@@ -1,0 +1,17 @@
+@import 'tailwindcss';
+
+@theme {
+    --radius-lg: 0.75rem;
+    --radius-md: 0.5rem;
+    --radius-sm: 0.25rem;
+}
+
+@layer base {
+    * {
+        @apply border-neutral-200;
+    }
+
+    body {
+        @apply bg-white text-neutral-900;
+    }
+}
