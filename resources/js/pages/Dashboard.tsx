@@ -1,5 +1,6 @@
-import { createElement } from 'react';
 import { Link } from '@inertiajs/react';
+import Button from '@/components/Button';
+import NavBar from '@/layouts/NavBar';
 
 interface EventRegistration {
     id: number;
@@ -29,31 +30,36 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ joined_events, hosted_events, certificates }: DashboardProps) {
-    return createElement('div', { style: { padding: '20px' } },
-        createElement('header', { style: { marginBottom: '20px' } },
-            createElement(Link, { href: '/' }, createElement('button', null, 'Home'))
-        ),
-        createElement('h1', null, 'My Dashboard'),
-        
-        createElement('h2', null, 'Joined Events'),
-        createElement('ul', null,
-            joined_events.map(reg => 
-                createElement('li', { key: reg.id }, reg.event?.title || 'Unknown Event')
-            )
-        ),
+    return (
+      <>
+        <NavBar />
 
-        createElement('h2', null, 'Hosted Events'),
-        createElement('ul', null,
-            hosted_events.map(ev => 
-                createElement('li', { key: ev.id }, ev.title)
-            )
-        ),
+        <div style={{ padding: '20px' }}>
+            <h1>My Dashboard</h1>
 
-        createElement('h2', null, 'Certificates'),
-        createElement('ul', null,
-            certificates.map(cert => 
-                createElement('li', { key: cert.id }, `Certificate for ${cert.eventRegistration?.event?.title || 'Unknown Event'}`)
-            )
-        )
+            <h2>Joined Events</h2>
+            <ul>
+                {joined_events.map((reg) => (
+                    <li key={reg.id}>{reg.event?.title || 'Unknown Event'}</li>
+                ))}
+            </ul>
+
+            <h2>Hosted Events</h2>
+            <ul>
+                {hosted_events.map((ev) => (
+                    <li key={ev.id}>{ev.title}</li>
+                ))}
+            </ul>
+
+            <h2>Certificates</h2>
+            <ul>
+                {certificates.map((cert) => (
+                    <li key={cert.id}>
+                        Certificate for {cert.eventRegistration?.event?.title || 'Unknown Event'}
+                    </li>
+                ))}
+            </ul>
+        </div>
+      </>
     );
 }

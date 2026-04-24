@@ -1,9 +1,78 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
+
 @import 'tailwindcss';
 
 @theme {
     --radius-lg: 0.75rem;
     --radius-md: 0.5rem;
     --radius-sm: 0.25rem;
+
+    --font-important: 'Nunito', ui-sans-serif, system-ui;
+    --font-text: 'Plus Jakarta Sans', ui-sans-serif, system-ui;
+
+    --color-primary-100: #CFDEFC;
+    --color-primary-200: #9EBDFA;
+    --color-primary-300: #6E9CF7;
+    --color-primary-400: #3D7AF5;
+    --color-primary-500: #0D59F2;
+    --color-primary-600: #0A47C2;
+    --color-primary-700: #083691;
+    --color-primary-800: #052461;
+    --color-primary-900: #031230;
+    
+    --color-secondary-100: #FFEECC;
+    --color-secondary-200: #FFDD99;
+    --color-secondary-300: #FFCC66;
+    --color-secondary-400: #FFBB33;
+    --color-secondary-500: #FFAA00;
+    --color-secondary-600: #CC8800;
+    --color-secondary-700: #996600;
+    --color-secondary-800: #664400;
+    --color-secondary-900: #332200;
+
+    --color-gray-100: #E6E6E6;
+    --color-gray-200: #CCCCCC;
+    --color-gray-300: #B3B3B3;
+    --color-gray-400: #999999;
+    --color-gray-500: #808080;
+    --color-gray-600: #666666;
+    --color-gray-700: #4D4D4D;
+    --color-gray-800: #333333;
+    --color-gray-900: #1A1A1A;
+
+
+    --text-h1-web: 4rem;
+    --text-h1-web--font-weight: 800;
+    --text-h2-web: 3.5rem;
+    --text-h2-web--font-weight: 700;
+    --text-h3-web: 3rem;
+    --text-h3-web--font-weight: 700;
+    --text-h4-web: 2.5rem;
+    --text-h4-web--font-weight: 600;
+    --text-h5-web: 2rem;
+    --text-h5-web--font-weight: 600;
+    --text-h6-web: 1.5rem;
+    --text-h6-web--font-weight: 600;
+    
+    --text-h1-mobile: 3rem;
+    --text-h1-mobile--font-weight: 800;
+    --text-h2-mobile: 2.5rem;
+    --text-h2-mobile--font-weight: 700;
+    --text-h3-mobile: 2.25rem;
+    --text-h3-mobile--font-weight: 700;
+    --text-h4-mobile: 2rem;
+    --text-h4-mobile--font-weight: 600;
+    --text-h5-mobile: 1.5rem;
+    --text-h5-mobile--font-weight: 600;
+    --text-h6-mobile: 1.25rem;
+    --text-h6-mobile--font-weight: 600;
+
+    --text-large: 1.5rem;
+    --text-base: 1.25rem;
+    --text-small: 1rem;
+    --text-small--font-weight: 500;
+    --text-micro: 0.875rem;
+    --text-micro--font-weight: 500;
 }
 
 @layer base {
@@ -13,5 +82,24 @@
 
     body {
         @apply bg-white text-neutral-900;
+    }
+
+    h1 {
+        @apply text-h1-mobile lg:text-h1-web font-important;
+    }
+    h2 {
+        @apply text-h2-mobile lg:text-h2-web font-important;
+    }
+    h3 {
+        @apply text-h3-mobile lg:text-h3-web font-important;
+    }
+    h4 {
+        @apply text-h4-mobile lg:text-h4-web font-important;
+    }
+    h5 {
+        @apply text-h5-mobile lg:text-h5-web font-important;
+    }
+    h6 {
+        @apply text-h6-mobile lg:text-h6-web font-important;
     }
 }
