@@ -1,5 +1,5 @@
 import { useForm, Head } from '@inertiajs/react';
-import Button from '@/components/Button';
+import Button from '@/components/ui/Button';
 
 import googleIconUrl from '@/assets/icons/material-icon-theme_google.svg';
 import faviconUrl from '@/../../public/favicon.svg';

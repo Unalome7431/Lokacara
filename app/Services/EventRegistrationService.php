@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\EventRegistration;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class EventRegistrationService
 {
@@ -20,6 +21,8 @@ class EventRegistrationService
             'user_id' => $userId,
             'event_id' => $eventId,
             'registered_at' => now(),
+            'qr_token' => Str::uuid(),
+            'status' => 'confirmed'
         ]);
     }
 }

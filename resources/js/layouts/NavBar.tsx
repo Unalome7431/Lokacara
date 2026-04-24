@@ -1,11 +1,11 @@
-import Button from '@/components/Button';
+import Button from '@/components/ui/Button';
 
 import defaultAvatar from '@/../../public/avatars/default.png';
 import faviconUrl from '@/../../public/favicon.svg';
 import SearchIcon from '@mui/icons-material/Search';
 import LocationIcon from '@mui/icons-material/FmdGoodOutlined';
 
-export default function NavBar() {
+export default function NavBar({isAuthenticated = true}:{isAuthenticated?:boolean}) {
 
   return(
     <nav className="sticky flex p-10 justify-between items-center w-screen drop-shadow-xl h-22.5 bg-white">
@@ -46,17 +46,24 @@ export default function NavBar() {
         </div>
       </div>
 
-      {/*Create Event Button and User Profile*/}
+      {/*Create Event Button and User Profile or Login Button*/}
       <div className='flex gap-5'>
-        {/*Create Event*/}
-        <Button className='text-small'>
-          Buat Event
-        </Button>
+        {isAuthenticated ?
+          <>
+            {/*Create Event*/}
+            <Button href='/dashboard' className='text-small'>
+              Dashboard
+            </Button>
 
-        {/*User Profile*/}
-        <div>
-          <img src={defaultAvatar} alt="User"  className='size-12 rounded-[10rem]'/>
-        </div>
+            {/*User Profile*/}
+            <div>
+              <img src={defaultAvatar} alt="User"  className='size-12 rounded-[10rem]'/>
+            </div>
+          </>
+          :
+          /*Login Button*/
+          <Button href='/login'/>
+        }
       </div>
     </nav>
   )

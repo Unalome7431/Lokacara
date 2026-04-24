@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import Button from '@/components/Button';
+import Button from '@/components/ui/Button';
 import NavBar from '@/layouts/NavBar';
 
 interface EventRegistration {
