@@ -1,17 +1,21 @@
-import { Link } from '@inertiajs/react';
-import Button from '@/components/ui/Button';
 import NavBar from '@/layouts/NavBar';
+import EventCard from '@/components/ui/EventCard';
 
 interface EventRegistration {
-    id: number;
-    event?: {
-        title: string;
-    };
+  id: number;
+  event: Event;
 }
 
 interface Event {
     id: number;
     title: string;
+    cover: string;
+    start_datetime: string;
+    location_name: string;
+    description: string;
+    category?: {
+        name: string;
+    };
 }
 
 interface Certificate {
@@ -34,25 +38,25 @@ export default function Dashboard({ joined_events, hosted_events, certificates }
       <>
         <NavBar />
 
-        <div style={{ padding: '20px' }}>
-            <h1>My Dashboard</h1>
+        <div className='p-20 pt-30'>
+            <h2 className='font-brand font-bold mb-5'>My Dashboard</h2>
 
-            <h2>Joined Events</h2>
-            <ul>
+            <h5 className='font-brand font-bold mb-5'>Event Terdaftar</h5>
+            <ul className='grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-3'>
                 {joined_events.map((reg) => (
-                    <li key={reg.id}>{reg.event?.title || 'Unknown Event'}</li>
+                    <EventCard key={reg.id} event={reg.event}/>
                 ))}
             </ul>
 
-            <h2>Hosted Events</h2>
-            <ul>
+            <h5 className='font-brand font-bold mb-5'>Event Dibuat</h5>
+            <ul className='grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-3'>
                 {hosted_events.map((ev) => (
-                    <li key={ev.id}>{ev.title}</li>
+                    <EventCard key={ev.id} event={ev}/>
                 ))}
             </ul>
 
-            <h2>Certificates</h2>
-            <ul>
+            <h5 className='font-brand font-bold mb-5'>E-Sertifikat</h5>
+            <ul className='grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-3'>
                 {certificates.map((cert) => (
                     <li key={cert.id}>
                         Certificate for {cert.eventRegistration?.event?.title || 'Unknown Event'}

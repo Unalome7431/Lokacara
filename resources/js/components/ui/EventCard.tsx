@@ -3,21 +3,24 @@ import Button from './Button';
 
 import DefaultCover from '@/../../public/covers/default_cover.jpg';
 
-interface EventCardProps {
-  event: {
-    id: number;
-    title: string;
-    cover: string;
-    start_datetime: string;
-    location_name: string;
-    description: string;
-    category?: {
-      name: string;
-    };
-  }
+interface Event {
+  id: number;
+  title: string;
+  cover: string;
+  start_datetime: string;
+  location_name: string;
+  description: string;
+  category?: {
+    name: string;
+  };
 }
 
-export default function EventCard({event}: EventCardProps) {
+interface EventCardProps {
+  event: Event;
+  isDetail?: boolean;
+}
+
+export default function EventCard({event, isDetail = true}: EventCardProps) {
   const handleJoin = (eventId: number) => {
     router.post(`/events/${eventId}/join`);
   };
@@ -38,21 +41,25 @@ export default function EventCard({event}: EventCardProps) {
       </div>
 
       <div className='p-6 pb-8 flex flex-col h-55'>
-        <h6 className='text-base font-text font-bold text-primary-500 leading-tight mb-2'>
+        <h6 className='text-base font-brand font-bold text-primary-500 leading-tight mb-2'>
           {event.title}
         </h6>
         
-        <span className='text-micro font-text text-gray-300 font-normal leading-snug'>
+        <span className='text-micro font-brand text-gray-300 font-normal leading-snug'>
           {formattedDate}
         </span>
         
-        <span className='text-micro font-text text-gray-300 font-normal leading-snug'>
+        <span className='text-micro font-brand text-gray-300 font-normal leading-snug'>
           {event.location_name}
         </span>
         
         {/* We keep the button here so you can still join! */}
         <div className="mt-auto">
-          <Button onClick={() => handleJoin(event.id)} className="text-small w-full">Join Event</Button>
+          {isDetail ?
+            <Button href='/dashboard' className="text-small w-full">Detail Event</Button>
+            :
+            <Button onClick={() => handleJoin(event.id)} className="text-small w-full">Join Event</Button>
+          }
         </div>
       </div>
     </div>

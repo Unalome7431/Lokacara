@@ -8,11 +8,11 @@ import LocationIcon from '@mui/icons-material/FmdGoodOutlined';
 export default function NavBar({isAuthenticated = true}:{isAuthenticated?:boolean}) {
 
   return(
-    <nav className="sticky flex p-10 justify-between items-center w-screen drop-shadow-xl h-22.5 bg-white">
+    <nav className="fixed flex p-10 justify-between items-center w-screen drop-shadow-xl h-22.5 bg-white">
       {/*Logo and Home Button*/}
       <a href="/" className='flex items-center gap-2'>
         <img src={faviconUrl} alt="Lokacara" className='w-6 h-7.5'/>
-        <span className='font-important font-bold lg:text-h6-web text-primary-500'>lokacara</span>
+        <span className='font-brand font-bold lg:text-h6-web text-primary-500'>lokacara</span>
       </a>
 
       {/*Search Bar and Location*/}
@@ -55,6 +55,11 @@ export default function NavBar({isAuthenticated = true}:{isAuthenticated?:boolea
               Dashboard
             </Button>
 
+            {/*Logout Button*/}
+            <Button href='/logout' method='post' variant='danger' className='text-small'>
+              Logout
+            </Button>
+
             {/*User Profile*/}
             <div>
               <img src={defaultAvatar} alt="User"  className='size-12 rounded-[10rem]'/>
@@ -62,7 +67,7 @@ export default function NavBar({isAuthenticated = true}:{isAuthenticated?:boolea
           </>
           :
           /*Login Button*/
-          <Button href='/login'/>
+          <Button href='/login' className='text-small'>Login</Button>
         }
       </div>
     </nav>

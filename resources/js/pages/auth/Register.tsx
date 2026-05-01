@@ -4,25 +4,26 @@ import Button from '@/components/ui/Button';
 import googleIconUrl from '@/assets/icons/material-icon-theme_google.svg';
 import faviconUrl from '@/../../public/favicon.svg';
 
-export default function Login() {
+export default function Register() {
     const { data, setData, post, processing, errors } = useForm({
         email: '',
         password: '',
+				password_confirmation: '',
     });
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
-        post('/login');
+        post('/register');
     };
 
     return (
       <div className='flex justify-center items-center h-screen w-screen'>
-        <div className='relative min-w-115 mx-10 my-auto rounded-2xl'>
+        <div className='relative max-w-115 mx-10 my-auto rounded-2xl'>
           <div className='absolute -inset-0.75 bg-linear-to-br from-primary-500 to-secondary-400 rounded-2xl opacity-50 drop-shadow-2xl'></div>
 
           <div className='relative px-10 pt-20 pb-10 border rounded-[calc(1rem-3px)] bg-white'>
               <Head title="Login" />
-              <h4 className='text-center text-primary-500 font-bold'>Masuk</h4>
+              <h4 className='text-center text-primary-500 font-bold'>Daftar</h4>
 
               {/* Google OAuth Button */}
               <div className='relative text-center mt-5 mb-3'>
@@ -32,13 +33,13 @@ export default function Login() {
                     className='relative flex items-center justify-center px-5 py-2.5 border rounded-xs bg-white w-full text-gray-500 text-base font-normal box-border font-brand'
                 >
                   <img src={googleIconUrl} alt="Google" className='absolute left-5 w-6 h-6' />
-                  <span>Masuk dengan <span className='text-primary-500 font-semibold'>Google</span></span>
+                  <span>Daftar dengan <span className='text-primary-500 font-semibold'>Google</span></span>
                 </a>
               </div>
               
               <div className='relative flex justify-center w-full my-3'>
-                <div className='absolute top-2.5 h-px w-full bg-gray-500 rounded-2xl'></div>
-                <span className='relative text-gray-500 text-center bg-white px-3 text-small font-normal'>atau</span>
+                <div className='absolute top-3 h-px w-full bg-gray-500 rounded-2xl'></div>
+                <span className='relative text-gray-500 text-center bg-white px-3 text-base font-normal'>atau</span>
               </div>
 
               {/* Manual Login Form */}
@@ -77,10 +78,35 @@ export default function Login() {
                               {errors.password}
                           </div>
                       )}
+                  </div>
 
-                      <div className='flex justify-end mt-2'>
-                        <a href="" className='text-small font-normal font-brand text-gray-500 hover:underline text-right'>Lupa Kata Sandi?</a>
-                      </div>
+									<div>
+                      <input
+                          id="password_confirmation"
+                          type="password"
+                          name="password_confirmation"
+                          placeholder='Tulis Ulang Kata Sandi'
+                          value={data.password}
+                          onChange={(e) => setData('password_confirmation', e.target.value)}
+                          required
+                          className='w-full px-5 py-2.5 box-border text-base font-brand font-normal placeholder-gray-500 bg-secondary-100 rounded'
+                      />
+                      {errors.password_confirmation && (
+                          <div className='text-red-500 mt-1.5 text-micro'>
+                              {errors.password_confirmation}
+                          </div>
+                      )}
+                  </div>
+
+                  <div className='flex items-center gap-2'>
+                    <input 
+                        id='policy'
+                        type='checkbox' 
+                        name='policy'
+                        required
+                        className="appearance-none w-5 h-5 bg-gray-100 rounded-sm checked:bg-primary-500 checked:bg-[url('https://upload.wikimedia.org/wikipedia/commons/2/27/White_check.svg')] bg-center bg-no-repeat bg-size-[12px_12px] transition-all duration-200 cursor-pointer outline-none"
+                    />
+                    <span className='font-brand text-small'>Saya setuju dengan <a className='text-primary-500'>persyaratan layanan</a> dan <a className='text-primary-500'>kebijakan privasi</a></span>
                   </div>
                   
                   <Button 
@@ -88,15 +114,9 @@ export default function Login() {
                       disabled={processing} 
                       className={`p-2.5 mt-5 text-large ${processing ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                   >
-                      Masuk
+                      Daftar
                   </Button>
               </form>
-
-              <div className='flex justify-center text-base font-normal font-brand mt-4'>
-                <span className='text-gray-500'>
-                  Belum memiliki akun? <a href="/register" className='text-primary-500 font-bold hover:underline'>Daftar</a>
-                </span>
-              </div>
 
               <div className='flex justify-center mt-20'>
                 <img src={faviconUrl} alt="Lokacara" className='w-12.5 h-15.5'/>

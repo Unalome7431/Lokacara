@@ -39,7 +39,7 @@ class User extends Authenticatable
         return Attribute::make(
             get: function ($value) {
                 if ($value) {
-                    return $value;
+                    return route('avatar.show', ['user' => $this->id]);
                 }
 
                 return asset('avatars/default.png');
