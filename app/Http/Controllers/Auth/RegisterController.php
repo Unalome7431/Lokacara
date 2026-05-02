@@ -18,8 +18,9 @@ class RegisterController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
+            'email' => ['required', 'email', 'unique:users,email'],
+            'password' => ['required', 'confirmed'],
+            'policy' => ['required', 'accepted'],
         ]);
 
         $user = User::create([

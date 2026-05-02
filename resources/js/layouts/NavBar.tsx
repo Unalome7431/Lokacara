@@ -1,3 +1,4 @@
+import { usePage } from '@inertiajs/react';
 import Button from '@/components/ui/Button';
 
 import defaultAvatar from '@/../../public/avatars/default.png';
@@ -5,7 +6,10 @@ import faviconUrl from '@/../../public/favicon.svg';
 import SearchIcon from '@mui/icons-material/Search';
 import LocationIcon from '@mui/icons-material/FmdGoodOutlined';
 
-export default function NavBar({isAuthenticated = true}:{isAuthenticated?:boolean}) {
+export default function NavBar() {
+  const { auth } = usePage().props as any;
+  const user = auth?.user;
+  const isAuthenticated = !!user;
 
   return(
     <nav className="fixed flex p-10 justify-between items-center w-screen drop-shadow-xl h-22.5 bg-white">
@@ -62,7 +66,7 @@ export default function NavBar({isAuthenticated = true}:{isAuthenticated?:boolea
 
             {/*User Profile*/}
             <div>
-              <img src={defaultAvatar} alt="User"  className='size-12 rounded-[10rem]'/>
+              <img src={user?.avatar_url || defaultAvatar} alt={user?.name || "User"} className='size-12 rounded-[10rem] object-cover'/>
             </div>
           </>
           :

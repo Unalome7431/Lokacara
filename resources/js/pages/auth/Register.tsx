@@ -6,9 +6,10 @@ import faviconUrl from '@/../../public/favicon.svg';
 
 export default function Register() {
     const { data, setData, post, processing, errors } = useForm({
-        email: '',
-        password: '',
-				password_confirmation: '',
+			email: '',
+			password: '',
+			password_confirmation: '',
+			policy: false,
     });
 
     const submit = (e: React.FormEvent) => {
@@ -38,8 +39,8 @@ export default function Register() {
               </div>
               
               <div className='relative flex justify-center w-full my-3'>
-                <div className='absolute top-3 h-px w-full bg-gray-500 rounded-2xl'></div>
-                <span className='relative text-gray-500 text-center bg-white px-3 text-base font-normal'>atau</span>
+                <div className='absolute top-2.5 h-px w-full bg-gray-500 rounded-2xl'></div>
+                <span className='relative text-gray-500 text-center bg-white px-3 text-small font-normal'>atau</span>
               </div>
 
               {/* Manual Login Form */}
@@ -81,32 +82,41 @@ export default function Register() {
                   </div>
 
 									<div>
-                      <input
-                          id="password_confirmation"
-                          type="password"
-                          name="password_confirmation"
-                          placeholder='Tulis Ulang Kata Sandi'
-                          value={data.password}
-                          onChange={(e) => setData('password_confirmation', e.target.value)}
-                          required
-                          className='w-full px-5 py-2.5 box-border text-base font-brand font-normal placeholder-gray-500 bg-secondary-100 rounded'
-                      />
-                      {errors.password_confirmation && (
-                          <div className='text-red-500 mt-1.5 text-micro'>
-                              {errors.password_confirmation}
-                          </div>
-                      )}
+										<input
+												id="password_confirmation"
+												type="password"
+												name="password_confirmation"
+												placeholder='Tulis Ulang Kata Sandi'
+												value={data.password_confirmation}
+												onChange={(e) => setData('password_confirmation', e.target.value)}
+												required
+												className='w-full px-5 py-2.5 box-border text-base font-brand font-normal placeholder-gray-500 bg-secondary-100 rounded'
+										/>
+										{errors.password_confirmation && (
+												<div className='text-red-500 mt-1.5 text-micro'>
+														{errors.password_confirmation}
+												</div>
+										)}
                   </div>
 
-                  <div className='flex items-center gap-2'>
-                    <input 
-                        id='policy'
-                        type='checkbox' 
-                        name='policy'
-                        required
-                        className="appearance-none w-5 h-5 bg-gray-100 rounded-sm checked:bg-primary-500 checked:bg-[url('https://upload.wikimedia.org/wikipedia/commons/2/27/White_check.svg')] bg-center bg-no-repeat bg-size-[12px_12px] transition-all duration-200 cursor-pointer outline-none"
-                    />
-                    <span className='font-brand text-small'>Saya setuju dengan <a className='text-primary-500'>persyaratan layanan</a> dan <a className='text-primary-500'>kebijakan privasi</a></span>
+                  <div>
+                    <div className='flex items-center gap-2'>
+                        <input 
+                            id='policy'
+                            type='checkbox' 
+                            name='policy'
+                            checked={data.policy}
+                            onChange={(e) => setData('policy', e.target.checked)}
+                            required
+                            className="appearance-none shrink-0 w-5 h-5 bg-gray-100 rounded-sm checked:bg-primary-500 checked:bg-[url('https://upload.wikimedia.org/wikipedia/commons/2/27/White_check.svg')] bg-center bg-no-repeat bg-size-[12px_12px] transition-all duration-200 cursor-pointer outline-none"
+                        />
+                        <span className='font-brand text-small'>Saya setuju dengan <a className='text-primary-500'>persyaratan layanan</a> dan <a className='text-primary-500'>kebijakan privasi</a></span>
+                    </div>
+                    {errors.policy && (
+                        <div className='text-red-500 mt-1.5 text-micro'>
+                            {errors.policy}
+                        </div>
+                    )}
                   </div>
                   
                   <Button 
@@ -117,6 +127,12 @@ export default function Register() {
                       Daftar
                   </Button>
               </form>
+
+              <div className='flex justify-center text-base font-normal font-brand mt-4'>
+                <span className='text-gray-500'>
+                  Sudah memiliki akun? <a href="/login" className='text-primary-500 font-bold hover:underline'>Masuk</a>
+                </span>
+              </div>
 
               <div className='flex justify-center mt-20'>
                 <img src={faviconUrl} alt="Lokacara" className='w-12.5 h-15.5'/>
