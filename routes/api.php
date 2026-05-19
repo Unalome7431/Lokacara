@@ -2,7 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\ApiHomeController;
+use App\Http\Controllers\Api\DiscoveryController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\EventRegistrationController;
 use App\Http\Controllers\Api\AuthController;
@@ -10,8 +10,10 @@ use App\Http\Controllers\Api\AdminAuthController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\AvatarController;
 
-// Task 1
-Route::get('/public-events', [ApiHomeController::class, 'index']);
+// Module 2: Discovery Routes
+Route::get('/events/feed', [DiscoveryController::class, 'index']);
+Route::get('/events/search', [DiscoveryController::class, 'search']);
+Route::get('/events/{event}', [DiscoveryController::class, 'show']);
 
 // Module 1: Authentication API Routes
 Route::middleware('guest')->group(function () {

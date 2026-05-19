@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
-use App\Http\Controllers\Web\HomeController;
+use App\Http\Controllers\Web\DiscoveryController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\EventRegistrationController;
 use App\Http\Controllers\Web\AdminSessionController;
@@ -14,8 +14,10 @@ use App\Http\Controllers\Auth\OnboardingController;
 use App\Http\Controllers\AvatarController;
 use Inertia\Inertia;
 
-// Home Page Route
-Route::get('/', [HomeController::class, 'index'])->name('home');
+// Module 2: Discovery Routes
+Route::get('/', [DiscoveryController::class, 'index'])->name('home');
+Route::get('/events/search', [DiscoveryController::class, 'search'])->name('events.search');
+Route::get('/events/{event}', [DiscoveryController::class, 'show'])->name('events.show');
 
 // Login Routes
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
