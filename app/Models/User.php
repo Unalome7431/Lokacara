@@ -37,9 +37,12 @@ class User extends Authenticatable
 
     protected function avatarUrl(): Attribute {
         return Attribute::make(
-            get: function ($value) {
-                if ($value) {
-                    return route('avatar.show', ['user' => $this->id]);
+            get: function ($value, $attributes) {
+                if (!empty($attributes['avatar_url'])) {
+                    $filename = basename($attributes['avatar_url']);
+                    return request()->is('api/*') 
+                        ? url("/api/profile/avatar/{$filename}") 
+                        : route('profile.avatar.show', ['filename' => $filename]);
                 }
 
                 return asset('avatars/default.png');
