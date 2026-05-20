@@ -9,6 +9,8 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\AdminAuthController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\EventManagementApiController;
+use App\Http\Controllers\Api\AttendanceApiController;
+use App\Http\Controllers\Api\CommunicationApiController;
 use App\Http\Controllers\AvatarController;
 use App\Http\Controllers\PosterController;
 
@@ -47,6 +49,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/organizer/events/{event}', [EventManagementApiController::class, 'update']);
     Route::delete('/organizer/events/{event}', [EventManagementApiController::class, 'destroy']);
     Route::get('/organizer/events/{event}/attendees', [EventManagementApiController::class, 'attendees']);
+
+    // Module 4: Communications & Attendance
+    Route::get('/events/{event}/ticket', [AttendanceApiController::class, 'ticket']);
+    Route::post('/organizer/events/{event}/attendance/scan', [AttendanceApiController::class, 'scan']);
+    Route::post('/organizer/events/{event}/attendance/{registration}/toggle', [AttendanceApiController::class, 'toggle']);
+    Route::post('/organizer/events/{event}/reminders', [CommunicationApiController::class, 'sendReminder']);
 });
 
 // Secure Poster Stream

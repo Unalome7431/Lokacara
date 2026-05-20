@@ -14,6 +14,8 @@ use App\Http\Controllers\Auth\OnboardingController;
 use App\Http\Controllers\AvatarController;
 use App\Http\Controllers\PosterController;
 use App\Http\Controllers\Web\EventManagementController;
+use App\Http\Controllers\Web\AttendanceController;
+use App\Http\Controllers\Web\CommunicationController;
 use Inertia\Inertia;
 
 // Module 2: Discovery Routes
@@ -64,6 +66,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/dashboard/events/{event}', [EventManagementController::class, 'update'])->name('dashboard.events.update');
     Route::delete('/dashboard/events/{event}', [EventManagementController::class, 'destroy'])->name('dashboard.events.destroy');
     Route::get('/dashboard/events/{event}/attendees', [EventManagementController::class, 'attendees'])->name('dashboard.events.attendees');
+
+    // Module 4: Communications & Attendance
+    Route::get('/events/{event}/ticket', [AttendanceController::class, 'ticket'])->name('events.ticket');
+    Route::post('/dashboard/events/{event}/attendance/scan', [AttendanceController::class, 'scan'])->name('dashboard.events.attendance.scan');
+    Route::post('/dashboard/events/{event}/attendance/{registration}/toggle', [AttendanceController::class, 'toggle'])->name('dashboard.events.attendance.toggle');
+    Route::post('/dashboard/events/{event}/reminders', [CommunicationController::class, 'sendReminder'])->name('dashboard.events.reminders');
 });
 
 // Secure Poster Stream
