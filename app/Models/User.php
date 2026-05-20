@@ -39,6 +39,11 @@ class User extends Authenticatable
         return Attribute::make(
             get: function ($value, $attributes) {
                 if (!empty($attributes['avatar_url'])) {
+                    // Check if it's already an absolute URL (like from Google or ui-avatars)
+                    if (str_starts_with($attributes['avatar_url'], 'http')) {
+                        return $attributes['avatar_url'];
+                    }
+
                     $filename = basename($attributes['avatar_url']);
                     return request()->is('api/*') 
                         ? url("/api/profile/avatar/{$filename}") 

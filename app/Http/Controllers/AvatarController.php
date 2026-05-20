@@ -10,11 +10,11 @@ class AvatarController extends Controller
     {
         $path = "avatars/{$filename}";
 
-        if (!Storage::disk('private')->exists($path)) {
+        if (!Storage::disk('local')->exists($path)) {
             abort(404);
         }
 
-        $fullPath = Storage::disk('private')->path($path);
+        $fullPath = Storage::disk('local')->path($path);
 
         return response()->file($fullPath);
     }

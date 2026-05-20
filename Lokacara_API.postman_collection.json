@@ -9,52 +9,96 @@
       "name": "Public Endpoints",
       "item": [
         {
-          "name": "Get Public Events",
+          "name": "Feed Events",
           "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              }
-            ],
+            "header": [{"key":"Accept","value":"application/json"}],
             "url": {
-              "raw": "{{base_url}}/public-events",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "public-events"
-              ]
+              "raw": "{{base_url}}/events/feed",
+              "host": ["{{base_url}}"],
+              "path": ["events", "feed"]
             }
           }
         },
         {
-          "name": "Login",
+          "name": "Search Events",
+          "request": {
+            "method": "GET",
+            "header": [{"key":"Accept","value":"application/json"}],
+            "url": {
+              "raw": "{{base_url}}/events/search?query=example",
+              "host": ["{{base_url}}"],
+              "path": ["events", "search"],
+              "query": [{"key":"query","value":"example"}]
+            }
+          }
+        },
+        {
+          "name": "Get Event Details",
+          "request": {
+            "method": "GET",
+            "header": [{"key":"Accept","value":"application/json"}],
+            "url": {
+              "raw": "{{base_url}}/events/1",
+              "host": ["{{base_url}}"],
+              "path": ["events", "1"]
+            }
+          }
+        },
+        {
+          "name": "Register User",
           "request": {
             "method": "POST",
             "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              {"key":"Accept","value":"application/json"},
+              {"key":"Content-Type","value":"application/json"}
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"password\"\n}"
+              "raw": "{\"name\":\"Test User\",\"email\":\"test@example.com\",\"password\":\"password\",\"password_confirmation\":\"password\"}"
             },
             "url": {
-              "raw": "{{base_url}}/login",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "login"
-              ]
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key":"Accept","value":"application/json"},
+              {"key":"Content-Type","value":"application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"test@example.com\",\"password\":\"password\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Admin Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key":"Accept","value":"application/json"},
+              {"key":"Content-Type","value":"application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"admin@example.com\",\"password\":\"password\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "auth", "login"]
             }
           }
         }
@@ -64,33 +108,99 @@
       "name": "Protected Endpoints",
       "item": [
         {
+          "name": "Logout User",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {"key":"token","value":"{{auth_token}}","type":"string"}
+              ]
+            },
+            "method": "POST",
+            "header": [{"key":"Accept","value":"application/json"}],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "logout"]
+            }
+          }
+        },
+        {
+          "name": "Get Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {"key":"token","value":"{{auth_token}}","type":"string"}
+              ]
+            },
+            "method": "GET",
+            "header": [{"key":"Accept","value":"application/json"}],
+            "url": {
+              "raw": "{{base_url}}/profile",
+              "host": ["{{base_url}}"],
+              "path": ["profile"]
+            }
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {"key":"token","value":"{{auth_token}}","type":"string"}
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {"key":"Accept","value":"application/json"},
+              {"key":"Content-Type","value":"application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"Updated Name\",\"email\":\"updated@example.com\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/profile",
+              "host": ["{{base_url}}"],
+              "path": ["profile"]
+            }
+          }
+        },
+        {
+          "name": "Get Avatar",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {"key":"token","value":"{{auth_token}}","type":"string"}
+              ]
+            },
+            "method": "GET",
+            "header": [{"key":"Accept","value":"application/json"}],
+            "url": {
+              "raw": "{{base_url}}/profile/avatar/default.png",
+              "host": ["{{base_url}}"],
+              "path": ["profile", "avatar", "default.png"]
+            }
+          }
+        },
+        {
           "name": "Get Authenticated User",
           "request": {
             "auth": {
               "type": "bearer",
               "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{auth_token}}",
-                  "type": "string"
-                }
+                {"key":"token","value":"{{auth_token}}","type":"string"}
               ]
             },
             "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              }
-            ],
+            "header": [{"key":"Accept","value":"application/json"}],
             "url": {
               "raw": "{{base_url}}/user",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "user"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["user"]
             }
           }
         },
@@ -100,28 +210,15 @@
             "auth": {
               "type": "bearer",
               "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{auth_token}}",
-                  "type": "string"
-                }
+                {"key":"token","value":"{{auth_token}}","type":"string"}
               ]
             },
             "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              }
-            ],
+            "header": [{"key":"Accept","value":"application/json"}],
             "url": {
               "raw": "{{base_url}}/dashboard",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "dashboard"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["dashboard"]
             }
           }
         },
@@ -131,30 +228,15 @@
             "auth": {
               "type": "bearer",
               "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{auth_token}}",
-                  "type": "string"
-                }
+                {"key":"token","value":"{{auth_token}}","type":"string"}
               ]
             },
             "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              }
-            ],
+            "header": [{"key":"Accept","value":"application/json"}],
             "url": {
               "raw": "{{base_url}}/events/1/join",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "events",
-                "1",
-                "join"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["events", "1", "join"]
             }
           }
         }
@@ -162,15 +244,7 @@
     }
   ],
   "variable": [
-    {
-      "key": "base_url",
-      "value": "http://localhost:8000/api",
-      "type": "string"
-    },
-    {
-      "key": "auth_token",
-      "value": "your_sanctum_token_here",
-      "type": "string"
-    }
+    {"key":"base_url","value":"http://localhost:8000/api","type":"string"},
+    {"key":"auth_token","value":"your_sanctum_token_here","type":"string"}
   ]
 }

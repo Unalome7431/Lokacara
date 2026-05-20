@@ -29,6 +29,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Profile
     Route::get('/profile', [ProfileController::class, 'show']);
     Route::post('/profile', [ProfileController::class, 'update']);
+    Route::post('/profile/avatar', [ProfileController::class, 'uploadAvatar']);
     Route::get('/profile/avatar/{filename}', [AvatarController::class, 'show']);
     
     // Other Protected Routes

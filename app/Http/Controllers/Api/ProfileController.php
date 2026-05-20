@@ -36,11 +36,11 @@ class ProfileController extends Controller
 
         if ($request->hasFile('avatar')) {
             // Delete old avatar if exists and not default
-            if ($user->getRawOriginal('avatar_url') && Storage::disk('private')->exists($user->getRawOriginal('avatar_url'))) {
-                Storage::disk('private')->delete($user->getRawOriginal('avatar_url'));
+            if ($user->getRawOriginal('avatar_url') && Storage::disk('local')->exists($user->getRawOriginal('avatar_url'))) {
+                Storage::disk('local')->delete($user->getRawOriginal('avatar_url'));
             }
 
-            $path = $request->file('avatar')->store('avatars', 'private');
+            $path = $request->file('avatar')->store('avatars', 'local');
             $user->avatar_url = $path;
         }
 
