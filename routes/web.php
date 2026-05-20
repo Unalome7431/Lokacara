@@ -12,6 +12,8 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\OnboardingController;
 use App\Http\Controllers\AvatarController;
+use App\Http\Controllers\PosterController;
+use App\Http\Controllers\Web\EventManagementController;
 use Inertia\Inertia;
 
 // Module 2: Discovery Routes
@@ -53,6 +55,18 @@ Route::middleware(['auth'])->group(function () {
     
     // Secure Avatar Stream
     Route::get('/profile/avatar/{filename}', [AvatarController::class, 'show'])->name('profile.avatar.show');
+    
+    // Module 3: Organizer Hub - Event Management
+    Route::get('/dashboard/events', [EventManagementController::class, 'index'])->name('dashboard.events.index');
+    Route::get('/dashboard/events/create', [EventManagementController::class, 'create'])->name('dashboard.events.create');
+    Route::post('/dashboard/events', [EventManagementController::class, 'store'])->name('dashboard.events.store');
+    Route::get('/dashboard/events/{event}/edit', [EventManagementController::class, 'edit'])->name('dashboard.events.edit');
+    Route::post('/dashboard/events/{event}', [EventManagementController::class, 'update'])->name('dashboard.events.update');
+    Route::delete('/dashboard/events/{event}', [EventManagementController::class, 'destroy'])->name('dashboard.events.destroy');
+    Route::get('/dashboard/events/{event}/attendees', [EventManagementController::class, 'attendees'])->name('dashboard.events.attendees');
 });
+
+// Secure Poster Stream
+Route::get('/posters/{filename}', [PosterController::class, 'show'])->name('poster.show');
 
 require __DIR__.'/settings.php';

@@ -8,7 +8,9 @@ use App\Http\Controllers\Api\EventRegistrationController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\AdminAuthController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\EventManagementApiController;
 use App\Http\Controllers\AvatarController;
+use App\Http\Controllers\PosterController;
 
 // Module 2: Discovery Routes
 Route::get('/events/feed', [DiscoveryController::class, 'index']);
@@ -38,4 +40,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
     Route::get('/dashboard', [DashboardController::class, 'index']);
     Route::post('/events/{event}/join', [EventRegistrationController::class, 'store']);
+    
+    // Module 3: Organizer Hub - Event Management
+    Route::get('/organizer/events', [EventManagementApiController::class, 'index']);
+    Route::post('/organizer/events', [EventManagementApiController::class, 'store']);
+    Route::post('/organizer/events/{event}', [EventManagementApiController::class, 'update']);
+    Route::delete('/organizer/events/{event}', [EventManagementApiController::class, 'destroy']);
+    Route::get('/organizer/events/{event}/attendees', [EventManagementApiController::class, 'attendees']);
 });
+
+// Secure Poster Stream
+Route::get('/posters/{filename}', [PosterController::class, 'show']);
