@@ -55,7 +55,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\"name\":\"Test User\",\"email\":\"test@example.com\",\"password\":\"password\",\"password_confirmation\":\"password\"}"
+              "raw": "{\n    \"name\": \"Test User\",\n    \"email\": \"test@example.com\",\n    \"password\": \"password\",\n    \"password_confirmation\": \"password\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/auth/register",
@@ -74,7 +74,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\"email\":\"test@example.com\",\"password\":\"password\"}"
+              "raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"password\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/auth/login",
@@ -93,12 +93,24 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\"email\":\"admin@example.com\",\"password\":\"password\"}"
+              "raw": "{\n    \"email\": \"admin@example.com\",\n    \"password\": \"password\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/admin/auth/login",
               "host": ["{{base_url}}"],
               "path": ["admin", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Get Poster",
+          "request": {
+            "method": "GET",
+            "header": [{"key":"Accept","value":"application/json"}],
+            "url": {
+              "raw": "{{base_url}}/posters/default.png",
+              "host": ["{{base_url}}"],
+              "path": ["posters", "default.png"]
             }
           }
         }
@@ -108,137 +120,311 @@
       "name": "Protected Endpoints",
       "item": [
         {
-          "name": "Logout User",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {"key":"token","value":"{{auth_token}}","type":"string"}
-              ]
+          "name": "Auth & Profile",
+          "item": [
+            {
+              "name": "Logout User",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{"key":"token","value":"{{auth_token}}","type":"string"}]
+                },
+                "method": "POST",
+                "header": [{"key":"Accept","value":"application/json"}],
+                "url": {
+                  "raw": "{{base_url}}/auth/logout",
+                  "host": ["{{base_url}}"],
+                  "path": ["auth", "logout"]
+                }
+              }
             },
-            "method": "POST",
-            "header": [{"key":"Accept","value":"application/json"}],
-            "url": {
-              "raw": "{{base_url}}/auth/logout",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "logout"]
+            {
+              "name": "Get Authenticated User",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{"key":"token","value":"{{auth_token}}","type":"string"}]
+                },
+                "method": "GET",
+                "header": [{"key":"Accept","value":"application/json"}],
+                "url": {
+                  "raw": "{{base_url}}/user",
+                  "host": ["{{base_url}}"],
+                  "path": ["user"]
+                }
+              }
+            },
+            {
+              "name": "Get Profile",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{"key":"token","value":"{{auth_token}}","type":"string"}]
+                },
+                "method": "GET",
+                "header": [{"key":"Accept","value":"application/json"}],
+                "url": {
+                  "raw": "{{base_url}}/profile",
+                  "host": ["{{base_url}}"],
+                  "path": ["profile"]
+                }
+              }
+            },
+            {
+              "name": "Update Profile",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{"key":"token","value":"{{auth_token}}","type":"string"}]
+                },
+                "method": "POST",
+                "header": [
+                  {"key":"Accept","value":"application/json"},
+                  {"key":"Content-Type","value":"application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"name\": \"Updated Name\",\n    \"email\": \"updated@example.com\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/profile",
+                  "host": ["{{base_url}}"],
+                  "path": ["profile"]
+                }
+              }
+            },
+            {
+              "name": "Upload Avatar",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{"key":"token","value":"{{auth_token}}","type":"string"}]
+                },
+                "method": "POST",
+                "header": [{"key":"Accept","value":"application/json"}],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {"key":"avatar","type":"file","src":[]}
+                  ]
+                },
+                "url": {
+                  "raw": "{{base_url}}/profile/avatar",
+                  "host": ["{{base_url}}"],
+                  "path": ["profile", "avatar"]
+                }
+              }
+            },
+            {
+              "name": "Get Avatar",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{"key":"token","value":"{{auth_token}}","type":"string"}]
+                },
+                "method": "GET",
+                "header": [{"key":"Accept","value":"application/json"}],
+                "url": {
+                  "raw": "{{base_url}}/profile/avatar/default.png",
+                  "host": ["{{base_url}}"],
+                  "path": ["profile", "avatar", "default.png"]
+                }
+              }
             }
-          }
+          ]
         },
         {
-          "name": "Get Profile",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {"key":"token","value":"{{auth_token}}","type":"string"}
-              ]
+          "name": "Participant Flow",
+          "item": [
+            {
+              "name": "Get Dashboard",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{"key":"token","value":"{{auth_token}}","type":"string"}]
+                },
+                "method": "GET",
+                "header": [{"key":"Accept","value":"application/json"}],
+                "url": {
+                  "raw": "{{base_url}}/dashboard",
+                  "host": ["{{base_url}}"],
+                  "path": ["dashboard"]
+                }
+              }
             },
-            "method": "GET",
-            "header": [{"key":"Accept","value":"application/json"}],
-            "url": {
-              "raw": "{{base_url}}/profile",
-              "host": ["{{base_url}}"],
-              "path": ["profile"]
+            {
+              "name": "Join Event",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{"key":"token","value":"{{auth_token}}","type":"string"}]
+                },
+                "method": "POST",
+                "header": [{"key":"Accept","value":"application/json"}],
+                "url": {
+                  "raw": "{{base_url}}/events/1/join",
+                  "host": ["{{base_url}}"],
+                  "path": ["events", "1", "join"]
+                }
+              }
+            },
+            {
+              "name": "Get Ticket",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{"key":"token","value":"{{auth_token}}","type":"string"}]
+                },
+                "method": "GET",
+                "header": [{"key":"Accept","value":"application/json"}],
+                "url": {
+                  "raw": "{{base_url}}/events/1/ticket",
+                  "host": ["{{base_url}}"],
+                  "path": ["events", "1", "ticket"]
+                }
+              }
             }
-          }
+          ]
         },
         {
-          "name": "Update Profile",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {"key":"token","value":"{{auth_token}}","type":"string"}
-              ]
+          "name": "Organizer Hub",
+          "item": [
+            {
+              "name": "Get Organizer Events",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{"key":"token","value":"{{auth_token}}","type":"string"}]
+                },
+                "method": "GET",
+                "header": [{"key":"Accept","value":"application/json"}],
+                "url": {
+                  "raw": "{{base_url}}/organizer/events",
+                  "host": ["{{base_url}}"],
+                  "path": ["organizer", "events"]
+                }
+              }
             },
-            "method": "POST",
-            "header": [
-              {"key":"Accept","value":"application/json"},
-              {"key":"Content-Type","value":"application/json"}
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\"name\":\"Updated Name\",\"email\":\"updated@example.com\"}"
+            {
+              "name": "Create Event",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{"key":"token","value":"{{auth_token}}","type":"string"}]
+                },
+                "method": "POST",
+                "header": [{"key":"Accept","value":"application/json"}],
+                "url": {
+                  "raw": "{{base_url}}/organizer/events",
+                  "host": ["{{base_url}}"],
+                  "path": ["organizer", "events"]
+                }
+              }
             },
-            "url": {
-              "raw": "{{base_url}}/profile",
-              "host": ["{{base_url}}"],
-              "path": ["profile"]
+            {
+              "name": "Update Event",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{"key":"token","value":"{{auth_token}}","type":"string"}]
+                },
+                "method": "POST",
+                "header": [{"key":"Accept","value":"application/json"}],
+                "url": {
+                  "raw": "{{base_url}}/organizer/events/1",
+                  "host": ["{{base_url}}"],
+                  "path": ["organizer", "events", "1"]
+                }
+              }
+            },
+            {
+              "name": "Delete Event",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{"key":"token","value":"{{auth_token}}","type":"string"}]
+                },
+                "method": "DELETE",
+                "header": [{"key":"Accept","value":"application/json"}],
+                "url": {
+                  "raw": "{{base_url}}/organizer/events/1",
+                  "host": ["{{base_url}}"],
+                  "path": ["organizer", "events", "1"]
+                }
+              }
+            },
+            {
+              "name": "Get Attendees",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{"key":"token","value":"{{auth_token}}","type":"string"}]
+                },
+                "method": "GET",
+                "header": [{"key":"Accept","value":"application/json"}],
+                "url": {
+                  "raw": "{{base_url}}/organizer/events/1/attendees",
+                  "host": ["{{base_url}}"],
+                  "path": ["organizer", "events", "1", "attendees"]
+                }
+              }
+            },
+            {
+              "name": "Scan Attendance",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{"key":"token","value":"{{auth_token}}","type":"string"}]
+                },
+                "method": "POST",
+                "header": [
+                  {"key":"Accept","value":"application/json"},
+                  {"key":"Content-Type","value":"application/json"}
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"registration_id\": 1\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/organizer/events/1/attendance/scan",
+                  "host": ["{{base_url}}"],
+                  "path": ["organizer", "events", "1", "attendance", "scan"]
+                }
+              }
+            },
+            {
+              "name": "Toggle Attendance",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{"key":"token","value":"{{auth_token}}","type":"string"}]
+                },
+                "method": "POST",
+                "header": [{"key":"Accept","value":"application/json"}],
+                "url": {
+                  "raw": "{{base_url}}/organizer/events/1/attendance/1/toggle",
+                  "host": ["{{base_url}}"],
+                  "path": ["organizer", "events", "1", "attendance", "1", "toggle"]
+                }
+              }
+            },
+            {
+              "name": "Send Event Reminders",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [{"key":"token","value":"{{auth_token}}","type":"string"}]
+                },
+                "method": "POST",
+                "header": [{"key":"Accept","value":"application/json"}],
+                "url": {
+                  "raw": "{{base_url}}/organizer/events/1/reminders",
+                  "host": ["{{base_url}}"],
+                  "path": ["organizer", "events", "1", "reminders"]
+                }
+              }
             }
-          }
-        },
-        {
-          "name": "Get Avatar",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {"key":"token","value":"{{auth_token}}","type":"string"}
-              ]
-            },
-            "method": "GET",
-            "header": [{"key":"Accept","value":"application/json"}],
-            "url": {
-              "raw": "{{base_url}}/profile/avatar/default.png",
-              "host": ["{{base_url}}"],
-              "path": ["profile", "avatar", "default.png"]
-            }
-          }
-        },
-        {
-          "name": "Get Authenticated User",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {"key":"token","value":"{{auth_token}}","type":"string"}
-              ]
-            },
-            "method": "GET",
-            "header": [{"key":"Accept","value":"application/json"}],
-            "url": {
-              "raw": "{{base_url}}/user",
-              "host": ["{{base_url}}"],
-              "path": ["user"]
-            }
-          }
-        },
-        {
-          "name": "Get Dashboard",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {"key":"token","value":"{{auth_token}}","type":"string"}
-              ]
-            },
-            "method": "GET",
-            "header": [{"key":"Accept","value":"application/json"}],
-            "url": {
-              "raw": "{{base_url}}/dashboard",
-              "host": ["{{base_url}}"],
-              "path": ["dashboard"]
-            }
-          }
-        },
-        {
-          "name": "Join Event",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {"key":"token","value":"{{auth_token}}","type":"string"}
-              ]
-            },
-            "method": "POST",
-            "header": [{"key":"Accept","value":"application/json"}],
-            "url": {
-              "raw": "{{base_url}}/events/1/join",
-              "host": ["{{base_url}}"],
-              "path": ["events", "1", "join"]
-            }
-          }
+          ]
         }
       ]
     }
