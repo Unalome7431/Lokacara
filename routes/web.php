@@ -16,6 +16,8 @@ use App\Http\Controllers\PosterController;
 use App\Http\Controllers\Web\EventManagementController;
 use App\Http\Controllers\Web\AttendanceController;
 use App\Http\Controllers\Web\CommunicationController;
+use App\Http\Controllers\Web\CertificateManagementController;
+use App\Http\Controllers\Web\CertificateController;
 use Inertia\Inertia;
 
 // Module 2: Discovery Routes
@@ -72,6 +74,14 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/dashboard/events/{event}/attendance/scan', [AttendanceController::class, 'scan'])->name('dashboard.events.attendance.scan');
     Route::post('/dashboard/events/{event}/attendance/{registration}/toggle', [AttendanceController::class, 'toggle'])->name('dashboard.events.attendance.toggle');
     Route::post('/dashboard/events/{event}/reminders', [CommunicationController::class, 'sendReminder'])->name('dashboard.events.reminders');
+    
+    // Module 5: Fulfillment (E-Certificates) - Organizer Side
+    Route::get('/dashboard/events/{event}/certificates', [CertificateManagementController::class, 'index'])->name('dashboard.events.certificates.index');
+    Route::post('/dashboard/events/{event}/certificates/distribute', [CertificateManagementController::class, 'distribute'])->name('dashboard.events.certificates.distribute');
+
+    // Module 5: Fulfillment (E-Certificates) - Attendee Side
+    Route::get('/dashboard/certificates', [CertificateController::class, 'index'])->name('dashboard.certificates.index');
+    Route::get('/certificates/{certificate}/download', [CertificateController::class, 'download'])->name('certificates.download');
 });
 
 // Secure Poster Stream
