@@ -44,4 +44,27 @@ class ProfileController extends Controller
 
         return redirect()->back()->with('status', 'Profile updated successfully.');
     }
+
+    public function uploadAvatar(Request $request)
+    {
+        $request->validate([
+            'avatar' => 'required|image|max:5120', // 5MB max
+        ]);
+
+        $user = $request->user();
+
+        if ($request->hasFile('avatar')) {
+            // Delete old avatar if exists
+            if ($user->getRawOriginal('avatar_url') && Storage::disk('local')->exists($user->getRawOriginal('avatar_url'))) {
+                Storage::disk('local')->delete($user->getRawOriginal('avatar_url'));
+            }
+
+            $path = $request->file('avatar')->store('avatars', 'local');
+            $user->avatar_url = $path;
+            $user->save();
+        }
+
+        return redirect()->back()->with('status', 'Avatar updated successfully.');
+    }
 }
+

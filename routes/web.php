@@ -18,6 +18,8 @@ use App\Http\Controllers\Web\AttendanceController;
 use App\Http\Controllers\Web\CommunicationController;
 use App\Http\Controllers\Web\CertificateManagementController;
 use App\Http\Controllers\Web\CertificateController;
+use App\Http\Controllers\ModerationController;
+use App\Http\Controllers\AdminModerationController;
 use Inertia\Inertia;
 
 // Module 2: Discovery Routes
@@ -82,6 +84,17 @@ Route::middleware(['auth'])->group(function () {
     // Module 5: Fulfillment (E-Certificates) - Attendee Side
     Route::get('/dashboard/certificates', [CertificateController::class, 'index'])->name('dashboard.certificates.index');
     Route::get('/certificates/{certificate}/download', [CertificateController::class, 'download'])->name('certificates.download');
+
+    // Module 6: Moderation (User)
+    Route::post('/events/{event}/report', [ModerationController::class, 'reportEvent'])->name('events.report');
+});
+
+// Module 6: Moderation (Admin)
+Route::middleware(['auth', 'can:admin-panels'])->group(function () {
+    Route::get('/admin/moderation', [AdminModerationController::class, 'index'])->name('admin.moderation.index');
+    Route::get('/admin/reports/{report}', [AdminModerationController::class, 'showReport'])->name('admin.reports.show');
+    Route::post('/admin/events/{event}/ban', [AdminModerationController::class, 'banEvent'])->name('admin.events.ban');
+    Route::post('/admin/users/{user}/ban', [AdminModerationController::class, 'banUser'])->name('admin.users.ban');
 });
 
 // Secure Poster Stream

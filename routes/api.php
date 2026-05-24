@@ -11,6 +11,9 @@ use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\EventManagementApiController;
 use App\Http\Controllers\Api\AttendanceApiController;
 use App\Http\Controllers\Api\CommunicationApiController;
+use App\Http\Controllers\Api\ModerationApiController;
+use App\Http\Controllers\Api\AdminModerationApiController;
+use App\Http\Controllers\Api\CertificateApiController;
 use App\Http\Controllers\AvatarController;
 use App\Http\Controllers\PosterController;
 
@@ -24,6 +27,8 @@ Route::middleware('guest')->group(function () {
     Route::post('/auth/register', [AuthController::class, 'register']);
     Route::post('/auth/login', [AuthController::class, 'login']);
     Route::post('/admin/auth/login', [AdminAuthController::class, 'login']);
+    Route::post('/auth/password/email', [AuthController::class, 'forgotPassword']);
+    Route::post('/auth/password/reset', [AuthController::class, 'resetPassword']);
 });
 
 // Module 1: Authenticated User & Profile Routes
@@ -32,7 +37,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     
     // Profile
     Route::get('/profile', [ProfileController::class, 'show']);
-    Route::post('/profile', [ProfileController::class, 'update']);
+    Route::patch('/profile', [ProfileController::class, 'update']);
     Route::post('/profile/avatar', [ProfileController::class, 'uploadAvatar']);
     Route::get('/profile/avatar/{filename}', [AvatarController::class, 'show']);
     
@@ -42,6 +47,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
     Route::get('/dashboard', [DashboardController::class, 'index']);
     Route::post('/events/{event}/join', [EventRegistrationController::class, 'store']);
+    Route::delete('/events/{event}/join', [EventRegistrationController::class, 'destroy']);
     
     // Module 3: Organizer Hub - Event Management
     Route::get('/organizer/events', [EventManagementApiController::class, 'index']);
@@ -51,10 +57,26 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/organizer/events/{event}/attendees', [EventManagementApiController::class, 'attendees']);
 
     // Module 4: Communications & Attendance
-    Route::get('/events/{event}/ticket', [AttendanceApiController::class, 'ticket']);
+    Route::get('/events/{event}/attendance/qr', [AttendanceApiController::class, 'ticket']);
     Route::post('/organizer/events/{event}/attendance/scan', [AttendanceApiController::class, 'scan']);
-    Route::post('/organizer/events/{event}/attendance/{registration}/toggle', [AttendanceApiController::class, 'toggle']);
+    Route::patch('/organizer/events/{event}/attendance/{registration}/toggle', [AttendanceApiController::class, 'toggle']);
     Route::post('/organizer/events/{event}/reminders', [CommunicationApiController::class, 'sendReminder']);
+
+    // E-Certificates
+    Route::post('/organizer/events/{event}/certificates/template', [CertificateApiController::class, 'uploadTemplate']);
+    Route::post('/organizer/events/{event}/certificates/distribute', [CertificateApiController::class, 'distribute']);
+    Route::get('/events/{event}/certificate', [CertificateApiController::class, 'download']);
+
+    // Module 6: Moderation (User)
+    Route::post('/events/{event}/report', [ModerationApiController::class, 'reportEvent']);
+});
+
+// Module 6: Moderation (Admin)
+Route::middleware(['auth:sanctum', 'ability:admin'])->group(function () {
+    Route::get('/admin/moderation', [AdminModerationApiController::class, 'index']);
+    Route::get('/admin/reports/{report}', [AdminModerationApiController::class, 'showReport']);
+    Route::post('/admin/events/{event}/ban', [AdminModerationApiController::class, 'banEvent']);
+    Route::post('/admin/users/{user}/ban', [AdminModerationApiController::class, 'banUser']);
 });
 
 // Secure Poster Stream

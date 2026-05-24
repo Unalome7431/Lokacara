@@ -19,4 +19,16 @@ class EventRegistrationController extends Controller
 
         return response()->json(['message' => 'Successfully joined the event!']);
     }
+
+    public function destroy($eventId)
+    {
+        $success = $this->registrationService->leaveEvent($eventId);
+
+        if (!$success) {
+            return response()->json(['message' => 'Not registered for this event.'], 404);
+        }
+
+        return response()->json(['message' => 'Successfully left the event!']);
+    }
 }
+

@@ -19,4 +19,16 @@ class EventRegistrationController extends Controller
 
         return redirect()->route('dashboard')->with('success', 'Successfully joined the event!');
     }
+
+    public function destroy($eventId)
+    {
+        $success = $this->registrationService->leaveEvent($eventId);
+
+        if (!$success) {
+            return redirect()->back()->with('error', 'Not registered for this event.');
+        }
+
+        return redirect()->route('dashboard')->with('success', 'Successfully left the event!');
+    }
 }
+
