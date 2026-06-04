@@ -1,8 +1,5 @@
-import Button from '@/components/ui/Button';
-import { Link } from '@inertiajs/react';
-import { router } from '@inertiajs/react';
-import NavBar from '@/layouts/NavBar';
 import EventCard from '@/components/ui/EventCard';
+import NavBar from '@/layouts/NavBar';
 
 // Using interfaces to map data structure
 interface Event {

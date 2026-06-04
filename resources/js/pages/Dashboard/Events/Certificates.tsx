@@ -1,7 +1,6 @@
 import { useForm, usePage } from "@inertiajs/react";
 import React, { useState, useEffect } from "react";
 import Button from "@/components/ui/Button"; // Assuming you have this
-import defaultPoster from "@/../../public/covers/default.png"; // Placeholder image
 
 export default function Certificates() {
     const { event, presentCount } = usePage().props as any;
@@ -21,6 +20,7 @@ export default function Certificates() {
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
+
         if (file) {
             setData("template", file);
             setPreviewUrl(URL.createObjectURL(file));
@@ -30,7 +30,9 @@ export default function Certificates() {
     useEffect(() => {
         // Cleanup memory
         return () => {
-            if (previewUrl) URL.revokeObjectURL(previewUrl);
+            if (previewUrl) {
+URL.revokeObjectURL(previewUrl);
+}
         };
     }, [previewUrl]);
 

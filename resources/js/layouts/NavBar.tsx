@@ -1,10 +1,10 @@
 import { usePage } from '@inertiajs/react';
-import Button from '@/components/ui/Button';
-
+import LocationIcon from '@mui/icons-material/FmdGoodOutlined';
+import SearchIcon from '@mui/icons-material/Search';
 import defaultAvatar from '@/../../public/avatars/default.png';
 import faviconUrl from '@/../../public/favicon.svg';
-import SearchIcon from '@mui/icons-material/Search';
-import LocationIcon from '@mui/icons-material/FmdGoodOutlined';
+import Button from '@/components/ui/Button';
+
 
 export default function NavBar() {
   const { auth } = usePage().props as any;

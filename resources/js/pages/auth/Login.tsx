@@ -1,8 +1,8 @@
 import { useForm, Head } from '@inertiajs/react';
+import faviconUrl from '@/../../public/favicon.svg';
+import googleIconUrl from '@/assets/icons/material-icon-theme_google.svg';
 import Button from '@/components/ui/Button';
 
-import googleIconUrl from '@/assets/icons/material-icon-theme_google.svg';
-import faviconUrl from '@/../../public/favicon.svg';
 
 export default function Login() {
     const { data, setData, post, processing, errors } = useForm({
