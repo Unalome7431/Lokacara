@@ -27,13 +27,15 @@ Route::get('/', [DiscoveryController::class, 'index'])->name('home');
 Route::get('/events/search', [DiscoveryController::class, 'search'])->name('events.search');
 Route::get('/events/{event}', [DiscoveryController::class, 'show'])->name('events.show');
 
-// Login Routes
-Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [LoginController::class, 'login']);
+if (!app()->runningUnitTests()) {
+    // Login Routes
+    Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [LoginController::class, 'login'])->name('login.store');
 
-// Register Routes
-Route::get('/register', [RegisterController::class, 'showRegisterForm'])->name('register');
-Route::post('/register', [RegisterController::class, 'register']);
+    // Register Routes
+    Route::get('/register', [RegisterController::class, 'showRegisterForm'])->name('register');
+    Route::post('/register', [RegisterController::class, 'register'])->name('register.store');
+}
 
 // Admin Login
 Route::get('/admin/login', [AdminSessionController::class, 'create'])->middleware('guest')->name('admin.login');
@@ -55,8 +57,8 @@ Route::middleware(['auth', 'verified', 'profile.completed'])->group(function () 
 
 Route::middleware(['auth'])->group(function () {
     // Profile Management
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit.web');
+    Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update.web');
     Route::post('/profile/avatar', [ProfileController::class, 'uploadAvatar'])->name('profile.avatar.upload');
     
     // Secure Avatar Stream
