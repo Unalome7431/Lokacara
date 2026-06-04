@@ -25,4 +25,20 @@ class EventRegistrationService
             'status' => 'confirmed'
         ]);
     }
+
+    public function leaveEvent($eventId)
+    {
+        $userId = Auth::id();
+
+        $registration = EventRegistration::where('user_id', $userId)
+            ->where('event_id', $eventId)
+            ->first();
+
+        if (!$registration) {
+            return false;
+        }
+
+        return $registration->delete();
+    }
 }
+

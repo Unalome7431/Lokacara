@@ -14,15 +14,24 @@ return new class extends Migration
         Schema::create('events', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('category_id')->constrained();
-            $table->string('cover')->nullable();
+            $table->foreignId('category_id')->nullable()->constrained()->nullOnDelete();
+            $table->enum('type', ['online', 'offline']);
+            $table->string('poster')->nullable();
             $table->string('title');
             $table->text('description');
-            $table->string('location_name');
-            $table->decimal('latitude', 10, 8);
-            $table->decimal('longitude', 11, 8);
-            $table->timestamp('start_datetime');
-            $table->timestamp('end_datetime');
+            
+            // Offline fields
+            $table->string('location_name')->nullable();
+            $table->string('address')->nullable();
+            $table->decimal('latitude', 10, 8)->nullable();
+            $table->decimal('longitude', 11, 8)->nullable();
+            
+            // Online fields
+            $table->string('platform_name')->nullable();
+            $table->string('link')->nullable();
+            
+            $table->dateTime('start_datetime');
+            $table->dateTime('end_datetime');
             $table->integer('capacity')->nullable();
             $table->integer('view_count')->default(0);
             $table->softDeletes();

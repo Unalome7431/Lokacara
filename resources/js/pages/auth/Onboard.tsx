@@ -1,11 +1,11 @@
-import { useEffect, useState, useRef } from "react"
 import { useForm } from "@inertiajs/react";
-import Button from "@/components/ui/Button";
+import { useEffect, useState, useRef } from "react"
 import defaultAvatar from "@/../../public/avatars/default.png";
 import faviconUrl from "@/../../public/favicon.svg";
+import Button from "@/components/ui/Button";
 
 export default function Onboard() {
-  const {data, setData, post, processing, errors} = useForm({
+  const {data, setData, post, processing} = useForm({
     name: '',
     avatar_url: null as File | null,
     _method: 'put',
@@ -27,24 +27,22 @@ export default function Onboard() {
     if (file && file.type.startsWith('image/')) {
       setSelectedFile(file);
       setData('avatar_url', file);
+      setPreviewUrl(URL.createObjectURL(file));
     } else {
       setSelectedFile(null);
       setData('avatar_url', null);
+      setPreviewUrl(null);
       alert('File gambar tidak valid');
     }
   }
 
   useEffect(() => {
-    if (!selectedFile) {
-      setPreviewUrl(null);
-      return;
-    }
-
-    const objectUrl = URL.createObjectURL(selectedFile);
-    setPreviewUrl(objectUrl);
-
-    return () => URL.revokeObjectURL(objectUrl);
-  }, [selectedFile]);
+    return () => {
+      if (previewUrl) {
+URL.revokeObjectURL(previewUrl);
+}
+    };
+  }, [previewUrl]);
 
   const handleImageClick = () => {
     if (fileInputRef.current) {

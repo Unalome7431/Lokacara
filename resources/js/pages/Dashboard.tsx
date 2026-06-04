@@ -1,5 +1,5 @@
-import NavBar from '@/layouts/NavBar';
 import EventCard from '@/components/ui/EventCard';
+import NavBar from '@/layouts/NavBar';
 
 interface EventRegistration {
   id: number;

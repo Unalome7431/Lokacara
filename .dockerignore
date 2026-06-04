@@ -1,0 +1,52 @@
+# Version control
+.git
+.github
+.gitignore
+.gitattributes
+
+# Docker files
+Dockerfile
+docker-compose.yml
+.dockerignore
+docker/
+
+# Package manager files and local dependencies
+node_modules
+vendor
+.npmrc
+pnpm-lock.yaml
+pnpm-workspace.yaml
+
+# Laravel environment, logs, and caches ireng
+.env
+.env.backup
+.env.production
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/testing/*
+storage/framework/views/*
+storage/logs/*
+database/*.sqlite
+
+# Frontend build directory (built inside the container)
+public/build
+
+# IDE configurations and os metadata
+.idea
+.vscode
+.editorconfig
+.prettierignore
+.prettierrc
+eslint.config.js
+tsconfig.json
+pint.json
+.DS_Store
+Thumbs.db
+
+# Documentation and tests
+tests
+phpunit.xml
+API_DOCUMENTATION.md
+FRONTEND_SETUP.md
+Lokacara_API.postman_collection.json
+android_ui_stubs/
