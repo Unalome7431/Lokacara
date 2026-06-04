@@ -1,0 +1,91 @@
+services:
+  # Web Server (Nginx)
+  web:
+    image: nginx:alpine
+    container_name: lokacara-web
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - public_data:/var/www/html/public
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+    networks:
+      - lokacara-network
+
+  # Application Service (PHP-FPM)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: lokacara-app:latest
+    container_name: lokacara-app
+    restart: unless-stopped
+    environment:
+      APP_NAME: "${APP_NAME:-Lokacara}"
+      APP_ENV: "${APP_ENV:-local}"
+      APP_KEY: "${APP_KEY}"
+      APP_DEBUG: "${APP_DEBUG:-true}"
+      APP_URL: "${APP_URL:-http://localhost:8000}"
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: "${DB_DATABASE:-lokacara}"
+      DB_USERNAME: "${DB_USERNAME:-postgres}"
+      DB_PASSWORD: "${DB_PASSWORD:-secret}"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RUN_MIGRATIONS: "true"
+    volumes:
+      - public_data:/var/www/html/public
+      - storage_data:/var/www/html/storage
+      - ./.env:/var/www/html/.env
+      - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    depends_on:
+      - db
+      - redis
+    networks:
+      - lokacara-network
+
+  # Database Service (PostgreSQL)
+  db:
+    image: postgres:15-alpine
+    container_name: lokacara-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: "${DB_DATABASE:-lokacara}"
+      POSTGRES_USER: "${DB_USERNAME:-postgres}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD:-secret}"
+    ports:
+      - "${FORWARD_DB_PORT:-5432}:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-postgres} -d $${POSTGRES_DB:-lokacara}"]
+      retries: 3
+      timeout: 5s
+    networks:
+      - lokacara-network
+
+  # Cache and Queue Driver (Redis)
+  redis:
+    image: redis:alpine
+    container_name: lokacara-redis
+    restart: unless-stopped
+    ports:
+      - "${FORWARD_REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - lokacara-network
+
+networks:
+  lokacara-network:
+    driver: bridge
+
+volumes:
+  db-data:
+  redis-data:
+  public_data:
+  storage_data:
