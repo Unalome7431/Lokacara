@@ -14,16 +14,39 @@ class DiscoveryController extends Controller
 {
     public function index()
     {
-        // Upcoming events with minimum view_count of 50, sorted by popularity (view_count / capacity)
-        $events = Event::with(['category', 'user'])
+        // All upcoming events
+        $allUpcomingEvents = Event::with(['category', 'user'])
             ->where('start_datetime', '>=', now())
-            ->where('view_count', '>=', 50)
-            ->orderByRaw('(view_count * 1.0 / COALESCE(NULLIF(capacity, 0), 1)) DESC')
-            ->take(20)
+            ->orderBy('start_datetime', 'asc')
             ->get();
 
+        // Popular events sorted by popularity ratio (views/capacity)
+        $popularEvents = Event::with(['category', 'user'])
+            ->where('start_datetime', '>=', now())
+            ->orderByRaw('(view_count * 1.0 / COALESCE(NULLIF(capacity, 0), 1)) DESC')
+            ->take(5)
+            ->get();
+
+        // User's joined upcoming events
+        $joinedEvents = [];
+        if (Auth::check()) {
+            $joinedEvents = Event::whereHas('eventRegistrations', function ($q) {
+                $q->where('user_id', Auth::id());
+            })
+            ->with(['category', 'user'])
+            ->where('start_datetime', '>=', now())
+            ->orderBy('start_datetime', 'asc')
+            ->get();
+        }
+
+        // All categories
+        $categories = Category::all();
+
         return Inertia::render('Home', [
-            'events' => $events,
+            'events' => $allUpcomingEvents,
+            'popularEvents' => $popularEvents,
+            'joinedEvents' => $joinedEvents,
+            'categories' => $categories,
         ]);
     }
 
