@@ -20,6 +20,8 @@ class Event extends Model
 {
     /** @use HasFactory<EventFactory> */
     use HasFactory, SoftDeletes;
+
+    protected $appends = ['poster_url'];
     
     /**
      * @return array<string, string>
