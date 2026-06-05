@@ -6,9 +6,33 @@ use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\EventRegistration;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
 class AttendanceApiController extends Controller
 {
+    #[OA\Get(
+        path: '/api/events/{event}/attendance/qr',
+        summary: 'Get attendance QR ticket for an event',
+        tags: ['Participant'],
+        security: [['sanctum' => []]]
+    )]
+    #[OA\Parameter(
+        name: 'event',
+        in: 'path',
+        description: 'Event ID',
+        required: true,
+        schema: new OA\Schema(type: 'integer')
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'QR ticket data',
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'event', ref: '#/components/schemas/Event'),
+                new OA\Property(property: 'registration', ref: '#/components/schemas/EventRegistration'),
+            ]
+        )
+    )]
     public function ticket(Request $request, Event $event)
     {
         $registration = EventRegistration::where('event_id', $event->id)
@@ -21,6 +45,41 @@ class AttendanceApiController extends Controller
         ]);
     }
 
+    #[OA\Post(
+        path: '/api/organizer/events/{event}/attendance/scan',
+        summary: 'Scan QR token to check in a participant',
+        tags: ['Organizer'],
+        security: [['sanctum' => []]]
+    )]
+    #[OA\Parameter(
+        name: 'event',
+        in: 'path',
+        description: 'Event ID',
+        required: true,
+        schema: new OA\Schema(type: 'integer')
+    )]
+    #[OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(
+            required: ['qr_token'],
+            properties: [
+                new OA\Property(property: 'qr_token', type: 'string', format: 'uuid', example: '550e8400-e29b-41d4-a716-446655440000'),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Successfully checked in',
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'message', type: 'string'),
+                new OA\Property(property: 'registration', ref: '#/components/schemas/EventRegistration'),
+            ]
+        )
+    )]
+    #[OA\Response(response: 400, description: 'Already checked in or invalid token')]
+    #[OA\Response(response: 403, description: 'Forbidden (not the owner)')]
+    #[OA\Response(response: 404, description: 'Invalid QR token for this event')]
     public function scan(Request $request, Event $event)
     {
         if ($event->user_id !== $request->user()->id) {
@@ -55,6 +114,38 @@ class AttendanceApiController extends Controller
         ]);
     }
 
+    #[OA\Patch(
+        path: '/api/organizer/events/{event}/attendance/{registration}/toggle',
+        summary: 'Manually toggle attendance check-in/check-out',
+        tags: ['Organizer'],
+        security: [['sanctum' => []]]
+    )]
+    #[OA\Parameter(
+        name: 'event',
+        in: 'path',
+        description: 'Event ID',
+        required: true,
+        schema: new OA\Schema(type: 'integer')
+    )]
+    #[OA\Parameter(
+        name: 'registration',
+        in: 'path',
+        description: 'Registration ID',
+        required: true,
+        schema: new OA\Schema(type: 'integer')
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Attendance toggled',
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'message', type: 'string'),
+                new OA\Property(property: 'registration', ref: '#/components/schemas/EventRegistration'),
+            ]
+        )
+    )]
+    #[OA\Response(response: 403, description: 'Forbidden (not the owner)')]
+    #[OA\Response(response: 404, description: 'Registration not found for this event')]
     public function toggle(Request $request, Event $event, EventRegistration $registration)
     {
         if ($event->user_id !== $request->user()->id) {
