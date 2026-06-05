@@ -23,7 +23,7 @@ export default function Register() {
         <div className='flex justify-center items-center min-h-screen w-screen bg-gray-50/50 p-4'>
             <div className='relative w-full max-w-[420px] mx-auto rounded-3xl shadow-xl shadow-gray-200/50 bg-white overflow-hidden'>
                 {/* Subtle gradient border effect */}
-                <div className='absolute -inset-[1px] bg-linear-to-br from-primary-400 to-secondary-300 rounded-3xl opacity-35 pointer-events-none'></div>
+                <div className='absolute -inset-px bg-linear-to-br from-primary-400 to-secondary-300 rounded-3xl opacity-35 pointer-events-none'></div>
 
                 <div className='relative px-8 pt-16 pb-10 bg-white rounded-3xl flex flex-col items-stretch'>
                     <Head title="Daftar" />
