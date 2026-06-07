@@ -71,7 +71,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard/events/{event}/edit', [EventManagementController::class, 'edit'])->name('dashboard.events.edit');
     Route::post('/dashboard/events/{event}', [EventManagementController::class, 'update'])->name('dashboard.events.update');
     Route::delete('/dashboard/events/{event}', [EventManagementController::class, 'destroy'])->name('dashboard.events.destroy');
+    Route::get('/dashboard/events/{event}', [EventManagementController::class, 'show'])->name('dashboard.events.show');
     Route::get('/dashboard/events/{event}/attendees', [EventManagementController::class, 'attendees'])->name('dashboard.events.attendees');
+    Route::delete('/dashboard/events/{event}/attendees/{registration}', [EventManagementController::class, 'kickAttendee'])->name('dashboard.events.attendees.kick');
 
     // Module 4: Communications & Attendance
     Route::get('/events/{event}/ticket', [AttendanceController::class, 'ticket'])->name('events.ticket');
