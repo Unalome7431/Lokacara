@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import React from 'react';
 import NavBar from '@/layouts/NavBar';
+import Footer from '@/layouts/Footer';
 
 interface Category {
   id: number;
@@ -57,11 +58,12 @@ export default function Ticket({ event, registration }: TicketProps) {
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(registration.qr_token)}`;
 
   return (
-    <div className="min-h-screen bg-neutral-50/50 pb-20">
-      <NavBar />
-      <Head title={`Tiket Event - ${event.title}`} />
+    <div className="min-h-screen bg-neutral-50/50 flex flex-col justify-between">
+      <div className="flex-grow">
+        <NavBar />
+        <Head title={`Tiket Event - ${event.title}`} />
 
-      <div className="max-w-3xl mx-auto px-4 md:px-8 pt-28">
+        <div className="max-w-3xl mx-auto px-4 md:px-8 pt-28 pb-16">
         
         {/* Back Link */}
         <div className="mb-6">
@@ -194,7 +196,9 @@ export default function Ticket({ event, registration }: TicketProps) {
           </div>
         </div>
 
+        </div>
       </div>
+      <Footer />
     </div>
   );
 }

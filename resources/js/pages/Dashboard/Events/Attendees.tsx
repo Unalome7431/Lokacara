@@ -6,6 +6,7 @@ import {
 import React, { useState, useEffect } from 'react';
 import defaultAvatar from '@/../../public/avatars/default.png';
 import NavBar from '@/layouts/NavBar';
+import Footer from '@/layouts/Footer';
 
 interface User {
   id: number;
@@ -51,6 +52,7 @@ interface AttendeesProps {
 
 export default function Attendees({ event, attendees, filters }: AttendeesProps) {
   const [search, setSearch] = useState(filters.search || '');
+  const [optimisticAttendance, setOptimisticAttendance] = useState<Record<number, boolean>>({});
 
   // Perform search queries using Inertia reload
   useEffect(() => {
@@ -67,13 +69,35 @@ export default function Attendees({ event, attendees, filters }: AttendeesProps)
     return () => clearTimeout(delayDebounce);
   }, [search, event.id, filters.search]);
 
-  const handleToggleAttendance = (regId: number) => {
+  const getIsAttended = (regId: number, checkedInAt?: string) => {
+    if (regId in optimisticAttendance) {
+      return optimisticAttendance[regId];
+    }
+
+    return !!checkedInAt;
+  };
+
+  const handleToggleAttendance = (regId: number, checkedInAt?: string) => {
+    const currentStatus = getIsAttended(regId, checkedInAt);
+    const newStatus = !currentStatus;
+
+    setOptimisticAttendance((prev) => ({
+      ...prev,
+      [regId]: newStatus,
+    }));
+
     router.post(
       `/dashboard/events/${event.id}/attendance/${regId}/toggle`,
       {},
       {
         preserveScroll: true,
         preserveState: true,
+        onError: () => {
+          setOptimisticAttendance((prev) => ({
+            ...prev,
+            [regId]: currentStatus,
+          }));
+        },
       }
     );
   };
@@ -101,11 +125,12 @@ export default function Attendees({ event, attendees, filters }: AttendeesProps)
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50/50 pb-20">
-      <NavBar />
-      <Head title={`Daftar Peserta - ${event.title}`} />
+    <div className="min-h-screen bg-neutral-50/50 flex flex-col justify-between">
+      <div className="flex-grow">
+        <NavBar />
+        <Head title={`Daftar Peserta - ${event.title}`} />
 
-      <div className="max-w-7xl mx-auto px-4 md:px-8 pt-28">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 pt-28 pb-16">
         
         {/* Navigation Breadcrumbs */}
         <div className="mb-6">
@@ -176,7 +201,7 @@ export default function Attendees({ event, attendees, filters }: AttendeesProps)
                       return null;
                     }
 
-                    const isAttended = !!reg.checked_in_at;
+                    const isAttended = getIsAttended(reg.id, reg.checked_in_at);
 
                     return (
                       <tr key={reg.id} className="hover:bg-neutral-50/30 transition-colors">
@@ -227,7 +252,7 @@ export default function Attendees({ event, attendees, filters }: AttendeesProps)
                               
                               <button 
                                 type="button"
-                                onClick={() => handleToggleAttendance(reg.id)}
+                                onClick={() => handleToggleAttendance(reg.id, reg.checked_in_at)}
                                 className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
                                   isAttended ? 'bg-primary-500' : 'bg-gray-200'
                                 }`}
@@ -298,8 +323,9 @@ export default function Attendees({ event, attendees, filters }: AttendeesProps)
           )}
 
         </div>
-
       </div>
+      </div>
+      <Footer />
     </div>
   );
 }

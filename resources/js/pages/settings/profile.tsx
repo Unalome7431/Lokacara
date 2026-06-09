@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import defaultAvatar from '@/../../public/avatars/default.png';
 import faviconUrl from '@/../../public/favicon.svg';
 import NavBar from '@/layouts/NavBar';
+import Footer from '@/layouts/Footer';
 
 interface UserData {
   id: number;
@@ -62,11 +63,12 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50/50 pb-20">
-      <NavBar />
-      <Head title="Pengaturan Saya - Lokacara" />
+    <div className="min-h-screen bg-neutral-50/50 flex flex-col justify-between">
+      <div className="flex-grow">
+        <NavBar />
+        <Head title="Pengaturan Saya - Lokacara" />
 
-      <div className="max-w-6xl mx-auto px-4 md:px-8 pt-28">
+        <div className="max-w-6xl mx-auto px-4 md:px-8 pt-28 pb-16">
         <div className="flex flex-col lg:flex-row gap-8 items-start">
           
           {/* Settings Navigation Sidebar */}
@@ -329,9 +331,10 @@ export default function Profile() {
             )}
 
           </div>
-
         </div>
       </div>
+      </div>
+      <Footer />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { Plus, Edit2, Trash2, Calendar, MapPin, Users } from 'lucide-react';
 import DefaultCover from '@/../../public/covers/default_cover.jpg';
 import Button from '@/components/ui/Button';
 import NavBar from '@/layouts/NavBar';
+import Footer from '@/layouts/Footer';
 
 interface Event {
   id: number;
@@ -44,11 +45,12 @@ export default function Index({ events }: IndexProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50/50 pb-20">
-      <NavBar />
-      <Head title="Kelola Event Anda - Dashboard" />
+    <div className="min-h-screen bg-gray-50/50 flex flex-col justify-between">
+      <div className="flex-grow">
+        <NavBar />
+        <Head title="Kelola Event Anda - Dashboard" />
 
-      <div className="max-w-[1280px] mx-auto px-4 md:px-8 py-10 pt-28 flex flex-col gap-8">
+        <div className="max-w-[1280px] mx-auto px-4 md:px-8 py-10 pt-28 flex flex-col gap-8 pb-16">
         
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-150 pb-6">
@@ -174,7 +176,9 @@ export default function Index({ events }: IndexProps) {
           </div>
         )}
 
+        </div>
       </div>
+      <Footer />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { GoogleMap, useJsApiLoader, MarkerF, Autocomplete } from '@react-google-
 import { Camera, Plus, Minus, Calendar, MapPin, Trash2, ArrowUp } from 'lucide-react';
 import { useState, useRef } from 'react';
 import NavBar from '@/layouts/NavBar';
+import Footer from '@/layouts/Footer';
 
 const GOOGLE_MAPS_LIBRARIES: any = ['places'];
 
@@ -285,11 +286,12 @@ return '';
   };
 
   return (
-    <div className="min-h-screen bg-white pb-20">
-      <NavBar />
-      <Head title={`Edit Event - ${event.title}`} />
+    <div className="min-h-screen bg-white flex flex-col justify-between">
+      <div className="flex-grow">
+        <NavBar />
+        <Head title={`Edit Event - ${event.title}`} />
 
-      <form onSubmit={submit} className="max-w-[1080px] mx-auto px-4 md:px-8 py-10 pt-28 flex flex-col gap-10">
+        <form onSubmit={submit} className="max-w-[1080px] mx-auto px-4 md:px-8 py-10 pt-28 flex flex-col gap-10 pb-16">
         
         {/* Breadcrumb */}
         <div className="flex items-center gap-4 text-small font-bold text-gray-400">
@@ -526,18 +528,26 @@ return '';
                   <label className="text-neutral-700 font-extrabold text-base font-brand">Lokasi</label>
                   
                   <div className="flex gap-4 items-center">
-                    <div className="flex bg-neutral-200 p-0.5 rounded-full w-fit shrink-0">
+                    <div className="flex bg-neutral-200 p-0.5 rounded-full w-fit shrink-0 relative">
+                      {/* Sliding background bubble */}
+                      <div 
+                        className="absolute top-0.5 bottom-0.5 left-0.5 bg-primary-500 rounded-full transition-transform duration-300 ease-out"
+                        style={{
+                          width: 'calc(50% - 0.25rem)',
+                          transform: data.type === 'offline' ? 'translateX(100%)' : 'translateX(0%)'
+                        }}
+                      />
                       <button
                         type="button"
                         onClick={() => setData('type', 'online')}
-                        className={`px-4 py-1.5 font-bold text-micro rounded-full cursor-pointer transition-all ${data.type === 'online' ? 'bg-primary-500 text-white shadow-sm' : 'text-neutral-600'}`}
+                        className={`relative z-10 px-4 py-1.5 font-bold text-micro rounded-full cursor-pointer transition-colors duration-300 ${data.type === 'online' ? 'text-white' : 'text-neutral-600'}`}
                       >
                         Online
                       </button>
                       <button
                         type="button"
                         onClick={() => setData('type', 'offline')}
-                        className={`px-4 py-1.5 font-bold text-micro rounded-full cursor-pointer transition-all ${data.type === 'offline' ? 'bg-primary-500 text-white shadow-sm' : 'text-neutral-600'}`}
+                        className={`relative z-10 px-4 py-1.5 font-bold text-micro rounded-full cursor-pointer transition-colors duration-300 ${data.type === 'offline' ? 'text-white' : 'text-neutral-600'}`}
                       >
                         Offline
                       </button>
@@ -668,6 +678,9 @@ return '';
         </div>
 
       </form>
+
+      </div>
+      <Footer />
     </div>
   );
 }

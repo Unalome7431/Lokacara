@@ -6,6 +6,7 @@ import {
 import React, { useState } from 'react';
 import DefaultCover from '@/../../public/covers/default_cover.jpg';
 import NavBar from '@/layouts/NavBar';
+import Footer from '@/layouts/Footer';
 
 interface Category {
   id: number;
@@ -83,11 +84,12 @@ export default function Show({ event, isRegistered }: ShowProps) {
     : null;
 
   return (
-    <div className="min-h-screen bg-neutral-50/50 pb-20">
-      <NavBar />
-      <Head title={`${event.title} - Lokacara`} />
+    <div className="min-h-screen bg-neutral-50/50 flex flex-col justify-between">
+      <div className="flex-grow">
+        <NavBar />
+        <Head title={`${event.title} - Lokacara`} />
 
-      <div className="max-w-7xl mx-auto px-4 md:px-8 pt-28">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 pt-28 pb-16">
         
         {/* Navigation Breadcrumb */}
         <div className="mb-6">
@@ -308,7 +310,9 @@ export default function Show({ event, isRegistered }: ShowProps) {
 
         </div>
 
+        </div>
       </div>
+      <Footer />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import {
 import { useState } from 'react';
 import defaultAvatar from '@/../../public/avatars/default.png';
 import NavBar from '@/layouts/NavBar';
+import Footer from '@/layouts/Footer';
 
 interface Category {
   id: number;
@@ -79,12 +80,13 @@ export default function Dashboard({ hosted_events = [], joined_events = [], cert
   );
 
   return (
-    <div className="min-h-screen bg-neutral-50/50 pb-20">
-      <NavBar />
-      <Head title="Dashboard Saya - Lokacara" />
+    <div className="min-h-screen bg-neutral-50/50 flex flex-col justify-between">
+      <div className="flex-grow">
+        <NavBar />
+        <Head title="Dashboard Saya - Lokacara" />
 
-      {/* Main Dashboard Layout */}
-      <div className="max-w-7xl mx-auto px-4 md:px-8 pt-28">
+        {/* Main Dashboard Layout */}
+        <div className="max-w-7xl mx-auto px-4 md:px-8 pt-28 pb-16">
         
         {/* User profile section */}
         <div className="bg-white border border-neutral-200 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 shadow-sm mb-10">
@@ -379,7 +381,9 @@ export default function Dashboard({ hosted_events = [], joined_events = [], cert
 
         </div>
 
+        </div>
       </div>
+      <Footer />
     </div>
   );
 }
