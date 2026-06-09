@@ -19,30 +19,30 @@ class EventFactory extends Factory
      */
     public function definition(): array
     {
-        $eventTypePrefix = fake()->randomElement(['Seminar Nasional:', 'Workshop:', 'Volunteer:', 'Gathering:']);
-        $startDate = fake()->dateTimeBetween('+1 days', '+1 month');
-        $endDate = fake()->dateTimeBetween($startDate, $startDate->format('Y-m-d H:i:s').'+2 days');
-        $type = fake()->randomElement(['online', 'offline']);
+        $eventTypePrefix = $this->faker->randomElement(['Seminar Nasional:', 'Workshop:', 'Volunteer:', 'Gathering:']);
+        $startDate = $this->faker->dateTimeBetween('+1 days', '+1 month');
+        $endDate = $this->faker->dateTimeBetween($startDate, $startDate->format('Y-m-d H:i:s').'+2 days');
+        $type = $this->faker->randomElement(['online', 'offline']);
 
         return [
             'user_id'=> User::factory(),
             'category_id'=> Category::factory(),
             'type'=> $type,
             'title'=> "{$eventTypePrefix} Custom Event",
-            'description'=> fake()->sentence(),
+            'description'=> $this->faker->sentence(),
             
-            'location_name'=> $type === 'offline' ? fake()->randomElement(['Auditorium Surakarta', 'Gedung Sate', 'Hotel Indonesia']) : null,
-            'address'=> $type === 'offline' ? fake()->address() : null,
-            'latitude'=> $type === 'offline' ? fake()->latitude() : null,
-            'longitude'=> $type === 'offline' ? fake()->longitude() : null,
+            'location_name'=> $type === 'offline' ? $this->faker->randomElement(['Auditorium Surakarta', 'Gedung Sate', 'Hotel Indonesia']) : null,
+            'address'=> $type === 'offline' ? $this->faker->address() : null,
+            'latitude'=> $type === 'offline' ? $this->faker->latitude() : null,
+            'longitude'=> $type === 'offline' ? $this->faker->longitude() : null,
             
-            'platform_name'=> $type === 'online' ? fake()->randomElement(['Zoom', 'Google Meet', 'Microsoft Teams']) : null,
-            'link'=> $type === 'online' ? fake()->url() : null,
+            'platform_name'=> $type === 'online' ? $this->faker->randomElement(['Zoom', 'Google Meet', 'Microsoft Teams']) : null,
+            'link'=> $type === 'online' ? $this->faker->url() : null,
 
             'start_datetime'=> $startDate,
             'end_datetime'=> $endDate,
-            'capacity'=> fake()->randomElement([50, 100, 250, null]),
-            'view_count'=> fake()->numberBetween(0, 1000)
+            'capacity'=> $this->faker->randomElement([50, 100, 250, null]),
+            'view_count'=> $this->faker->numberBetween(0, 1000)
         ];
     }
 }

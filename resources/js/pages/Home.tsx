@@ -1,8 +1,10 @@
 import { Head } from '@inertiajs/react';
-import { Plus, ChevronRight, ChevronDown, Calendar, MapPin } from 'lucide-react';
-import { useState } from 'react';
+import gsap from 'gsap';
+import { Plus, ChevronRight, ChevronLeft, ChevronDown, Calendar, MapPin } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import DefaultCover from '@/../../public/covers/default_cover.jpg';
 import Button from '@/components/ui/Button';
+import Footer from '@/layouts/Footer';
 import NavBar from '@/layouts/NavBar';
 
 interface Event {
@@ -37,7 +39,29 @@ export default function Home({ events, popularEvents, joinedEvents, categories }
     const [currentSlide, setCurrentSlide] = useState(0);
     const hasPopular = popularEvents && popularEvents.length > 0;
     const heroEvents = hasPopular ? popularEvents : events.slice(0, 3);
-    const activeHero = heroEvents[currentSlide] || null;
+
+    const heroTrackRef = useRef<HTMLDivElement>(null);
+    const joinedTrackRef = useRef<HTMLDivElement>(null);
+    const nearbyTrackRef = useRef<HTMLDivElement>(null);
+
+    const tabAllRef = useRef<HTMLButtonElement>(null);
+    const tabOnlineRef = useRef<HTMLButtonElement>(null);
+    const tabOfflineRef = useRef<HTMLButtonElement>(null);
+    const [underlineStyle, setUnderlineStyle] = useState({ left: 0, width: 0 });
+
+    // 2. Location Filtering State & List
+    const [selectedLocation, setSelectedLocation] = useState('Semua');
+    const [locationMenuOpen, setLocationMenuOpen] = useState(false);
+
+    // Extract unique locations from events (ignoring null/empty)
+    const locationsList = ['Semua', ...Array.from(new Set(events.map(e => e.location_name).filter(Boolean) as string[]))];
+    const filteredNearbyEvents = events.filter(e => {
+        if (selectedLocation === 'Semua') {
+            return true;
+        }
+
+        return e.location_name === selectedLocation;
+    }); // Display matching events
 
     const handleNextSlide = () => {
         if (heroEvents.length > 0) {
@@ -45,23 +69,231 @@ export default function Home({ events, popularEvents, joinedEvents, categories }
         }
     };
 
-    // 2. Location Filtering State
-    const [selectedLocation, setSelectedLocation] = useState('Semua');
-    const [locationMenuOpen, setLocationMenuOpen] = useState(false);
-    
-    // Extract unique locations from events (ignoring null/empty)
-    const locationsList = ['Semua', ...Array.from(new Set(events.map(e => e.location_name).filter(Boolean) as string[]))];
-    const filteredNearbyEvents = events.filter(e => {
-        if (selectedLocation === 'Semua') {
-return true;
-}
+    const handlePrevSlide = () => {
+        if (heroEvents.length > 0) {
+            setCurrentSlide((prev) => (prev - 1 + heroEvents.length) % heroEvents.length);
+        }
+    };
 
-        return e.location_name === selectedLocation;
-    }).slice(0, 3); // Display top 3 matching events
+    // Carousel states for Joined and Nearby Events
+    const [joinedIndex, setJoinedIndex] = useState(0);
+    const [nearbyIndex, setNearbyIndex] = useState(0);
+    const [cardsToShow, setCardsToShow] = useState(3);
+
+    const displayJoined = joinedEvents.length > cardsToShow 
+        ? [...joinedEvents, ...joinedEvents.slice(0, cardsToShow)] 
+        : joinedEvents;
+
+    const displayNearby = filteredNearbyEvents.length > cardsToShow 
+        ? [...filteredNearbyEvents, ...filteredNearbyEvents.slice(0, cardsToShow)] 
+        : filteredNearbyEvents;
+
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth < 640) {
+                setCardsToShow(1);
+            } else if (window.innerWidth < 1024) {
+                setCardsToShow(2);
+            } else {
+                setCardsToShow(3);
+            }
+        };
+
+        handleResize();
+        window.addEventListener('resize', handleResize);
+
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    const handleJoinedNext = () => {
+        if (joinedEvents.length === 0) {
+            return;
+        }
+
+        setJoinedIndex((prev) => {
+            const nextIndex = prev + cardsToShow;
+            const maxIndex = joinedEvents.length - cardsToShow;
+
+            if (prev < maxIndex) {
+                return Math.min(nextIndex, maxIndex);
+            }
+
+            return joinedEvents.length;
+        });
+    };
+
+    const handleJoinedPrev = () => {
+        if (joinedEvents.length === 0) {
+            return;
+        }
+
+        if (joinedIndex === 0) {
+            const track = joinedTrackRef.current;
+
+            if (track) {
+                const cardElement = track.firstElementChild as HTMLElement;
+
+                if (cardElement) {
+                    const cardWidth = cardElement.getBoundingClientRect().width || 
+                        (track.getBoundingClientRect().width - (cardsToShow - 1) * 24) / cardsToShow;
+                    const gap = 24;
+
+                    gsap.set(track, { x: -joinedEvents.length * (cardWidth + gap) });
+                    
+                    const maxIndex = joinedEvents.length - cardsToShow;
+
+                    setJoinedIndex(maxIndex);
+                }
+            }
+        } else {
+            setJoinedIndex((prev) => {
+                const prevIndex = prev - cardsToShow;
+
+                return Math.max(0, prevIndex);
+            });
+        }
+    };
+
+    const handleNearbyNext = () => {
+        if (filteredNearbyEvents.length === 0) {
+            return;
+        }
+
+        setNearbyIndex((prev) => {
+            const nextIndex = prev + cardsToShow;
+            const maxIndex = filteredNearbyEvents.length - cardsToShow;
+
+            if (prev < maxIndex) {
+                return Math.min(nextIndex, maxIndex);
+            }
+
+            return filteredNearbyEvents.length;
+        });
+    };
+
+    const handleNearbyPrev = () => {
+        if (filteredNearbyEvents.length === 0) {
+            return;
+        }
+
+        if (nearbyIndex === 0) {
+            const track = nearbyTrackRef.current;
+
+            if (track) {
+                const cardElement = track.firstElementChild as HTMLElement;
+
+                if (cardElement) {
+                    const cardWidth = cardElement.getBoundingClientRect().width || 
+                        (track.getBoundingClientRect().width - (cardsToShow - 1) * 24) / cardsToShow;
+                    const gap = 24;
+
+                    gsap.set(track, { x: -filteredNearbyEvents.length * (cardWidth + gap) });
+                    
+                    const maxIndex = filteredNearbyEvents.length - cardsToShow;
+
+                    setNearbyIndex(maxIndex);
+                }
+            }
+        } else {
+            setNearbyIndex((prev) => {
+                const prevIndex = prev - cardsToShow;
+
+                return Math.max(0, prevIndex);
+            });
+        }
+    };
+
+    // GSAP Slider animations
+    useEffect(() => {
+        if (heroTrackRef.current) {
+            gsap.to(heroTrackRef.current, {
+                xPercent: -currentSlide * 100,
+                duration: 0.6,
+                ease: 'power2.out'
+            });
+        }
+    }, [currentSlide]);
+
+    useEffect(() => {
+        if (joinedTrackRef.current) {
+            const cardElement = joinedTrackRef.current.firstElementChild as HTMLElement;
+
+            if (cardElement) {
+                const cardWidth = cardElement.getBoundingClientRect().width || 
+                    (joinedTrackRef.current.getBoundingClientRect().width - (cardsToShow - 1) * 24) / cardsToShow;
+                const gap = 24;
+                const targetX = -joinedIndex * (cardWidth + gap);
+
+                gsap.to(joinedTrackRef.current, {
+                    x: targetX,
+                    duration: 0.6,
+                    ease: 'power2.out',
+                    onComplete: () => {
+                        if (joinedIndex === joinedEvents.length) {
+                            gsap.set(joinedTrackRef.current, { x: 0 });
+                            setJoinedIndex(0);
+                        }
+                    }
+                });
+            }
+        }
+    }, [joinedIndex, cardsToShow, joinedEvents]);
+
+    useEffect(() => {
+        if (nearbyTrackRef.current) {
+            const cardElement = nearbyTrackRef.current.firstElementChild as HTMLElement;
+
+            if (cardElement) {
+                const cardWidth = cardElement.getBoundingClientRect().width || 
+                    (nearbyTrackRef.current.getBoundingClientRect().width - (cardsToShow - 1) * 24) / cardsToShow;
+                const gap = 24;
+                const targetX = -nearbyIndex * (cardWidth + gap);
+
+                gsap.to(nearbyTrackRef.current, {
+                    x: targetX,
+                    duration: 0.6,
+                    ease: 'power2.out',
+                    onComplete: () => {
+                        if (nearbyIndex === filteredNearbyEvents.length) {
+                            gsap.set(nearbyTrackRef.current, { x: 0 });
+                            setNearbyIndex(0);
+                        }
+                    }
+                });
+            }
+        }
+    }, [nearbyIndex, cardsToShow, filteredNearbyEvents]);
+
 
     // 3. Category & Type Catalog Filter State
     const [activeCategory, setActiveCategory] = useState<number | null>(null);
     const [activeType, setActiveType] = useState<'all' | 'online' | 'offline'>('all');
+
+    useEffect(() => {
+        const updateUnderline = () => {
+            let activeTab: HTMLButtonElement | null = null;
+
+            if (activeType === 'all') {
+                activeTab = tabAllRef.current;
+            } else if (activeType === 'online') {
+                activeTab = tabOnlineRef.current;
+            } else if (activeType === 'offline') {
+                activeTab = tabOfflineRef.current;
+            }
+
+            if (activeTab) {
+                setUnderlineStyle({
+                    left: activeTab.offsetLeft,
+                    width: activeTab.offsetWidth
+                });
+            }
+        };
+
+        updateUnderline();
+        window.addEventListener('resize', updateUnderline);
+
+        return () => window.removeEventListener('resize', updateUnderline);
+    }, [activeType]);
 
     const filteredCatalogEvents = events.filter(e => {
         const matchesCategory = activeCategory === null || e.category?.id === activeCategory;
@@ -69,6 +301,16 @@ return true;
 
         return matchesCategory && matchesType;
     });
+
+    // 4. Pagination State & Logic for Catalogue
+    const [currentPage, setCurrentPage] = useState(1);
+
+    const eventsPerPage = 9;
+    const totalPages = Math.ceil(filteredCatalogEvents.length / eventsPerPage);
+    const paginatedCatalogEvents = filteredCatalogEvents.slice(
+        (currentPage - 1) * eventsPerPage,
+        currentPage * eventsPerPage
+    );
 
     const formatIndonesianDate = (dateString: string) => {
         const dateObj = new Date(dateString);
@@ -93,61 +335,94 @@ return true;
         }).format(dateObj) + " WIB";
     };
 
-    return (
-        <div className="min-h-screen bg-white pb-20">
-            <NavBar />
-            <Head title="Home - Temukan Event Komunitas Terbaik" />
 
-            <div className="max-w-[1280px] mx-auto px-4 md:px-8 py-10 pt-28 flex flex-col gap-14">
+
+    return (
+        <div className="min-h-screen bg-white flex flex-col justify-between">
+            <div className="flex-grow">
+                <NavBar />
+                <Head title="Home - Temukan Event Komunitas Terbaik" />
+
+                <div className="max-w-[1280px] mx-auto px-4 md:px-8 py-10 pt-28 flex flex-col gap-14 pb-16">
                 
                 {/* 1. HERO SECTION: EVENT POPULER */}
-                {activeHero && (
+                {/* 1. HERO SECTION: EVENT POPULER */}
+                {heroEvents.length > 0 && (
                     <div className="relative w-full h-[280px] sm:h-[380px] md:h-[480px] rounded-3xl overflow-hidden shadow-lg group">
-                        <img 
-                            src={activeHero.poster_url || DefaultCover} 
-                            alt={activeHero.title} 
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                        />
-                        {/* Dark gradient overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/95 via-neutral-900/40 to-transparent"></div>
-
-                        {/* Title Badge overlay */}
-                        <div className="absolute top-6 left-6 md:top-8 md:left-10 px-4 py-1.5 bg-white/20 backdrop-blur-md border border-white/20 rounded-full text-white text-small font-bold">
-                            Event Populer
-                        </div>
-
-                        {/* Text and Controls overlay */}
-                        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-                            <div className="flex flex-col gap-2 max-w-[680px]">
-                                <h1 className="text-white text-3xl md:text-5xl font-black font-brand leading-tight">
-                                    {activeHero.title}
-                                </h1>
-                                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-neutral-300 text-small md:text-base font-semibold">
-                                    <span className="flex items-center gap-1.5">
-                                        <Calendar size={16} />
-                                        {formatIndonesianDate(activeHero.start_datetime)}
-                                    </span>
-                                    <span className="hidden md:inline text-neutral-500">|</span>
-                                    <span className="flex items-center gap-1.5">
-                                        <MapPin size={16} />
-                                        {activeHero.type === 'online' ? 'Online' : (activeHero.location_name || 'Lokasi Offline')}
-                                    </span>
-                                </div>
-                                <p className="text-neutral-400 text-small md:text-base font-medium line-clamp-2 mt-2 leading-relaxed">
-                                    {activeHero.description}
-                                </p>
-                            </div>
-
-                            {/* Carousel slide trigger button */}
-                            {heroEvents.length > 1 && (
+                        {/* Standalone Navigation Buttons */}
+                        {heroEvents.length > 1 && (
+                            <>
+                                <button 
+                                    onClick={handlePrevSlide}
+                                    className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 bg-white/10 hover:bg-white/25 border border-white/20 rounded-full text-white cursor-pointer backdrop-blur-md transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100"
+                                    title="Slide Sebelumnya"
+                                >
+                                    <ChevronLeft size={22} />
+                                </button>
                                 <button 
                                     onClick={handleNextSlide}
-                                    className="p-3.5 bg-white/10 hover:bg-white/25 border border-white/20 rounded-full text-white cursor-pointer backdrop-blur-md shrink-0 self-end md:self-center transition-all duration-300"
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 bg-white/10 hover:bg-white/25 border border-white/20 rounded-full text-white cursor-pointer backdrop-blur-md transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100"
                                     title="Slide Selanjutnya"
                                 >
                                     <ChevronRight size={22} />
                                 </button>
-                            )}
+                            </>
+                        )}
+
+                        {/* Dot indicators */}
+                        {heroEvents.length > 1 && (
+                            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
+                                {heroEvents.map((_, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => setCurrentSlide(idx)}
+                                        className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
+                                            currentSlide === idx ? 'w-6 bg-white' : 'w-2 bg-white/40 hover:bg-white/75'
+                                        }`}
+                                        aria-label={`Go to slide ${idx + 1}`}
+                                    />
+                                ))}
+                            </div>
+                        )}
+
+                        <div ref={heroTrackRef} className="flex h-full w-full">
+                            {heroEvents.map((event) => (
+                                <div key={event.id} className="w-full h-full shrink-0 relative">
+                                    <img 
+                                        src={event.poster_url || DefaultCover} 
+                                        alt={event.title} 
+                                        className="w-full h-full object-cover"
+                                    />
+                                    {/* Dark gradient overlay */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/95 via-neutral-900/40 to-transparent"></div>
+
+                                    {/* Title Badge overlay */}
+                                    <div className="absolute top-6 left-6 md:top-8 md:left-10 px-4 py-1.5 bg-white/20 backdrop-blur-md border border-white/20 rounded-full text-white text-small font-bold">
+                                        Event Populer
+                                    </div>
+
+                                    {/* Text overlay */}
+                                    <div className="absolute bottom-0 left-0 right-0 pt-6 pl-[4.5rem] pr-16 pb-12 md:pt-10 md:pl-24 md:pr-20 md:pb-16 flex flex-col gap-2 max-w-[680px]">
+                                        <h1 className="text-white text-3xl md:text-5xl font-black font-brand leading-tight">
+                                            {event.title}
+                                        </h1>
+                                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-neutral-300 text-small md:text-base font-semibold">
+                                            <span className="flex items-center gap-1.5">
+                                                <Calendar size={16} />
+                                                {formatIndonesianDate(event.start_datetime)}
+                                            </span>
+                                            <span className="hidden md:inline text-neutral-500">|</span>
+                                            <span className="flex items-center gap-1.5">
+                                                <MapPin size={16} />
+                                                {event.type === 'online' ? 'Online' : (event.location_name || 'Lokasi Offline')}
+                                            </span>
+                                        </div>
+                                        <p className="text-neutral-400 text-small md:text-base font-medium line-clamp-2 mt-2 leading-relaxed">
+                                            {event.description}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 )}
@@ -158,7 +433,7 @@ return true;
                         Event Mendatang
                     </h3>
                     
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="w-full relative group/slider">
                         {/* Placeholder card if not registered for any events */}
                         {joinedEvents.length === 0 ? (
                             <div className="w-full h-[280px] bg-white border-2 border-dashed border-neutral-200 rounded-3xl flex flex-col items-center justify-center p-6 gap-4 text-center group hover:border-primary-300 transition-colors duration-300">
@@ -178,37 +453,64 @@ return true;
                                 </div>
                             </div>
                         ) : (
-                            joinedEvents.map((event) => (
-                                <div key={event.id} className="w-full border border-neutral-150 rounded-3xl shadow-sm hover:shadow-md transition-all duration-300 bg-white overflow-hidden flex flex-col group">
-                                    <div className="relative aspect-3/2 w-full overflow-hidden">
-                                        <img 
-                                            src={event.poster_url || DefaultCover} 
-                                            alt={event.title} 
-                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                        />
-                                    </div>
-                                    <div className="p-6 flex flex-col gap-3 flex-grow">
-                                        <h4 className="text-primary-500 font-extrabold text-lg leading-tight line-clamp-1 group-hover:text-primary-600">
-                                            {event.title}
-                                        </h4>
-                                        <div className="flex flex-col gap-1.5 text-gray-400 text-small font-medium">
-                                            <span className="flex items-center gap-1.5">
-                                                <Calendar size={14} className="shrink-0" />
-                                                {formatShortDate(event.start_datetime)}
-                                            </span>
-                                            <span className="flex items-center gap-1.5">
-                                                <MapPin size={14} className="shrink-0" />
-                                                {event.type === 'online' ? 'Online' : (event.location_name || 'Lokasi Offline')}
-                                            </span>
+                                    <div className="w-full overflow-hidden relative">
+                                        <div ref={joinedTrackRef} className="flex gap-6 w-full">
+                                            {displayJoined.map((event, idx) => (
+                                                <div 
+                                                    key={`${event.id}-clone-${idx}`} 
+                                                    className="w-full sm:w-[calc((100%-24px)/2)] lg:w-[calc((100%-48px)/3)] shrink-0 border border-neutral-150 rounded-3xl shadow-sm hover:shadow-md transition-all duration-300 bg-white overflow-hidden flex flex-col group"
+                                                >
+                                                    <div className="relative aspect-3/2 w-full overflow-hidden shrink-0">
+                                                        <img 
+                                                            src={event.poster_url || DefaultCover} 
+                                                            alt={event.title} 
+                                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                        />
+                                                    </div>
+                                                    <div className="p-6 flex flex-col gap-3 flex-grow justify-between">
+                                                        <div className="flex flex-col gap-2">
+                                                            <h4 className="text-primary-500 font-extrabold text-lg leading-tight line-clamp-1 group-hover:text-primary-600">
+                                                                {event.title}
+                                                            </h4>
+                                                            <div className="flex flex-col gap-1.5 text-gray-400 text-small font-semibold mt-1">
+                                                                <span className="flex items-center gap-2">
+                                                                    <Calendar size={14} className="shrink-0 text-gray-400" />
+                                                                    {formatShortDate(event.start_datetime)}
+                                                                </span>
+                                                                <span className="flex items-center gap-2">
+                                                                    <MapPin size={14} className="shrink-0 text-gray-400" />
+                                                                    {event.type === 'online' ? 'Online' : (event.location_name || 'Lokasi Offline')}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="pt-2">
+                                                            <Button href={`/events/${event.id}`} className="text-small w-full py-2.5">
+                                                                Detail Event
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
-                                        <div className="mt-auto pt-3">
-                                            <Button href={`/events/${event.id}`} className="text-small w-full py-2.5">
-                                                Detail Event
-                                            </Button>
-                                        </div>
+                                        {joinedEvents.length > cardsToShow && (
+                                            <>
+                                                <button 
+                                                    onClick={handleJoinedPrev}
+                                                    className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 bg-white/80 hover:bg-white border border-neutral-200/80 text-neutral-800 rounded-full cursor-pointer backdrop-blur-md transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center shadow-md opacity-0 group-hover/slider:opacity-100"
+                                                    title="Halaman Sebelumnya"
+                                                >
+                                                    <ChevronLeft size={22} />
+                                                </button>
+                                                <button 
+                                                    onClick={handleJoinedNext}
+                                                    className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 bg-white/80 hover:bg-white border border-neutral-200/80 text-neutral-800 rounded-full cursor-pointer backdrop-blur-md transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center shadow-md opacity-0 group-hover/slider:opacity-100"
+                                                    title="Halaman Selanjutnya"
+                                                >
+                                                    <ChevronRight size={22} />
+                                                </button>
+                                            </>
+                                        )}
                                     </div>
-                                </div>
-                            ))
                         )}
                     </div>
                 </div>
@@ -235,6 +537,7 @@ return true;
                                             key={loc}
                                             onClick={() => {
                                                 setSelectedLocation(loc);
+                                                setNearbyIndex(0);
                                                 setLocationMenuOpen(false);
                                             }}
                                             className={`w-full text-left px-4 py-2.5 text-base font-semibold hover:bg-neutral-50 transition-colors cursor-pointer ${selectedLocation === loc ? 'text-primary-500 bg-primary-50/30' : 'text-neutral-700'}`}
@@ -247,43 +550,71 @@ return true;
                         </div>
                     </div>
                     
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="w-full relative group/slider">
+                        {/* Placeholder card if not registered for any events */}
                         {filteredNearbyEvents.length === 0 ? (
-                            <div className="col-span-full py-12 text-center text-gray-400 font-semibold">
+                            <div className="col-span-full py-12 text-center text-gray-400 font-semibold bg-white border border-neutral-200 rounded-3xl">
                                 Tidak ada event terdekat di lokasi ini.
                             </div>
                         ) : (
-                            filteredNearbyEvents.map((event) => (
-                                <div key={event.id} className="w-full border border-neutral-150 rounded-3xl shadow-sm hover:shadow-md transition-all duration-300 bg-white overflow-hidden flex flex-col group">
-                                    <div className="relative aspect-3/2 w-full overflow-hidden">
-                                        <img 
-                                            src={event.poster_url || DefaultCover} 
-                                            alt={event.title} 
-                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                        />
-                                    </div>
-                                    <div className="p-6 flex flex-col gap-3 flex-grow">
-                                        <h4 className="text-primary-500 font-extrabold text-lg leading-tight line-clamp-1 group-hover:text-primary-600">
-                                            {event.title}
-                                        </h4>
-                                        <div className="flex flex-col gap-1.5 text-gray-400 text-small font-medium">
-                                            <span className="flex items-center gap-1.5">
-                                                <Calendar size={14} className="shrink-0" />
-                                                {formatShortDate(event.start_datetime)}
-                                            </span>
-                                            <span className="flex items-center gap-1.5">
-                                                <MapPin size={14} className="shrink-0" />
-                                                {event.type === 'online' ? 'Online' : (event.location_name || 'Lokasi Offline')}
-                                            </span>
+                                    <div className="w-full overflow-hidden relative">
+                                        <div ref={nearbyTrackRef} className="flex gap-6 w-full">
+                                            {displayNearby.map((event, idx) => (
+                                                <div 
+                                                    key={`${event.id}-clone-${idx}`} 
+                                                    className="w-full sm:w-[calc((100%-24px)/2)] lg:w-[calc((100%-48px)/3)] shrink-0 border border-neutral-150 rounded-3xl shadow-sm hover:shadow-md transition-all duration-300 bg-white overflow-hidden flex flex-col group"
+                                                >
+                                                    <div className="relative aspect-3/2 w-full overflow-hidden shrink-0">
+                                                        <img 
+                                                            src={event.poster_url || DefaultCover} 
+                                                            alt={event.title} 
+                                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                        />
+                                                    </div>
+                                                    <div className="p-6 flex flex-col gap-3 flex-grow justify-between">
+                                                        <div className="flex flex-col gap-2">
+                                                            <h4 className="text-primary-500 font-extrabold text-lg leading-tight line-clamp-1 group-hover:text-primary-600">
+                                                                {event.title}
+                                                            </h4>
+                                                            <div className="flex flex-col gap-1.5 text-gray-400 text-small font-semibold mt-1">
+                                                                <span className="flex items-center gap-2">
+                                                                    <Calendar size={14} className="shrink-0 text-gray-400" />
+                                                                    {formatShortDate(event.start_datetime)}
+                                                                </span>
+                                                                <span className="flex items-center gap-2">
+                                                                    <MapPin size={14} className="shrink-0 text-gray-400" />
+                                                                    {event.type === 'online' ? 'Online' : (event.location_name || 'Lokasi Offline')}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="pt-2">
+                                                            <Button href={`/events/${event.id}`} className="text-small w-full py-2.5">
+                                                                Detail Event
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
-                                        <div className="mt-auto pt-3">
-                                            <Button href={`/events/${event.id}`} className="text-small w-full py-2.5">
-                                                Detail Event
-                                            </Button>
-                                        </div>
+                                        {filteredNearbyEvents.length > cardsToShow && (
+                                            <>
+                                                <button 
+                                                    onClick={handleNearbyPrev}
+                                                    className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 bg-white/80 hover:bg-white border border-neutral-200/80 text-neutral-800 rounded-full cursor-pointer backdrop-blur-md transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center shadow-md opacity-0 group-hover/slider:opacity-100"
+                                                    title="Halaman Sebelumnya"
+                                                >
+                                                    <ChevronLeft size={22} />
+                                                </button>
+                                                <button 
+                                                    onClick={handleNearbyNext}
+                                                    className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 bg-white/80 hover:bg-white border border-neutral-200/80 text-neutral-800 rounded-full cursor-pointer backdrop-blur-md transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center shadow-md opacity-0 group-hover/slider:opacity-100"
+                                                    title="Halaman Selanjutnya"
+                                                >
+                                                    <ChevronRight size={22} />
+                                                </button>
+                                            </>
+                                        )}
                                     </div>
-                                </div>
-                            ))
                         )}
                     </div>
                 </div>
@@ -292,7 +623,7 @@ return true;
                 <div id="catalog" className="flex flex-col lg:flex-row gap-10 mt-6 scroll-mt-24">
                     
                     {/* Left Column: Sidebar Category Filter */}
-                    <div className="w-full lg:w-1/4 shrink-0 flex flex-col gap-6">
+                    <div className="w-full lg:w-1/4 shrink-0 flex flex-col gap-6 lg:border-r lg:border-neutral-150 lg:pr-10 pb-8 lg:pb-0 border-b lg:border-b-0 border-neutral-150">
                         <h4 className="text-primary-500 font-black text-xl font-brand">
                             Kategori
                         </h4>
@@ -303,7 +634,10 @@ return true;
                                 return (
                                     <button 
                                         key={cat.id}
-                                        onClick={() => setActiveCategory(isActive ? null : cat.id)}
+                                        onClick={() => {
+                                            setActiveCategory(isActive ? null : cat.id);
+                                            setCurrentPage(1);
+                                        }}
                                         className="flex items-center gap-3 text-neutral-600 hover:text-primary-500 font-semibold text-base transition-colors cursor-pointer group"
                                     >
                                         {/* Square bullet style */}
@@ -318,46 +652,64 @@ return true;
                     {/* Right Column: Events Catalogue Listing */}
                     <div className="flex-grow flex flex-col gap-8">
                         {/* Tab Filter Type */}
-                        <div className="flex items-center gap-8 border-b border-gray-150 pb-1">
+                        <div className="flex items-center gap-8 border-b border-gray-150 pb-1 relative">
+                            {/* Sliding underline */}
+                            <div 
+                                className="absolute bottom-0 h-0.75 bg-primary-500 rounded-full transition-all duration-300 ease-out"
+                                style={{
+                                    left: `${underlineStyle.left}px`,
+                                    width: `${underlineStyle.width}px`
+                                }}
+                            />
+                            
                             <button 
-                                onClick={() => setActiveType('all')}
-                                className={`pb-3 font-bold text-base relative cursor-pointer transition-colors ${activeType === 'all' ? 'text-primary-500' : 'text-neutral-400 hover:text-neutral-600'}`}
+                                ref={tabAllRef}
+                                onClick={() => {
+                                    setActiveType('all');
+                                    setCurrentPage(1);
+                                }}
+                                className={`pb-3 font-bold text-base cursor-pointer transition-colors duration-300 ${activeType === 'all' ? 'text-primary-500' : 'text-neutral-400 hover:text-neutral-600'}`}
                             >
                                 Semua
-                                {activeType === 'all' && <div className="absolute bottom-0 left-0 right-0 h-0.75 bg-primary-500 rounded-full"></div>}
                             </button>
                             <button 
-                                onClick={() => setActiveType('online')}
-                                className={`pb-3 font-bold text-base relative cursor-pointer transition-colors ${activeType === 'online' ? 'text-primary-500' : 'text-neutral-400 hover:text-neutral-600'}`}
+                                ref={tabOnlineRef}
+                                onClick={() => {
+                                    setActiveType('online');
+                                    setCurrentPage(1);
+                                }}
+                                className={`pb-3 font-bold text-base cursor-pointer transition-colors duration-300 ${activeType === 'online' ? 'text-primary-500' : 'text-neutral-400 hover:text-neutral-600'}`}
                             >
                                 Online
-                                {activeType === 'online' && <div className="absolute bottom-0 left-0 right-0 h-0.75 bg-primary-500 rounded-full"></div>}
                             </button>
                             <button 
-                                onClick={() => setActiveType('offline')}
-                                className={`pb-3 font-bold text-base relative cursor-pointer transition-colors ${activeType === 'offline' ? 'text-primary-500' : 'text-neutral-400 hover:text-neutral-600'}`}
+                                ref={tabOfflineRef}
+                                onClick={() => {
+                                    setActiveType('offline');
+                                    setCurrentPage(1);
+                                }}
+                                className={`pb-3 font-bold text-base cursor-pointer transition-colors duration-300 ${activeType === 'offline' ? 'text-primary-500' : 'text-neutral-400 hover:text-neutral-600'}`}
                             >
                                 Offline
-                                {activeType === 'offline' && <div className="absolute bottom-0 left-0 right-0 h-0.75 bg-primary-500 rounded-full"></div>}
                             </button>
                         </div>
 
                         {/* Catalogue Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {filteredCatalogEvents.length === 0 ? (
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            {paginatedCatalogEvents.length === 0 ? (
                                 <div className="col-span-full py-20 text-center text-gray-400 font-semibold">
                                     Tidak ada event yang ditemukan untuk filter ini.
                                 </div>
                             ) : (
-                                filteredCatalogEvents.map((event) => (
-                                    <div key={event.id} className="w-full border border-neutral-150 rounded-3xl shadow-sm hover:shadow-md transition-all duration-300 bg-white overflow-hidden flex flex-col group relative">
+                                paginatedCatalogEvents.map((event) => (
+                                    <div key={event.id} className="w-full border border-neutral-150 rounded-3xl shadow-sm hover:shadow-md transition-all duration-300 bg-white overflow-hidden flex flex-col sm:flex-row lg:flex-col group relative">
                                         
                                         {/* "FREE" Badge on Top-Left of image */}
                                         <div className="absolute top-4 left-4 z-10 px-3 py-1 bg-secondary-400 text-secondary-900 font-extrabold text-[0.6275rem] rounded-md shadow-sm">
                                             FREE
                                         </div>
 
-                                        <div className="relative aspect-3/2 w-full overflow-hidden bg-gray-50 border-b border-gray-100">
+                                        <div className="relative aspect-3/2 w-full sm:w-56 lg:w-full shrink-0 overflow-hidden bg-gray-50 border-b sm:border-b-0 sm:border-r lg:border-r-0 lg:border-b border-gray-100">
                                             <img 
                                                 src={event.poster_url || DefaultCover} 
                                                 alt={event.title} 
@@ -366,7 +718,7 @@ return true;
                                         </div>
 
                                         <div className="p-6 flex flex-col gap-3 flex-grow">
-                                            <h4 className="text-primary-500 font-extrabold text-lg leading-tight line-clamp-2 h-12 group-hover:text-primary-600">
+                                            <h4 className="text-primary-500 font-extrabold text-lg leading-tight line-clamp-2 h-auto lg:h-12 group-hover:text-primary-600">
                                                 {event.title}
                                             </h4>
                                             
@@ -395,11 +747,65 @@ return true;
                                 ))
                             )}
                         </div>
+
+                        {/* Pagination Controls */}
+                        {totalPages > 1 && (
+                            <div className="flex items-center justify-between border-t border-neutral-100 pt-6 mt-4">
+                                <span className="text-micro font-semibold text-gray-400">
+                                    Halaman {currentPage} dari {totalPages}
+                                </span>
+                                
+                                <div className="flex gap-1.5">
+                                    <button
+                                        type="button"
+                                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                        disabled={currentPage === 1}
+                                        className={`px-3 py-1.5 font-bold text-micro rounded-lg border transition-colors ${
+                                            currentPage === 1 
+                                                ? 'bg-neutral-50 text-gray-300 cursor-not-allowed border-neutral-150' 
+                                                : 'bg-white hover:bg-neutral-50 text-neutral-800 border-neutral-200 cursor-pointer'
+                                        }`}
+                                    >
+                                        Sebelumnya
+                                    </button>
+
+                                    {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((pageNumber) => (
+                                        <button
+                                            key={pageNumber}
+                                            type="button"
+                                            onClick={() => setCurrentPage(pageNumber)}
+                                            className={`px-3 py-1.5 font-bold text-micro rounded-lg border transition-colors cursor-pointer ${
+                                                currentPage === pageNumber 
+                                                    ? 'bg-primary-500 text-white border-primary-500 shadow-sm' 
+                                                    : 'bg-white hover:bg-neutral-50 text-neutral-800 border-neutral-200'
+                                            }`}
+                                        >
+                                            {pageNumber}
+                                        </button>
+                                    ))}
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                        disabled={currentPage === totalPages}
+                                        className={`px-3 py-1.5 font-bold text-micro rounded-lg border transition-colors ${
+                                            currentPage === totalPages 
+                                                ? 'bg-neutral-50 text-gray-300 cursor-not-allowed border-neutral-150' 
+                                                : 'bg-white hover:bg-neutral-50 text-neutral-800 border-neutral-200 cursor-pointer'
+                                        }`}
+                                    >
+                                        Selanjutnya
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                 </div>
 
+                </div>
             </div>
+            <Footer />
         </div>
     );
 }

@@ -83,7 +83,7 @@ class DiscoveryController extends Controller
             Cache::put($cacheKey, true, now()->addHours(2)); // Block subsequent view count increments for 2 hours
         }
 
-        $event->load(['category', 'user']);
+        $event->load(['category', 'user'])->loadCount('eventRegistrations');
 
         $isRegistered = false;
         if (Auth::check()) {

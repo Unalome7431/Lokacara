@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Models\Event;
+use App\Models\Category;
+use App\Models\EventRegistration;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -51,7 +53,10 @@ class EventManagementController extends Controller
 
     public function create()
     {
-        return Inertia::render('Dashboard/Events/Create');
+        $categories = Category::all();
+        return Inertia::render('Dashboard/Events/Create', [
+            'categories' => $categories
+        ]);
     }
 
     public function store(Request $request)
@@ -76,8 +81,10 @@ class EventManagementController extends Controller
             abort(403);
         }
 
+        $categories = Category::all();
         return Inertia::render('Dashboard/Events/Edit', [
-            'event' => $event
+            'event' => $event,
+            'categories' => $categories
         ]);
     }
 
@@ -129,20 +136,64 @@ class EventManagementController extends Controller
         return redirect()->route('dashboard.events.index')->with('success', 'Event deleted successfully.');
     }
 
+    public function show(Request $request, Event $event)
+    {
+        if ($event->user_id !== $request->user()->id) {
+            abort(403);
+        }
+
+        $event->load('category');
+        $totalAttendees = $event->eventRegistrations()->count();
+        $checkedInAttendees = $event->eventRegistrations()->whereNotNull('checked_in_at')->count();
+        $remainingCapacity = $event->capacity ? ($event->capacity - $totalAttendees) : null;
+
+        return Inertia::render('Dashboard/Events/Show', [
+            'event' => $event,
+            'total_attendees' => $totalAttendees,
+            'checked_in_attendees' => $checkedInAttendees,
+            'remaining_capacity' => $remainingCapacity,
+        ]);
+    }
+
+    public function kickAttendee(Request $request, Event $event, EventRegistration $registration)
+    {
+        if ($event->user_id !== $request->user()->id) {
+            abort(403);
+        }
+
+        if ($registration->event_id !== $event->id) {
+            abort(404);
+        }
+
+        $registration->delete();
+
+        return redirect()->back()->with('success', 'Peserta berhasil dikeluarkan dari event.');
+    }
+
     public function attendees(Request $request, Event $event)
     {
         if ($event->user_id !== $request->user()->id) {
             abort(403);
         }
 
-        $attendees = $event->eventRegistrations()
+        $query = $event->eventRegistrations()
             ->with(['user:id,name,email,avatar_url'])
-            ->latest()
-            ->paginate(15);
+            ->latest();
+
+        if ($request->has('search') && !empty($request->input('search'))) {
+            $search = $request->input('search');
+            $query->whereHas('user', function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                  ->orWhere('email', 'like', '%' . $search . '%');
+            });
+        }
+
+        $attendees = $query->paginate(15)->withQueryString();
 
         return Inertia::render('Dashboard/Events/Attendees', [
             'event' => $event,
-            'attendees' => $attendees
+            'attendees' => $attendees,
+            'filters' => $request->only(['search']),
         ]);
     }
 }

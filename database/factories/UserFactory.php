@@ -24,15 +24,15 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
-        $name = fake()->name();
+        $name = $this->faker->name();
         return [
             'name' => $name,
-            'email' => fake()->unique()->safeEmail(),
+            'email' => $this->faker->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'avatar_url'=> 'https://ui-avatars.com/api/?name=' . urlencode($name) . '&background=random',
-            'role'=> fake()->randomElement(['user', 'user', 'user', 'user', 'user', 'user', 'user', 'user', 'user', 'admin']),
-            'suspended_at'=> fake()->optional(0.05)->dateTimeThisMonth(),
+            'role'=> $this->faker->randomElement(['user', 'user', 'user', 'user', 'user', 'user', 'user', 'user', 'user', 'admin']),
+            'suspended_at'=> $this->faker->optional(0.05)->dateTimeThisMonth(),
             'provider_id'=> null,
             'provider'=> null,
             'remember_token' => Str::random(10),
