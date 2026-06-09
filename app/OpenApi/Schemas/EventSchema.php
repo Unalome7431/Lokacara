@@ -15,6 +15,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'poster_url', type: 'string', nullable: true, example: 'http://localhost:8000/api/posters/abc123.jpg'),
         new OA\Property(property: 'title', type: 'string', example: 'Summer Music Festival'),
         new OA\Property(property: 'description', type: 'string', example: 'A great music event'),
+        new OA\Property(property: 'price', type: 'integer', nullable: true, example: 25000),
         new OA\Property(property: 'location_name', type: 'string', nullable: true, example: 'Central Park'),
         new OA\Property(property: 'address', type: 'string', nullable: true, example: '123 Main St, City'),
         new OA\Property(property: 'latitude', type: 'number', format: 'float', nullable: true, example: -6.2088),
