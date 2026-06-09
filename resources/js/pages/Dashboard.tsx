@@ -4,8 +4,8 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import defaultAvatar from '@/../../public/avatars/default.png';
-import NavBar from '@/layouts/NavBar';
 import Footer from '@/layouts/Footer';
+import NavBar from '@/layouts/NavBar';
 
 interface Category {
   id: number;

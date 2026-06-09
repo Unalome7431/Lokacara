@@ -3,8 +3,8 @@ import { User, Lock, Camera, Info, ShieldAlert } from 'lucide-react';
 import React, { useState } from 'react';
 import defaultAvatar from '@/../../public/avatars/default.png';
 import faviconUrl from '@/../../public/favicon.svg';
-import NavBar from '@/layouts/NavBar';
 import Footer from '@/layouts/Footer';
+import NavBar from '@/layouts/NavBar';
 
 interface UserData {
   id: number;

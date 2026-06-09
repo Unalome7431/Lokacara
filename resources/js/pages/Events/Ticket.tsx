@@ -4,8 +4,8 @@ import {
   Clock, AlertCircle, ArrowUpRight
 } from 'lucide-react';
 import React from 'react';
-import NavBar from '@/layouts/NavBar';
 import Footer from '@/layouts/Footer';
+import NavBar from '@/layouts/NavBar';
 
 interface Category {
   id: number;

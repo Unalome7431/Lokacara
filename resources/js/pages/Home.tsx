@@ -4,8 +4,8 @@ import { Plus, ChevronRight, ChevronLeft, ChevronDown, Calendar, MapPin } from '
 import { useState, useEffect, useRef } from 'react';
 import DefaultCover from '@/../../public/covers/default_cover.jpg';
 import Button from '@/components/ui/Button';
-import NavBar from '@/layouts/NavBar';
 import Footer from '@/layouts/Footer';
+import NavBar from '@/layouts/NavBar';
 
 interface Event {
     id: number;
@@ -304,9 +304,6 @@ export default function Home({ events, popularEvents, joinedEvents, categories }
 
     // 4. Pagination State & Logic for Catalogue
     const [currentPage, setCurrentPage] = useState(1);
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [activeCategory, activeType]);
 
     const eventsPerPage = 9;
     const totalPages = Math.ceil(filteredCatalogEvents.length / eventsPerPage);
@@ -637,7 +634,10 @@ export default function Home({ events, popularEvents, joinedEvents, categories }
                                 return (
                                     <button 
                                         key={cat.id}
-                                        onClick={() => setActiveCategory(isActive ? null : cat.id)}
+                                        onClick={() => {
+                                            setActiveCategory(isActive ? null : cat.id);
+                                            setCurrentPage(1);
+                                        }}
                                         className="flex items-center gap-3 text-neutral-600 hover:text-primary-500 font-semibold text-base transition-colors cursor-pointer group"
                                     >
                                         {/* Square bullet style */}
@@ -664,21 +664,30 @@ export default function Home({ events, popularEvents, joinedEvents, categories }
                             
                             <button 
                                 ref={tabAllRef}
-                                onClick={() => setActiveType('all')}
+                                onClick={() => {
+                                    setActiveType('all');
+                                    setCurrentPage(1);
+                                }}
                                 className={`pb-3 font-bold text-base cursor-pointer transition-colors duration-300 ${activeType === 'all' ? 'text-primary-500' : 'text-neutral-400 hover:text-neutral-600'}`}
                             >
                                 Semua
                             </button>
                             <button 
                                 ref={tabOnlineRef}
-                                onClick={() => setActiveType('online')}
+                                onClick={() => {
+                                    setActiveType('online');
+                                    setCurrentPage(1);
+                                }}
                                 className={`pb-3 font-bold text-base cursor-pointer transition-colors duration-300 ${activeType === 'online' ? 'text-primary-500' : 'text-neutral-400 hover:text-neutral-600'}`}
                             >
                                 Online
                             </button>
                             <button 
                                 ref={tabOfflineRef}
-                                onClick={() => setActiveType('offline')}
+                                onClick={() => {
+                                    setActiveType('offline');
+                                    setCurrentPage(1);
+                                }}
                                 className={`pb-3 font-bold text-base cursor-pointer transition-colors duration-300 ${activeType === 'offline' ? 'text-primary-500' : 'text-neutral-400 hover:text-neutral-600'}`}
                             >
                                 Offline

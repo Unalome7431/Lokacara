@@ -2,8 +2,8 @@ import { Head, Link, router } from '@inertiajs/react';
 import { Plus, Edit2, Trash2, Calendar, MapPin, Users } from 'lucide-react';
 import DefaultCover from '@/../../public/covers/default_cover.jpg';
 import Button from '@/components/ui/Button';
-import NavBar from '@/layouts/NavBar';
 import Footer from '@/layouts/Footer';
+import NavBar from '@/layouts/NavBar';
 
 interface Event {
   id: number;

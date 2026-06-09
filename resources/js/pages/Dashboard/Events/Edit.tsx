@@ -2,8 +2,8 @@ import { Head, router, useForm } from '@inertiajs/react';
 import { GoogleMap, useJsApiLoader, MarkerF, Autocomplete } from '@react-google-maps/api';
 import { Camera, Plus, Minus, Calendar, MapPin, Trash2, ArrowUp } from 'lucide-react';
 import { useState, useRef } from 'react';
-import NavBar from '@/layouts/NavBar';
 import Footer from '@/layouts/Footer';
+import NavBar from '@/layouts/NavBar';
 
 const GOOGLE_MAPS_LIBRARIES: any = ['places'];
 

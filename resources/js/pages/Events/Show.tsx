@@ -5,8 +5,8 @@ import {
 } from 'lucide-react';
 import React, { useState } from 'react';
 import DefaultCover from '@/../../public/covers/default_cover.jpg';
-import NavBar from '@/layouts/NavBar';
 import Footer from '@/layouts/Footer';
+import NavBar from '@/layouts/NavBar';
 
 interface Category {
   id: number;
