@@ -14,8 +14,17 @@ use App\Http\Controllers\Api\CommunicationApiController;
 use App\Http\Controllers\Api\ModerationApiController;
 use App\Http\Controllers\Api\AdminModerationApiController;
 use App\Http\Controllers\Api\CertificateApiController;
+use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\ConfigController;
+use App\Http\Controllers\Api\LocationController;
+use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\BookmarkController;
 use App\Http\Controllers\AvatarController;
 use App\Http\Controllers\PosterController;
+
+Route::get('/categories', [CategoryController::class, 'index']);
+Route::get('/locations', [LocationController::class, 'index']);
+Route::get('/config/tabs', [ConfigController::class, 'tabs']);
 
 // Module 2: Discovery Routes
 Route::get('/events/feed', [DiscoveryController::class, 'index']);
@@ -31,15 +40,19 @@ Route::middleware('guest')->group(function () {
     Route::post('/auth/password/reset', [AuthController::class, 'resetPassword']);
 });
 
+Route::post('/auth/refresh', [AuthController::class, 'refresh']);
+
 // Module 1: Authenticated User & Profile Routes
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
+    Route::post('/auth/password/change', [AuthController::class, 'changePassword']);
     
     // Profile
     Route::get('/profile', [ProfileController::class, 'show']);
     Route::patch('/profile', [ProfileController::class, 'update']);
     Route::post('/profile/avatar', [ProfileController::class, 'uploadAvatar']);
     Route::get('/profile/avatar/{filename}', [AvatarController::class, 'show']);
+    Route::delete('/user', [ProfileController::class, 'destroy']);
     
     // Other Protected Routes
     Route::get('/user', function (Request $request) {
@@ -69,6 +82,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Module 6: Moderation (User)
     Route::post('/events/{event}/report', [ModerationApiController::class, 'reportEvent']);
+
+    // Notifications
+    Route::get('/notifications', [NotificationController::class, 'index']);
+
+    // Bookmarks
+    Route::get('/bookmarks', [BookmarkController::class, 'index']);
 });
 
 // Module 6: Moderation (Admin)

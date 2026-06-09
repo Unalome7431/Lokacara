@@ -18,6 +18,7 @@ class EventManagementController extends Controller
             'title' => 'required|string|max:255',
             'category_id' => 'nullable|exists:categories,id',
             'description' => 'required|string',
+            'price' => 'nullable|integer|min:0',
             'type' => 'required|in:online,offline',
             
             // Rules for offline
