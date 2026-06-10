@@ -30,6 +30,7 @@ class EventFactory extends Factory
             'type'=> $type,
             'title'=> "{$eventTypePrefix} Custom Event",
             'description'=> $this->faker->sentence(),
+            'price'=> $this->faker->randomElement([0, 0, 0, 15000, 25000, 50000, 100000, null]),
             
             'location_name'=> $type === 'offline' ? $this->faker->randomElement(['Auditorium Surakarta', 'Gedung Sate', 'Hotel Indonesia']) : null,
             'address'=> $type === 'offline' ? $this->faker->address() : null,

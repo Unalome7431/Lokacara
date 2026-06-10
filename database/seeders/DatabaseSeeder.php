@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use App\Models\Event;
 use App\Models\Category;
+use Database\Seeders\LocationSeeder;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -15,6 +16,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call(LocationSeeder::class);
+
         $titles = [
             'Learning Labs: Crash Course for Frontend Developer',
             'GoGreen: Create a Breathable World',

@@ -154,6 +154,118 @@ class AuthController extends Controller
     }
 
     #[OA\Post(
+        path: '/api/auth/refresh',
+        summary: 'Refresh expired access token',
+        tags: ['Authentication'],
+        security: [['sanctum' => []]]
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'New access token',
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'token', type: 'string', example: '1|abc123token...'),
+            ]
+        )
+    )]
+    #[OA\Response(response: 401, description: 'Invalid or expired token')]
+    public function refresh(Request $request)
+    {
+        $bearerToken = $request->bearerToken();
+
+        if (!$bearerToken) {
+            return response()->json(['message' => 'Token not provided'], 401);
+        }
+
+        $id = null;
+        if (str_contains($bearerToken, '|')) {
+            [$id, $plainText] = explode('|', $bearerToken, 2);
+        }
+
+        if (!$id || !is_numeric($id)) {
+            return response()->json(['message' => 'Invalid token format'], 401);
+        }
+
+        $accessToken = \Laravel\Sanctum\PersonalAccessToken::find($id);
+
+        if (!$accessToken) {
+            return response()->json(['message' => 'Invalid token'], 401);
+        }
+
+        $user = $accessToken->tokenable;
+
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 401);
+        }
+
+        if ($user->suspended_at) {
+            return response()->json(['message' => 'Your account is suspended.'], 403);
+        }
+
+        $accessToken->delete();
+
+        $newToken = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'token' => $newToken,
+        ], 200);
+    }
+
+    #[OA\Post(
+        path: '/api/auth/password/change',
+        summary: 'Change password for authenticated user',
+        tags: ['Authentication'],
+        security: [['sanctum' => []]]
+    )]
+    #[OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(
+            required: ['old_password', 'new_password', 'new_password_confirmation'],
+            properties: [
+                new OA\Property(property: 'old_password', type: 'string', example: 'password_lama'),
+                new OA\Property(property: 'new_password', type: 'string', minLength: 8, example: 'password_baru'),
+                new OA\Property(property: 'new_password_confirmation', type: 'string', example: 'password_baru'),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Password changed successfully',
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'message', type: 'string', example: 'Password berhasil diubah'),
+            ]
+        )
+    )]
+    #[OA\Response(response: 422, description: 'Validation error')]
+    public function changePassword(Request $request)
+    {
+        $validated = $request->validate([
+            'old_password' => 'required|string',
+            'new_password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user = $request->user();
+
+        if (!Hash::check($validated['old_password'], $user->password)) {
+            return response()->json([
+                'message' => 'The given data was invalid.',
+                'errors' => [
+                    'old_password' => ['Kata sandi lama tidak sesuai'],
+                ],
+            ], 422);
+        }
+
+        $user->forceFill([
+            'password' => Hash::make($validated['new_password']),
+        ])->save();
+
+        return response()->json([
+            'message' => 'Password berhasil diubah',
+        ], 200);
+    }
+
+    #[OA\Post(
         path: '/api/auth/password/email',
         summary: 'Send password reset link to email',
         tags: ['Authentication'],

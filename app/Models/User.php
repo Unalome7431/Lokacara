@@ -14,7 +14,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Sanctum\HasApiTokens;
 
-#[Fillable(['name', 'email', 'password', 'avatar_url', 'role', 'suspended_at', 'provider_id', 'provider'])]
+#[Fillable(['name', 'email', 'password', 'avatar_url', 'phone', 'location', 'role', 'suspended_at', 'provider_id', 'provider'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -65,5 +65,13 @@ class User extends Authenticatable
 
     public function eventReports(): HasMany {
         return $this->hasMany(EventReport::class, 'reporter_id')->chaperone();
+    }
+
+    public function notifications(): HasMany {
+        return $this->hasMany(Notification::class)->chaperone();
+    }
+
+    public function bookmarks(): HasMany {
+        return $this->hasMany(Bookmark::class)->chaperone();
     }
 }

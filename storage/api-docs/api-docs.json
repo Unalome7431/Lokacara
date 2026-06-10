@@ -616,6 +616,106 @@
                 ]
             }
         },
+        "/api/auth/refresh": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Refresh expired access token",
+                "operationId": "30c20c52f5f72828d8c531fd7c9ea3e7",
+                "responses": {
+                    "200": {
+                        "description": "New access token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "token": {
+                                            "type": "string",
+                                            "example": "1|abc123token..."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid or expired token"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/auth/password/change": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Change password for authenticated user",
+                "operationId": "7ab0619257ede1244ae00abe9c20d29b",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "old_password",
+                                    "new_password",
+                                    "new_password_confirmation"
+                                ],
+                                "properties": {
+                                    "old_password": {
+                                        "type": "string",
+                                        "example": "password_lama"
+                                    },
+                                    "new_password": {
+                                        "type": "string",
+                                        "example": "password_baru",
+                                        "minLength": 8
+                                    },
+                                    "new_password_confirmation": {
+                                        "type": "string",
+                                        "example": "password_baru"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Password changed successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Password berhasil diubah"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/auth/password/email": {
             "post": {
                 "tags": [
@@ -728,6 +828,72 @@
                     },
                     "400": {
                         "description": "Invalid token or email"
+                    }
+                }
+            }
+        },
+        "/api/bookmarks": {
+            "get": {
+                "tags": [
+                    "Bookmarks"
+                ],
+                "summary": "Get bookmarked events for authenticated user",
+                "operationId": "233ed23d9346fff85a0b94fd45e34647",
+                "responses": {
+                    "200": {
+                        "description": "List of bookmarked events",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Event"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/categories": {
+            "get": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Get all event categories",
+                "operationId": "ac9c4d978ea4e5b72915ca9728e5b8b1",
+                "responses": {
+                    "200": {
+                        "description": "List of categories",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Category"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -989,6 +1155,61 @@
                         "sanctum": []
                     }
                 ]
+            }
+        },
+        "/api/config/tabs": {
+            "get": {
+                "tags": [
+                    "Config"
+                ],
+                "summary": "Get tab configuration for mobile app",
+                "operationId": "d00d0f68190609b1afff33980fd589c3",
+                "responses": {
+                    "200": {
+                        "description": "Tab configurations",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "tickets_tabs": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "key": {
+                                                        "type": "string",
+                                                        "example": "upcoming"
+                                                    },
+                                                    "label": {
+                                                        "type": "string",
+                                                        "example": "Mendatang"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "notification_tabs": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "key": {
+                                                        "type": "string",
+                                                        "example": "activity"
+                                                    },
+                                                    "label": {
+                                                        "type": "string",
+                                                        "example": "Aktivitas"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
             }
         },
         "/api/dashboard": {
@@ -1634,6 +1855,45 @@
                 ]
             }
         },
+        "/api/locations": {
+            "get": {
+                "tags": [
+                    "Locations"
+                ],
+                "summary": "Get all locations",
+                "operationId": "4a95f25c1e13530115fd3fd6961b92de",
+                "responses": {
+                    "200": {
+                        "description": "List of locations",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "Surakarta"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/events/{event}/report": {
             "post": {
                 "tags": [
@@ -1691,6 +1951,47 @@
                     },
                     "400": {
                         "description": "Already reported or cannot be reported"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/notifications": {
+            "get": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Get notifications for authenticated user",
+                "operationId": "6d56a555955089a73fdf3f7229e8ead8",
+                "responses": {
+                    "200": {
+                        "description": "List of notifications with unread count",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Notification"
+                                            }
+                                        },
+                                        "unread_count": {
+                                            "type": "integer",
+                                            "example": 2
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
                     }
                 },
                 "security": [
@@ -1794,6 +2095,93 @@
                 ]
             }
         },
+        "/api/user": {
+            "get": {
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Get the authenticated user",
+                "operationId": "1f7a314ba092e408ae8e1f203164cda2",
+                "responses": {
+                    "200": {
+                        "description": "Authenticated user",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ],
+                "servers": [
+                    {
+                        "url": "http://localhost:8000",
+                        "description": "Local development server"
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Delete authenticated user account",
+                "operationId": "af675b08ca30a714266bd115404bbc64",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "password"
+                                ],
+                                "properties": {
+                                    "password": {
+                                        "type": "string",
+                                        "example": "password_saat_ini"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Account deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Akun berhasil dihapus"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Invalid password"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/profile/avatar": {
             "post": {
                 "tags": [
@@ -1849,41 +2237,6 @@
                 "security": [
                     {
                         "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/user": {
-            "get": {
-                "tags": [
-                    "Profile"
-                ],
-                "summary": "Get the authenticated user",
-                "operationId": "1f7a314ba092e408ae8e1f203164cda2",
-                "responses": {
-                    "200": {
-                        "description": "Authenticated user",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/User"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ],
-                "servers": [
-                    {
-                        "url": "http://localhost:8000",
-                        "description": "Local development server"
                     }
                 ]
             }
@@ -2085,6 +2438,11 @@
                         "type": "string",
                         "example": "A great music event"
                     },
+                    "price": {
+                        "type": "integer",
+                        "example": 25000,
+                        "nullable": true
+                    },
                     "location_name": {
                         "type": "string",
                         "example": "Central Park",
@@ -2157,6 +2515,47 @@
                 },
                 "type": "object"
             },
+            "Notification": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "sender_name": {
+                        "type": "string",
+                        "example": "Lokacara"
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Event \"Seminar AI\" akan dimulai besok"
+                    },
+                    "type": {
+                        "type": "string",
+                        "example": "system",
+                        "enum": [
+                            "system",
+                            "social"
+                        ]
+                    },
+                    "is_read": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
             "User": {
                 "properties": {
                     "id": {
@@ -2181,6 +2580,16 @@
                     "avatar_url": {
                         "type": "string",
                         "example": "avatars/abc123.jpg",
+                        "nullable": true
+                    },
+                    "phone": {
+                        "type": "string",
+                        "example": "08123456789",
+                        "nullable": true
+                    },
+                    "location": {
+                        "type": "string",
+                        "example": "Jakarta",
                         "nullable": true
                     },
                     "role": {
@@ -2246,6 +2655,26 @@
         {
             "name": "Admin Moderation",
             "description": "Admin-only endpoints for moderation queue, event/user banning"
+        },
+        {
+            "name": "Bookmarks",
+            "description": "Bookmarks"
+        },
+        {
+            "name": "Categories",
+            "description": "Categories"
+        },
+        {
+            "name": "Config",
+            "description": "Config"
+        },
+        {
+            "name": "Locations",
+            "description": "Locations"
+        },
+        {
+            "name": "Notifications",
+            "description": "Notifications"
         }
     ],
     "security": [

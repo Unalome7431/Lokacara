@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use App\Models\User;
 use OpenApi\Attributes as OA;
@@ -69,6 +70,8 @@ class ProfileController extends Controller
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:255',
             'email' => 'sometimes|required|email|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:20',
+            'location' => 'nullable|string|max:255',
             'avatar' => 'nullable|image|max:5120', // 5MB max
         ]);
 
@@ -78,6 +81,14 @@ class ProfileController extends Controller
         
         if (isset($validated['email'])) {
             $user->email = $validated['email'];
+        }
+
+        if (array_key_exists('phone', $validated)) {
+            $user->phone = $validated['phone'];
+        }
+
+        if (array_key_exists('location', $validated)) {
+            $user->location = $validated['location'];
         }
 
         if ($request->hasFile('avatar')) {
@@ -95,6 +106,54 @@ class ProfileController extends Controller
         return response()->json([
             'message' => 'Profile updated successfully',
             'user' => $user,
+        ], 200);
+    }
+
+    #[OA\Delete(
+        path: '/api/user',
+        summary: 'Delete authenticated user account',
+        tags: ['Profile'],
+        security: [['sanctum' => []]]
+    )]
+    #[OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(
+            required: ['password'],
+            properties: [
+                new OA\Property(property: 'password', type: 'string', example: 'password_saat_ini'),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Account deleted successfully',
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'message', type: 'string', example: 'Akun berhasil dihapus'),
+            ]
+        )
+    )]
+    #[OA\Response(response: 422, description: 'Invalid password')]
+    public function destroy(Request $request)
+    {
+        $validated = $request->validate([
+            'password' => 'required|string',
+        ]);
+
+        $user = $request->user();
+
+        if (!Hash::check($validated['password'], $user->password)) {
+            return response()->json([
+                'message' => 'Password tidak sesuai',
+            ], 422);
+        }
+
+        $user->currentAccessToken()->delete();
+
+        $user->delete();
+
+        return response()->json([
+            'message' => 'Akun berhasil dihapus',
         ], 200);
     }
 
