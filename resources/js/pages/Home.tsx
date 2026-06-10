@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import gsap from 'gsap';
 import { Plus, ChevronRight, ChevronLeft, ChevronDown, Calendar, MapPin } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
@@ -35,10 +35,22 @@ interface HomeProps {
 }
 
 export default function Home({ events, popularEvents, joinedEvents, categories }: HomeProps) {
+    const { auth } = usePage().props as any;
+    const isAuthenticated = !!auth?.user;
+
     // 1. Carousel State for Popular Events
-    const [currentSlide, setCurrentSlide] = useState(0);
+    const [activeIndex, setActiveIndex] = useState(1);
+    const isTransitioning = useRef(false);
+    const isMounted = useRef(false);
     const hasPopular = popularEvents && popularEvents.length > 0;
     const heroEvents = hasPopular ? popularEvents : events.slice(0, 3);
+    const displayHeroEvents = heroEvents.length > 1
+        ? [heroEvents[heroEvents.length - 1], ...heroEvents, heroEvents[0]]
+        : heroEvents;
+
+    const currentDot = heroEvents.length > 0
+        ? (activeIndex - 1 + heroEvents.length) % heroEvents.length
+        : 0;
 
     const heroTrackRef = useRef<HTMLDivElement>(null);
     const joinedTrackRef = useRef<HTMLDivElement>(null);
@@ -64,14 +76,14 @@ export default function Home({ events, popularEvents, joinedEvents, categories }
     }); // Display matching events
 
     const handleNextSlide = () => {
-        if (heroEvents.length > 0) {
-            setCurrentSlide((prev) => (prev + 1) % heroEvents.length);
+        if (heroEvents.length > 1 && !isTransitioning.current) {
+            setActiveIndex((prev) => prev + 1);
         }
     };
 
     const handlePrevSlide = () => {
-        if (heroEvents.length > 0) {
-            setCurrentSlide((prev) => (prev - 1 + heroEvents.length) % heroEvents.length);
+        if (heroEvents.length > 1 && !isTransitioning.current) {
+            setActiveIndex((prev) => prev - 1);
         }
     };
 
@@ -205,14 +217,44 @@ export default function Home({ events, popularEvents, joinedEvents, categories }
 
     // GSAP Slider animations
     useEffect(() => {
-        if (heroTrackRef.current) {
+        if (heroTrackRef.current && heroEvents.length > 1) {
+            if (!isMounted.current) {
+                gsap.set(heroTrackRef.current, { xPercent: -activeIndex * 100 });
+                isMounted.current = true;
+                return;
+            }
+
+            isTransitioning.current = true;
             gsap.to(heroTrackRef.current, {
-                xPercent: -currentSlide * 100,
+                xPercent: -activeIndex * 100,
                 duration: 0.6,
-                ease: 'power2.out'
+                ease: 'power2.out',
+                onComplete: () => {
+                    if (activeIndex === heroEvents.length + 1) {
+                        gsap.set(heroTrackRef.current, { xPercent: -100 });
+                        setActiveIndex(1);
+                    } else if (activeIndex === 0) {
+                        gsap.set(heroTrackRef.current, { xPercent: -heroEvents.length * 100 });
+                        setActiveIndex(heroEvents.length);
+                    }
+                    isTransitioning.current = false;
+                }
             });
         }
-    }, [currentSlide]);
+    }, [activeIndex, heroEvents.length]);
+
+    // Auto-scroll for Hero Slider
+    useEffect(() => {
+        if (heroEvents.length <= 1) return;
+
+        const interval = setInterval(() => {
+            if (!isTransitioning.current) {
+                setActiveIndex((prev) => prev + 1);
+            }
+        }, 5000); // Auto scroll every 5 seconds
+
+        return () => clearInterval(interval);
+    }, [activeIndex, heroEvents.length]);
 
     useEffect(() => {
         if (joinedTrackRef.current) {
@@ -375,9 +417,13 @@ export default function Home({ events, popularEvents, joinedEvents, categories }
                                 {heroEvents.map((_, idx) => (
                                     <button
                                         key={idx}
-                                        onClick={() => setCurrentSlide(idx)}
+                                        onClick={() => {
+                                            if (!isTransitioning.current) {
+                                                setActiveIndex(idx + 1);
+                                            }
+                                        }}
                                         className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
-                                            currentSlide === idx ? 'w-6 bg-white' : 'w-2 bg-white/40 hover:bg-white/75'
+                                            currentDot === idx ? 'w-6 bg-white' : 'w-2 bg-white/40 hover:bg-white/75'
                                         }`}
                                         aria-label={`Go to slide ${idx + 1}`}
                                     />
@@ -385,21 +431,25 @@ export default function Home({ events, popularEvents, joinedEvents, categories }
                             </div>
                         )}
 
+                        {/* Stationary Event Populer label */}
+                        <div className="absolute top-6 left-6 md:top-8 md:left-10 z-20 px-4 py-1.5 bg-white/20 backdrop-blur-md border border-white/20 rounded-full text-white text-small font-bold">
+                            Event Populer
+                        </div>
+
                         <div ref={heroTrackRef} className="flex h-full w-full">
-                            {heroEvents.map((event) => (
-                                <div key={event.id} className="w-full h-full shrink-0 relative">
+                            {displayHeroEvents.map((event, idx) => (
+                                <Link 
+                                    key={`${event.id}-hero-${idx}`} 
+                                    href={`/events/${event.id}`}
+                                    className="w-full h-full shrink-0 relative block cursor-pointer overflow-hidden group/hero-slide"
+                                >
                                     <img 
                                         src={event.poster_url || DefaultCover} 
                                         alt={event.title} 
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-cover transition-transform duration-700 group-hover/hero-slide:scale-[1.03]"
                                     />
                                     {/* Dark gradient overlay */}
                                     <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/95 via-neutral-900/40 to-transparent"></div>
-
-                                    {/* Title Badge overlay */}
-                                    <div className="absolute top-6 left-6 md:top-8 md:left-10 px-4 py-1.5 bg-white/20 backdrop-blur-md border border-white/20 rounded-full text-white text-small font-bold">
-                                        Event Populer
-                                    </div>
 
                                     {/* Text overlay */}
                                     <div className="absolute bottom-0 left-0 right-0 pt-6 pl-[4.5rem] pr-16 pb-12 md:pt-10 md:pl-24 md:pr-20 md:pb-16 flex flex-col gap-2 max-w-[680px]">
@@ -421,99 +471,101 @@ export default function Home({ events, popularEvents, joinedEvents, categories }
                                             {event.description}
                                         </p>
                                     </div>
-                                </div>
+                                </Link>
                             ))}
                         </div>
                     </div>
                 )}
 
                 {/* 2. EVENT MENDATANG SECTION (JOINED EVENTS) */}
-                <div className="flex flex-col gap-5">
-                    <h3 className="text-neutral-900 font-extrabold text-2xl md:text-3xl font-brand tracking-tight">
-                        Event Mendatang
-                    </h3>
-                    
-                    <div className="w-full relative group/slider">
-                        {/* Placeholder card if not registered for any events */}
-                        {joinedEvents.length === 0 ? (
-                            <div className="w-full h-[280px] bg-white border-2 border-dashed border-neutral-200 rounded-3xl flex flex-col items-center justify-center p-6 gap-4 text-center group hover:border-primary-300 transition-colors duration-300">
-                                <a 
-                                    href="#catalog"
-                                    className="w-16 h-16 rounded-full bg-gray-50 border border-neutral-100 flex items-center justify-center text-primary-500 shadow-md group-hover:scale-105 transition-transform duration-300"
-                                >
-                                    <Plus size={28} />
-                                </a>
-                                <div className="flex flex-col gap-1">
-                                    <h4 className="text-neutral-700 font-bold text-base font-brand">
-                                        Belum Ikut Event Apapun
-                                    </h4>
-                                    <p className="text-gray-400 text-small max-w-[200px]">
-                                        Temukan berbagai event menarik di bawah ini
-                                    </p>
+                {isAuthenticated && (
+                    <div className="flex flex-col gap-5">
+                        <h3 className="text-neutral-900 font-extrabold text-2xl md:text-3xl font-brand tracking-tight">
+                            Event Mendatang
+                        </h3>
+                        
+                        <div className="w-full relative group/slider">
+                            {/* Placeholder card if not registered for any events */}
+                            {joinedEvents.length === 0 ? (
+                                <div className="w-full h-[280px] bg-white border-2 border-dashed border-neutral-200 rounded-3xl flex flex-col items-center justify-center p-6 gap-4 text-center group hover:border-primary-300 transition-colors duration-300">
+                                    <a 
+                                        href="#catalog"
+                                        className="w-16 h-16 rounded-full bg-gray-50 border border-neutral-150 flex items-center justify-center text-primary-500 shadow-md group-hover:scale-105 transition-transform duration-300"
+                                    >
+                                        <Plus size={28} />
+                                    </a>
+                                    <div className="flex flex-col gap-1">
+                                        <h4 className="text-neutral-700 font-bold text-base font-brand">
+                                            Belum Ikut Event Apapun
+                                        </h4>
+                                        <p className="text-gray-400 text-small max-w-[200px]">
+                                            Temukan berbagai event menarik di bawah ini
+                                        </p>
+                                    </div>
                                 </div>
-                            </div>
-                        ) : (
-                                    <div className="w-full overflow-hidden relative">
-                                        <div ref={joinedTrackRef} className="flex gap-6 w-full">
-                                            {displayJoined.map((event, idx) => (
-                                                <div 
-                                                    key={`${event.id}-clone-${idx}`} 
-                                                    className="w-full sm:w-[calc((100%-24px)/2)] lg:w-[calc((100%-48px)/3)] shrink-0 border border-neutral-150 rounded-3xl shadow-sm hover:shadow-md transition-all duration-300 bg-white overflow-hidden flex flex-col group"
-                                                >
-                                                    <div className="relative aspect-3/2 w-full overflow-hidden shrink-0">
-                                                        <img 
-                                                            src={event.poster_url || DefaultCover} 
-                                                            alt={event.title} 
-                                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                                        />
-                                                    </div>
-                                                    <div className="p-6 flex flex-col gap-3 flex-grow justify-between">
-                                                        <div className="flex flex-col gap-2">
-                                                            <h4 className="text-primary-500 font-extrabold text-lg leading-tight line-clamp-1 group-hover:text-primary-600">
-                                                                {event.title}
-                                                            </h4>
-                                                            <div className="flex flex-col gap-1.5 text-gray-400 text-small font-semibold mt-1">
-                                                                <span className="flex items-center gap-2">
-                                                                    <Calendar size={14} className="shrink-0 text-gray-400" />
-                                                                    {formatShortDate(event.start_datetime)}
-                                                                </span>
-                                                                <span className="flex items-center gap-2">
-                                                                    <MapPin size={14} className="shrink-0 text-gray-400" />
-                                                                    {event.type === 'online' ? 'Online' : (event.location_name || 'Lokasi Offline')}
-                                                                </span>
+                            ) : (
+                                        <div className="w-full overflow-hidden relative">
+                                            <div ref={joinedTrackRef} className="flex gap-6 w-full">
+                                                {displayJoined.map((event, idx) => (
+                                                    <div 
+                                                        key={`${event.id}-clone-${idx}`} 
+                                                        className="w-full sm:w-[calc((100%-24px)/2)] lg:w-[calc((100%-48px)/3)] shrink-0 border border-neutral-150 rounded-3xl shadow-sm hover:shadow-md transition-all duration-300 bg-white overflow-hidden flex flex-col group"
+                                                    >
+                                                        <div className="relative aspect-3/2 w-full overflow-hidden shrink-0">
+                                                            <img 
+                                                                src={event.poster_url || DefaultCover} 
+                                                                alt={event.title} 
+                                                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                            />
+                                                        </div>
+                                                        <div className="p-6 flex flex-col gap-3 flex-grow justify-between">
+                                                            <div className="flex flex-col gap-2">
+                                                                <h4 className="text-primary-500 font-extrabold text-lg leading-tight line-clamp-3 h-[72px] group-hover:text-primary-600">
+                                                                    {event.title}
+                                                                </h4>
+                                                                <div className="flex flex-col gap-1.5 text-gray-400 text-small font-semibold mt-1">
+                                                                    <span className="flex items-center gap-2">
+                                                                        <Calendar size={14} className="shrink-0 text-gray-400" />
+                                                                        {formatShortDate(event.start_datetime)}
+                                                                    </span>
+                                                                    <span className="flex items-center gap-2">
+                                                                        <MapPin size={14} className="shrink-0 text-gray-400" />
+                                                                        {event.type === 'online' ? 'Online' : (event.location_name || 'Lokasi Offline')}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <div className="pt-2">
+                                                                <Button href={`/events/${event.id}`} className="text-small w-full py-2.5">
+                                                                    Detail Event
+                                                                </Button>
                                                             </div>
                                                         </div>
-                                                        <div className="pt-2">
-                                                            <Button href={`/events/${event.id}`} className="text-small w-full py-2.5">
-                                                                Detail Event
-                                                            </Button>
-                                                        </div>
                                                     </div>
-                                                </div>
-                                            ))}
+                                                ))}
+                                            </div>
+                                            {joinedEvents.length > cardsToShow && (
+                                                <>
+                                                    <button 
+                                                        onClick={handleJoinedPrev}
+                                                        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 bg-white/80 hover:bg-white border border-neutral-200/80 text-neutral-800 rounded-full cursor-pointer backdrop-blur-md transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center shadow-md opacity-0 group-hover/slider:opacity-100"
+                                                        title="Halaman Sebelumnya"
+                                                    >
+                                                        <ChevronLeft size={22} />
+                                                    </button>
+                                                    <button 
+                                                        onClick={handleJoinedNext}
+                                                        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 bg-white/80 hover:bg-white border border-neutral-200/80 text-neutral-800 rounded-full cursor-pointer backdrop-blur-md transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center shadow-md opacity-0 group-hover/slider:opacity-100"
+                                                        title="Halaman Selanjutnya"
+                                                    >
+                                                        <ChevronRight size={22} />
+                                                    </button>
+                                                </>
+                                            )}
                                         </div>
-                                        {joinedEvents.length > cardsToShow && (
-                                            <>
-                                                <button 
-                                                    onClick={handleJoinedPrev}
-                                                    className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 bg-white/80 hover:bg-white border border-neutral-200/80 text-neutral-800 rounded-full cursor-pointer backdrop-blur-md transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center shadow-md opacity-0 group-hover/slider:opacity-100"
-                                                    title="Halaman Sebelumnya"
-                                                >
-                                                    <ChevronLeft size={22} />
-                                                </button>
-                                                <button 
-                                                    onClick={handleJoinedNext}
-                                                    className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 bg-white/80 hover:bg-white border border-neutral-200/80 text-neutral-800 rounded-full cursor-pointer backdrop-blur-md transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center shadow-md opacity-0 group-hover/slider:opacity-100"
-                                                    title="Halaman Selanjutnya"
-                                                >
-                                                    <ChevronRight size={22} />
-                                                </button>
-                                            </>
-                                        )}
-                                    </div>
-                        )}
+                            )}
+                        </div>
                     </div>
-                </div>
+                )}
 
                 {/* 3. EVENT TERDEKAT SECTION */}
                 <div className="flex flex-col gap-5">
@@ -573,7 +625,7 @@ export default function Home({ events, popularEvents, joinedEvents, categories }
                                                     </div>
                                                     <div className="p-6 flex flex-col gap-3 flex-grow justify-between">
                                                         <div className="flex flex-col gap-2">
-                                                            <h4 className="text-primary-500 font-extrabold text-lg leading-tight line-clamp-1 group-hover:text-primary-600">
+                                                            <h4 className="text-primary-500 font-extrabold text-lg leading-tight line-clamp-3 h-[72px] group-hover:text-primary-600">
                                                                 {event.title}
                                                             </h4>
                                                             <div className="flex flex-col gap-1.5 text-gray-400 text-small font-semibold mt-1">
@@ -702,14 +754,14 @@ export default function Home({ events, popularEvents, joinedEvents, categories }
                                 </div>
                             ) : (
                                 paginatedCatalogEvents.map((event) => (
-                                    <div key={event.id} className="w-full border border-neutral-150 rounded-3xl shadow-sm hover:shadow-md transition-all duration-300 bg-white overflow-hidden flex flex-col sm:flex-row lg:flex-col group relative">
+                                    <div key={event.id} className="w-full h-[410px] border border-neutral-150 rounded-3xl shadow-sm hover:shadow-md transition-all duration-300 bg-white overflow-hidden flex flex-col group relative">
                                         
                                         {/* "FREE" Badge on Top-Left of image */}
                                         <div className="absolute top-4 left-4 z-10 px-3 py-1 bg-secondary-400 text-secondary-900 font-extrabold text-[0.6275rem] rounded-md shadow-sm">
                                             FREE
                                         </div>
 
-                                        <div className="relative aspect-3/2 w-full sm:w-56 lg:w-full shrink-0 overflow-hidden bg-gray-50 border-b sm:border-b-0 sm:border-r lg:border-r-0 lg:border-b border-gray-100">
+                                        <div className="relative h-[180px] w-full shrink-0 overflow-hidden bg-gray-50 border-b border-gray-100">
                                             <img 
                                                 src={event.poster_url || DefaultCover} 
                                                 alt={event.title} 
@@ -717,16 +769,12 @@ export default function Home({ events, popularEvents, joinedEvents, categories }
                                             />
                                         </div>
 
-                                        <div className="p-6 flex flex-col gap-3 flex-grow">
-                                            <h4 className="text-primary-500 font-extrabold text-lg leading-tight line-clamp-2 h-auto lg:h-12 group-hover:text-primary-600">
+                                        <div className="p-6 flex flex-col justify-between flex-grow">
+                                            <h4 className="text-primary-500 font-extrabold text-lg leading-tight line-clamp-3 h-[72px] group-hover:text-primary-600">
                                                 {event.title}
                                             </h4>
-                                            
-                                            <p className="text-gray-400 text-small font-medium line-clamp-3 leading-relaxed">
-                                                {event.description}
-                                            </p>
 
-                                            <div className="mt-auto pt-3 border-t border-gray-100/50 flex flex-col gap-2 text-gray-400 text-micro font-semibold">
+                                            <div className="pt-3 border-t border-gray-100/50 flex flex-col gap-2 text-gray-400 text-micro font-semibold">
                                                 <span className="flex items-center gap-1.5">
                                                     <Calendar size={12} className="shrink-0 text-gray-400" />
                                                     {formatShortDate(event.start_datetime)}

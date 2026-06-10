@@ -35,23 +35,25 @@ export default function EventCard({event, isDetail = true}: EventCardProps) {
   }).format(dateObj);
 
   return(
-    <div className='w-full border border-neutral-200 rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] bg-white overflow-hidden flex flex-col'>
-      <div className='w-full aspect-3/2'>
+    <div className='w-full border border-neutral-200 rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] bg-white overflow-hidden flex flex-col h-[410px]'>
+      <div className='w-full h-[180px] shrink-0'>
         <img src={event.cover??DefaultCover} alt={event.title} className='w-full h-full object-cover'/>
       </div>
 
-      <div className='p-6 pb-8 flex flex-col h-55'>
-        <h6 className='text-base font-brand font-bold text-primary-500 leading-tight mb-2'>
-          {event.title}
-        </h6>
-        
-        <span className='text-micro font-brand text-gray-300 font-normal leading-snug'>
-          {formattedDate}
-        </span>
-        
-        <span className='text-micro font-brand text-gray-300 font-normal leading-snug'>
-          {event.location_name}
-        </span>
+      <div className='p-6 pb-8 flex flex-col justify-between flex-grow'>
+        <div>
+          <h6 className='text-base font-brand font-bold text-primary-500 leading-tight mb-2 line-clamp-3 h-[72px]'>
+            {event.title}
+          </h6>
+          
+          <span className='text-micro font-brand text-gray-300 font-normal leading-snug block'>
+            {formattedDate}
+          </span>
+          
+          <span className='text-micro font-brand text-gray-300 font-normal leading-snug block'>
+            {event.location_name}
+          </span>
+        </div>
         
         {/* We keep the button here so you can still join! */}
         <div className="mt-auto">
