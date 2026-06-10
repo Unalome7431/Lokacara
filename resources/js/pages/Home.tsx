@@ -1,11 +1,12 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import gsap from 'gsap';
-import { Plus, ChevronRight, ChevronLeft, ChevronDown, Calendar, MapPin } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
+import { Plus, ChevronRight, ChevronLeft, Calendar, MapPin, Loader2 } from 'lucide-react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import DefaultCover from '@/../../public/covers/default_cover.jpg';
 import Button from '@/components/ui/Button';
 import Footer from '@/layouts/Footer';
 import NavBar from '@/layouts/NavBar';
+import { calculateDistance, geocodeAddress, reverseGeocode } from '@/lib/geocoding';
 
 interface Event {
     id: number;
@@ -14,6 +15,9 @@ interface Event {
     type: 'online' | 'offline';
     poster_url?: string;
     location_name?: string;
+    latitude?: number;
+    longitude?: number;
+    distance?: number;
     start_datetime: string;
     category?: {
         id: number;
@@ -61,19 +65,105 @@ export default function Home({ events, popularEvents, joinedEvents, categories }
     const tabOfflineRef = useRef<HTMLButtonElement>(null);
     const [underlineStyle, setUnderlineStyle] = useState({ left: 0, width: 0 });
 
-    // 2. Location Filtering State & List
-    const [selectedLocation, setSelectedLocation] = useState('Semua');
-    const [locationMenuOpen, setLocationMenuOpen] = useState(false);
+    // 2. Location & Proximity State
+    const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
+    const [locationName, setLocationName] = useState('');
+    const [isLoadingLocation, setIsLoadingLocation] = useState(true);
 
-    // Extract unique locations from events (ignoring null/empty)
-    const locationsList = ['Semua', ...Array.from(new Set(events.map(e => e.location_name).filter(Boolean) as string[]))];
-    const filteredNearbyEvents = events.filter(e => {
-        if (selectedLocation === 'Semua') {
-            return true;
+    const detectLocation = (isInitial = false) => {
+        if (!isInitial) {
+            setIsLoadingLocation(true);
         }
 
-        return e.location_name === selectedLocation;
-    }); // Display matching events
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    setUserCoords({ lat, lng });
+
+                    try {
+                        const city = await reverseGeocode(lat, lng);
+                        setLocationName(city);
+                    } catch (err) {
+                        console.error('Reverse geocoding failed, using coordinates', err);
+                        setLocationName(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+                    }
+
+                    setIsLoadingLocation(false);
+                },
+                async (error) => {
+                    console.warn('Geolocation failed, defaulting to Yogyakarta', error);
+                    const fallback = { lat: -7.79558, lng: 110.36949 };
+                    setUserCoords(fallback);
+                    setLocationName('Yogyakarta');
+                    setIsLoadingLocation(false);
+                },
+                { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+            );
+        } else {
+            console.warn('Geolocation not supported, defaulting to Yogyakarta');
+            const fallback = { lat: -7.79558, lng: 110.36949 };
+            setTimeout(() => {
+                setUserCoords(fallback);
+                setLocationName('Yogyakarta');
+                setIsLoadingLocation(false);
+            }, 0);
+        }
+    };
+
+    // Geolocation detection on load
+    useEffect(() => {
+        setTimeout(() => {
+            detectLocation(true);
+        }, 0);
+    }, []);
+
+    // Calculate proximity and sort events via useMemo (prevents render-loop state updates)
+    const filteredNearbyEvents = useMemo(() => {
+        if (!userCoords) {
+            return [];
+        }
+
+        return events
+            .filter((e) => e.type === 'offline' && e.latitude !== null && e.longitude !== null && e.latitude !== undefined && e.longitude !== undefined)
+            .map((e) => {
+                const distance = calculateDistance(
+                    userCoords.lat,
+                    userCoords.lng,
+                    Number(e.latitude),
+                    Number(e.longitude)
+                );
+
+                return { ...e, distance };
+            })
+            .sort((a, b) => (a.distance || 0) - (b.distance || 0))
+            .slice(0, 12);
+    }, [userCoords, events]);
+
+    // Handle search location submit in navbar
+    const handleLocationSubmit = async (searchQuery: string) => {
+        if (!searchQuery.trim()) {
+return;
+}
+
+        setIsLoadingLocation(true);
+
+        try {
+            const result = await geocodeAddress(searchQuery);
+
+            if (result) {
+                setUserCoords({ lat: result.lat, lng: result.lng });
+                setLocationName(result.city);
+            } else {
+                alert(`Tidak dapat menemukan lokasi: "${searchQuery}"`);
+            }
+        } catch (err) {
+            console.error('Error during geocoding:', err);
+        } finally {
+            setIsLoadingLocation(false);
+        }
+    };
 
     const handleNextSlide = () => {
         if (heroEvents.length > 1 && !isTransitioning.current) {
@@ -102,12 +192,10 @@ export default function Home({ events, popularEvents, joinedEvents, categories }
 
     useEffect(() => {
         const handleResize = () => {
-            if (window.innerWidth < 640) {
-                setCardsToShow(1);
-            } else if (window.innerWidth < 1024) {
+            if (window.innerWidth < 1024) {
                 setCardsToShow(2);
             } else {
-                setCardsToShow(3);
+                setCardsToShow(4);
             }
         };
 
@@ -215,12 +303,92 @@ export default function Home({ events, popularEvents, joinedEvents, categories }
         }
     };
 
+    // Pointer drag / swipe handlers for touch & mouse
+    const heroDragStartX = useRef<number | null>(null);
+    const heroDragStartY = useRef<number | null>(null);
+    const handleHeroPointerDown = (e: React.PointerEvent) => {
+        heroDragStartX.current = e.clientX;
+        heroDragStartY.current = e.clientY;
+    };
+    const handleHeroPointerUp = (e: React.PointerEvent) => {
+        if (heroDragStartX.current === null || heroDragStartY.current === null) {
+            return;
+        }
+
+        const diffX = heroDragStartX.current - e.clientX;
+        const diffY = heroDragStartY.current - e.clientY;
+
+        heroDragStartX.current = null;
+        heroDragStartY.current = null;
+
+        if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY)) {
+            if (diffX > 0) {
+                handleNextSlide();
+            } else {
+                handlePrevSlide();
+            }
+        }
+    };
+
+    const joinedDragStartX = useRef<number | null>(null);
+    const joinedDragStartY = useRef<number | null>(null);
+    const handleJoinedPointerDown = (e: React.PointerEvent) => {
+        joinedDragStartX.current = e.clientX;
+        joinedDragStartY.current = e.clientY;
+    };
+    const handleJoinedPointerUp = (e: React.PointerEvent) => {
+        if (joinedDragStartX.current === null || joinedDragStartY.current === null) {
+            return;
+        }
+
+        const diffX = joinedDragStartX.current - e.clientX;
+        const diffY = joinedDragStartY.current - e.clientY;
+
+        joinedDragStartX.current = null;
+        joinedDragStartY.current = null;
+
+        if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY)) {
+            if (diffX > 0) {
+                handleJoinedNext();
+            } else {
+                handleJoinedPrev();
+            }
+        }
+    };
+
+    const nearbyDragStartX = useRef<number | null>(null);
+    const nearbyDragStartY = useRef<number | null>(null);
+    const handleNearbyPointerDown = (e: React.PointerEvent) => {
+        nearbyDragStartX.current = e.clientX;
+        nearbyDragStartY.current = e.clientY;
+    };
+    const handleNearbyPointerUp = (e: React.PointerEvent) => {
+        if (nearbyDragStartX.current === null || nearbyDragStartY.current === null) {
+            return;
+        }
+
+        const diffX = nearbyDragStartX.current - e.clientX;
+        const diffY = nearbyDragStartY.current - e.clientY;
+
+        nearbyDragStartX.current = null;
+        nearbyDragStartY.current = null;
+
+        if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY)) {
+            if (diffX > 0) {
+                handleNearbyNext();
+            } else {
+                handleNearbyPrev();
+            }
+        }
+    };
+
     // GSAP Slider animations
     useEffect(() => {
         if (heroTrackRef.current && heroEvents.length > 1) {
             if (!isMounted.current) {
                 gsap.set(heroTrackRef.current, { xPercent: -activeIndex * 100 });
                 isMounted.current = true;
+
                 return;
             }
 
@@ -237,6 +405,7 @@ export default function Home({ events, popularEvents, joinedEvents, categories }
                         gsap.set(heroTrackRef.current, { xPercent: -heroEvents.length * 100 });
                         setActiveIndex(heroEvents.length);
                     }
+
                     isTransitioning.current = false;
                 }
             });
@@ -245,7 +414,9 @@ export default function Home({ events, popularEvents, joinedEvents, categories }
 
     // Auto-scroll for Hero Slider
     useEffect(() => {
-        if (heroEvents.length <= 1) return;
+        if (heroEvents.length <= 1) {
+return;
+}
 
         const interval = setInterval(() => {
             if (!isTransitioning.current) {
@@ -382,28 +553,33 @@ export default function Home({ events, popularEvents, joinedEvents, categories }
     return (
         <div className="min-h-screen bg-white flex flex-col justify-between">
             <div className="flex-grow">
-                <NavBar />
+                <NavBar 
+                    locationValue={locationName} 
+                    onLocationSubmit={handleLocationSubmit} 
+                    onUseCurrentLocation={detectLocation}
+                />
                 <Head title="Home - Temukan Event Komunitas Terbaik" />
 
-                <div className="max-w-[1280px] mx-auto px-4 md:px-8 py-10 pt-28 flex flex-col gap-14 pb-16">
-                
-                {/* 1. HERO SECTION: EVENT POPULER */}
-                {/* 1. HERO SECTION: EVENT POPULER */}
+                {/* 1. HERO SECTION: EVENT POPULER (FULL WIDTH) */}
                 {heroEvents.length > 0 && (
-                    <div className="relative w-full h-[280px] sm:h-[380px] md:h-[480px] rounded-3xl overflow-hidden shadow-lg group">
+                    <div 
+                        onPointerDown={handleHeroPointerDown}
+                        onPointerUp={handleHeroPointerUp}
+                        className="relative w-full h-[340px] sm:h-[460px] md:h-[580px] overflow-hidden group pt-18 select-none touch-pan-y"
+                    >
                         {/* Standalone Navigation Buttons */}
                         {heroEvents.length > 1 && (
                             <>
                                 <button 
                                     onClick={handlePrevSlide}
-                                    className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 bg-white/10 hover:bg-white/25 border border-white/20 rounded-full text-white cursor-pointer backdrop-blur-md transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100"
+                                    className="absolute left-6 top-1/2 -translate-y-1/2 z-20 p-3 bg-white/10 hover:bg-white/25 border border-white/20 rounded-full text-white cursor-pointer backdrop-blur-md transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100"
                                     title="Slide Sebelumnya"
                                 >
                                     <ChevronLeft size={22} />
                                 </button>
                                 <button 
                                     onClick={handleNextSlide}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 bg-white/10 hover:bg-white/25 border border-white/20 rounded-full text-white cursor-pointer backdrop-blur-md transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100"
+                                    className="absolute right-6 top-1/2 -translate-y-1/2 z-20 p-3 bg-white/10 hover:bg-white/25 border border-white/20 rounded-full text-white cursor-pointer backdrop-blur-md transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100"
                                     title="Slide Selanjutnya"
                                 >
                                     <ChevronRight size={22} />
@@ -432,7 +608,7 @@ export default function Home({ events, popularEvents, joinedEvents, categories }
                         )}
 
                         {/* Stationary Event Populer label */}
-                        <div className="absolute top-6 left-6 md:top-8 md:left-10 z-20 px-4 py-1.5 bg-white/20 backdrop-blur-md border border-white/20 rounded-full text-white text-small font-bold">
+                        <div className="absolute top-24 left-6 md:top-26 md:left-10 z-20 px-4 py-1.5 bg-white/20 backdrop-blur-md border border-white/20 rounded-full text-white text-small font-bold">
                             Event Populer
                         </div>
 
@@ -446,13 +622,14 @@ export default function Home({ events, popularEvents, joinedEvents, categories }
                                     <img 
                                         src={event.poster_url || DefaultCover} 
                                         alt={event.title} 
+                                        draggable="false"
                                         className="w-full h-full object-cover transition-transform duration-700 group-hover/hero-slide:scale-[1.03]"
                                     />
                                     {/* Dark gradient overlay */}
                                     <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/95 via-neutral-900/40 to-transparent"></div>
 
                                     {/* Text overlay */}
-                                    <div className="absolute bottom-0 left-0 right-0 pt-6 pl-[4.5rem] pr-16 pb-12 md:pt-10 md:pl-24 md:pr-20 md:pb-16 flex flex-col gap-2 max-w-[680px]">
+                                    <div className="absolute bottom-0 left-0 right-0 pt-6 pl-8 pr-8 pb-12 md:pt-10 md:pl-16 md:pr-16 md:pb-16 flex flex-col gap-2 max-w-[800px] ml-4">
                                         <h1 className="text-white text-3xl md:text-5xl font-black font-brand leading-tight">
                                             {event.title}
                                         </h1>
@@ -476,6 +653,8 @@ export default function Home({ events, popularEvents, joinedEvents, categories }
                         </div>
                     </div>
                 )}
+
+                <div className="max-w-[1280px] mx-auto px-4 md:px-8 py-10 flex flex-col gap-14 pb-16">
 
                 {/* 2. EVENT MENDATANG SECTION (JOINED EVENTS) */}
                 {isAuthenticated && (
@@ -504,38 +683,48 @@ export default function Home({ events, popularEvents, joinedEvents, categories }
                                     </div>
                                 </div>
                             ) : (
-                                        <div className="w-full overflow-hidden relative">
+                                        <div 
+                                            onPointerDown={handleJoinedPointerDown}
+                                            onPointerUp={handleJoinedPointerUp}
+                                            className="w-full overflow-hidden relative select-none touch-pan-y"
+                                        >
                                             <div ref={joinedTrackRef} className="flex gap-6 w-full">
                                                 {displayJoined.map((event, idx) => (
                                                     <div 
                                                         key={`${event.id}-clone-${idx}`} 
-                                                        className="w-full sm:w-[calc((100%-24px)/2)] lg:w-[calc((100%-48px)/3)] shrink-0 border border-neutral-150 rounded-3xl shadow-sm hover:shadow-md transition-all duration-300 bg-white overflow-hidden flex flex-col group"
+                                                        className="w-[calc((100%-24px)/2)] lg:w-[calc((100%-72px)/4)] shrink-0 border border-neutral-150 rounded-3xl shadow-sm hover:shadow-md transition-all duration-300 bg-white overflow-hidden flex flex-col group relative justify-between h-[325px] sm:h-[370px] lg:h-[400px]"
                                                     >
-                                                        <div className="relative aspect-3/2 w-full overflow-hidden shrink-0">
+                                                        {/* "FREE" Badge on Top-Left of image */}
+                                                        <div className="absolute top-4 left-4 z-10 px-3 py-1 bg-secondary-400 text-secondary-900 font-extrabold text-[0.6275rem] rounded-md shadow-sm">
+                                                            FREE
+                                                        </div>
+
+                                                        <div className="relative w-full h-[140px] sm:h-[170px] lg:h-auto lg:aspect-3/2 shrink-0 overflow-hidden bg-gray-50 border-b border-gray-100">
                                                             <img 
                                                                 src={event.poster_url || DefaultCover} 
                                                                 alt={event.title} 
+                                                                draggable="false"
                                                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                                             />
                                                         </div>
-                                                        <div className="p-6 flex flex-col gap-3 flex-grow justify-between">
-                                                            <div className="flex flex-col gap-2">
-                                                                <h4 className="text-primary-500 font-extrabold text-lg leading-tight line-clamp-3 h-[72px] group-hover:text-primary-600">
+                                                        <div className="p-4 flex flex-col gap-2 flex-grow justify-between">
+                                                            <div className="flex flex-col gap-1.5">
+                                                                <h4 className="text-primary-500 font-extrabold text-xs sm:text-sm lg:text-base leading-snug line-clamp-2 lg:line-clamp-3 h-[34px] sm:h-[40px] lg:h-[66px] group-hover:text-primary-600 overflow-hidden">
                                                                     {event.title}
                                                                 </h4>
-                                                                <div className="flex flex-col gap-1.5 text-gray-400 text-small font-semibold mt-1">
-                                                                    <span className="flex items-center gap-2">
-                                                                        <Calendar size={14} className="shrink-0 text-gray-400" />
+                                                                <div className="pt-1.5 border-t border-gray-100/50 flex flex-col gap-1 text-gray-400 text-[10px] sm:text-micro font-semibold">
+                                                                    <span className="flex items-center gap-1.5">
+                                                                        <Calendar size={12} className="shrink-0 text-gray-400" />
                                                                         {formatShortDate(event.start_datetime)}
                                                                     </span>
-                                                                    <span className="flex items-center gap-2">
-                                                                        <MapPin size={14} className="shrink-0 text-gray-400" />
+                                                                    <span className="flex items-center gap-1.5">
+                                                                        <MapPin size={12} className="shrink-0 text-gray-400" />
                                                                         {event.type === 'online' ? 'Online' : (event.location_name || 'Lokasi Offline')}
                                                                     </span>
                                                                 </div>
                                                             </div>
-                                                            <div className="pt-2">
-                                                                <Button href={`/events/${event.id}`} className="text-small w-full py-2.5">
+                                                            <div className="pt-1">
+                                                                <Button href={`/events/${event.id}`} className="text-[10px] sm:text-small w-full py-1.5 sm:py-2">
                                                                     Detail Event
                                                                 </Button>
                                                             </div>
@@ -571,102 +760,95 @@ export default function Home({ events, popularEvents, joinedEvents, categories }
                 <div className="flex flex-col gap-5">
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                         <h3 className="text-neutral-900 font-extrabold text-2xl md:text-3xl font-brand tracking-tight">
-                            Event Terdekat di
+                            Event Terdekat di Sekitarmu
                         </h3>
-                        <div className="relative">
-                            <button 
-                                onClick={() => setLocationMenuOpen(!locationMenuOpen)}
-                                className="flex items-center gap-1 text-secondary-500 font-extrabold text-2xl md:text-3xl font-brand cursor-pointer hover:text-secondary-600 transition-colors"
-                            >
-                                <span>{selectedLocation}</span>
-                                <ChevronDown size={24} className="mt-1" />
-                            </button>
-                            
-                            {locationMenuOpen && (
-                                <div className="absolute left-0 mt-2 py-2 w-56 bg-white border border-neutral-100 rounded-2xl shadow-xl z-30">
-                                    {locationsList.map((loc) => (
-                                        <button 
-                                            key={loc}
-                                            onClick={() => {
-                                                setSelectedLocation(loc);
-                                                setNearbyIndex(0);
-                                                setLocationMenuOpen(false);
-                                            }}
-                                            className={`w-full text-left px-4 py-2.5 text-base font-semibold hover:bg-neutral-50 transition-colors cursor-pointer ${selectedLocation === loc ? 'text-primary-500 bg-primary-50/30' : 'text-neutral-700'}`}
-                                        >
-                                            {loc}
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
+                        {isLoadingLocation && (
+                            <div className="flex items-center gap-2 text-primary-500 animate-pulse ml-2">
+                                <Loader2 size={20} className="animate-spin text-primary-500" />
+                                <span className="font-brand font-bold text-small">Mendapatkan lokasi...</span>
+                            </div>
+                        )}
                     </div>
                     
                     <div className="w-full relative group/slider">
-                        {/* Placeholder card if not registered for any events */}
-                        {filteredNearbyEvents.length === 0 ? (
+                        {isLoadingLocation && filteredNearbyEvents.length === 0 ? (
+                            <div className="w-full h-[280px] bg-white border border-neutral-200 rounded-3xl flex items-center justify-center">
+                                <Loader2 size={32} className="animate-spin text-primary-500 mr-2" />
+                                <span className="font-brand font-bold text-neutral-500">Memuat event terdekat...</span>
+                            </div>
+                        ) : filteredNearbyEvents.length === 0 ? (
                             <div className="col-span-full py-12 text-center text-gray-400 font-semibold bg-white border border-neutral-200 rounded-3xl">
-                                Tidak ada event terdekat di lokasi ini.
+                                Tidak ada event terdekat di sekitarmu.
                             </div>
                         ) : (
-                                    <div className="w-full overflow-hidden relative">
-                                        <div ref={nearbyTrackRef} className="flex gap-6 w-full">
-                                            {displayNearby.map((event, idx) => (
-                                                <div 
-                                                    key={`${event.id}-clone-${idx}`} 
-                                                    className="w-full sm:w-[calc((100%-24px)/2)] lg:w-[calc((100%-48px)/3)] shrink-0 border border-neutral-150 rounded-3xl shadow-sm hover:shadow-md transition-all duration-300 bg-white overflow-hidden flex flex-col group"
-                                                >
-                                                    <div className="relative aspect-3/2 w-full overflow-hidden shrink-0">
-                                                        <img 
-                                                            src={event.poster_url || DefaultCover} 
-                                                            alt={event.title} 
-                                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                                        />
-                                                    </div>
-                                                    <div className="p-6 flex flex-col gap-3 flex-grow justify-between">
-                                                        <div className="flex flex-col gap-2">
-                                                            <h4 className="text-primary-500 font-extrabold text-lg leading-tight line-clamp-3 h-[72px] group-hover:text-primary-600">
-                                                                {event.title}
-                                                            </h4>
-                                                            <div className="flex flex-col gap-1.5 text-gray-400 text-small font-semibold mt-1">
-                                                                <span className="flex items-center gap-2">
-                                                                    <Calendar size={14} className="shrink-0 text-gray-400" />
-                                                                    {formatShortDate(event.start_datetime)}
-                                                                </span>
-                                                                <span className="flex items-center gap-2">
-                                                                    <MapPin size={14} className="shrink-0 text-gray-400" />
-                                                                    {event.type === 'online' ? 'Online' : (event.location_name || 'Lokasi Offline')}
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                        <div className="pt-2">
-                                                            <Button href={`/events/${event.id}`} className="text-small w-full py-2.5">
-                                                                Detail Event
-                                                            </Button>
-                                                        </div>
+                            <div 
+                                onPointerDown={handleNearbyPointerDown}
+                                onPointerUp={handleNearbyPointerUp}
+                                className="w-full overflow-hidden relative select-none touch-pan-y"
+                            >
+                                <div ref={nearbyTrackRef} className="flex gap-6 w-full">
+                                    {displayNearby.map((event, idx) => (
+                                        <div 
+                                            key={`${event.id}-clone-${idx}`} 
+                                            className="w-[calc((100%-24px)/2)] lg:w-[calc((100%-72px)/4)] shrink-0 border border-neutral-150 rounded-3xl shadow-sm hover:shadow-md transition-all duration-300 bg-white overflow-hidden flex flex-col group relative justify-between h-[325px] sm:h-[370px] lg:h-[400px]"
+                                        >
+                                            {/* "FREE" Badge on Top-Left of image */}
+                                            <div className="absolute top-4 left-4 z-10 px-3 py-1 bg-secondary-400 text-secondary-900 font-extrabold text-[0.6275rem] rounded-md shadow-sm">
+                                                FREE
+                                            </div>
+
+                                            <div className="relative w-full h-[140px] sm:h-[170px] lg:h-auto lg:aspect-3/2 shrink-0 overflow-hidden bg-gray-50 border-b border-gray-100">
+                                                <img 
+                                                    src={event.poster_url || DefaultCover} 
+                                                    alt={event.title} 
+                                                    draggable="false"
+                                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                />
+                                            </div>
+                                            <div className="p-4 flex flex-col gap-2 flex-grow justify-between">
+                                                <div className="flex flex-col gap-1.5">
+                                                    <h4 className="text-primary-500 font-extrabold text-xs sm:text-sm lg:text-base leading-snug line-clamp-2 lg:line-clamp-3 h-[34px] sm:h-[40px] lg:h-[66px] group-hover:text-primary-600 overflow-hidden">
+                                                        {event.title}
+                                                    </h4>
+                                                    <div className="pt-1.5 border-t border-gray-100/50 flex flex-col gap-1 text-gray-400 text-[10px] sm:text-micro font-semibold">
+                                                        <span className="flex items-center gap-1.5">
+                                                            <Calendar size={12} className="shrink-0 text-gray-400" />
+                                                            {formatShortDate(event.start_datetime)}
+                                                        </span>
+                                                        <span className="flex items-center gap-1.5">
+                                                            <MapPin size={12} className="shrink-0 text-gray-400" />
+                                                            {event.type === 'online' ? 'Online' : (event.location_name || 'Lokasi Offline')}
+                                                        </span>
                                                     </div>
                                                 </div>
-                                            ))}
+                                                <div className="pt-1">
+                                                    <Button href={`/events/${event.id}`} className="text-[10px] sm:text-small w-full py-1.5 sm:py-2">
+                                                        Detail Event
+                                                    </Button>
+                                                </div>
+                                            </div>
                                         </div>
-                                        {filteredNearbyEvents.length > cardsToShow && (
-                                            <>
-                                                <button 
-                                                    onClick={handleNearbyPrev}
-                                                    className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 bg-white/80 hover:bg-white border border-neutral-200/80 text-neutral-800 rounded-full cursor-pointer backdrop-blur-md transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center shadow-md opacity-0 group-hover/slider:opacity-100"
-                                                    title="Halaman Sebelumnya"
-                                                >
-                                                    <ChevronLeft size={22} />
-                                                </button>
-                                                <button 
-                                                    onClick={handleNearbyNext}
-                                                    className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 bg-white/80 hover:bg-white border border-neutral-200/80 text-neutral-800 rounded-full cursor-pointer backdrop-blur-md transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center shadow-md opacity-0 group-hover/slider:opacity-100"
-                                                    title="Halaman Selanjutnya"
-                                                >
-                                                    <ChevronRight size={22} />
-                                                </button>
-                                            </>
-                                        )}
-                                    </div>
+                                    ))}
+                                </div>
+                                {filteredNearbyEvents.length > cardsToShow && (
+                                    <>
+                                        <button 
+                                            onClick={handleNearbyPrev}
+                                            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 bg-white/80 hover:bg-white border border-neutral-200/80 text-neutral-800 rounded-full cursor-pointer backdrop-blur-md transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center shadow-md opacity-0 group-hover/slider:opacity-100"
+                                            title="Halaman Sebelumnya"
+                                        >
+                                            <ChevronLeft size={22} />
+                                        </button>
+                                        <button 
+                                            onClick={handleNearbyNext}
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 bg-white/80 hover:bg-white border border-neutral-200/80 text-neutral-800 rounded-full cursor-pointer backdrop-blur-md transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center shadow-md opacity-0 group-hover/slider:opacity-100"
+                                            title="Halaman Selanjutnya"
+                                        >
+                                            <ChevronRight size={22} />
+                                        </button>
+                                    </>
+                                )}
+                            </div>
                         )}
                     </div>
                 </div>
@@ -754,39 +936,42 @@ export default function Home({ events, popularEvents, joinedEvents, categories }
                                 </div>
                             ) : (
                                 paginatedCatalogEvents.map((event) => (
-                                    <div key={event.id} className="w-full h-[410px] border border-neutral-150 rounded-3xl shadow-sm hover:shadow-md transition-all duration-300 bg-white overflow-hidden flex flex-col group relative">
+                                    <div key={event.id} className="w-full border border-neutral-150 rounded-3xl shadow-sm hover:shadow-md transition-all duration-300 bg-white overflow-hidden flex flex-row lg:flex-col group relative justify-between h-[140px] sm:h-[170px] lg:h-[400px]">
                                         
                                         {/* "FREE" Badge on Top-Left of image */}
-                                        <div className="absolute top-4 left-4 z-10 px-3 py-1 bg-secondary-400 text-secondary-900 font-extrabold text-[0.6275rem] rounded-md shadow-sm">
+                                        <div className="absolute top-3 left-3 sm:top-4 lg:top-4 z-10 px-3 py-1 bg-secondary-400 text-secondary-900 font-extrabold text-[0.6275rem] rounded-md shadow-sm">
                                             FREE
                                         </div>
 
-                                        <div className="relative h-[180px] w-full shrink-0 overflow-hidden bg-gray-50 border-b border-gray-100">
+                                        <div className="relative aspect-square h-full w-[140px] sm:w-[170px] lg:h-[180px] lg:w-full lg:aspect-none shrink-0 overflow-hidden bg-gray-50 border-r lg:border-r-0 lg:border-b border-gray-100">
                                             <img 
                                                 src={event.poster_url || DefaultCover} 
                                                 alt={event.title} 
+                                                draggable="false"
                                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                             />
                                         </div>
 
-                                        <div className="p-6 flex flex-col justify-between flex-grow">
-                                            <h4 className="text-primary-500 font-extrabold text-lg leading-tight line-clamp-3 h-[72px] group-hover:text-primary-600">
-                                                {event.title}
-                                            </h4>
+                                        <div className="p-3 sm:p-4 lg:p-4 flex flex-col gap-1 sm:gap-2 lg:gap-2 flex-grow justify-between overflow-hidden">
+                                            <div className="flex flex-col gap-1 sm:gap-1.5">
+                                                <h4 className="text-primary-500 font-extrabold text-xs sm:text-sm lg:text-base leading-snug line-clamp-2 lg:line-clamp-3 h-[36px] sm:h-[40px] lg:h-[66px] group-hover:text-primary-600 overflow-hidden">
+                                                    {event.title}
+                                                </h4>
 
-                                            <div className="pt-3 border-t border-gray-100/50 flex flex-col gap-2 text-gray-400 text-micro font-semibold">
-                                                <span className="flex items-center gap-1.5">
-                                                    <Calendar size={12} className="shrink-0 text-gray-400" />
-                                                    {formatShortDate(event.start_datetime)}
-                                                </span>
-                                                <span className="flex items-center gap-1.5">
-                                                    <MapPin size={12} className="shrink-0 text-gray-400" />
-                                                    {event.type === 'online' ? 'Online' : (event.location_name || 'Lokasi Offline')}
-                                                </span>
+                                                <div className="pt-1 sm:pt-1.5 border-t border-gray-100/50 flex flex-col gap-0.5 sm:gap-1 text-gray-400 text-[10px] sm:text-micro font-semibold">
+                                                    <span className="flex items-center gap-1.5">
+                                                        <Calendar size={12} className="shrink-0 text-gray-400" />
+                                                        {formatShortDate(event.start_datetime)}
+                                                    </span>
+                                                    <span className="flex items-center gap-1.5">
+                                                        <MapPin size={12} className="shrink-0 text-gray-400" />
+                                                        {event.type === 'online' ? 'Online' : (event.location_name || 'Lokasi Offline')}
+                                                    </span>
+                                                </div>
                                             </div>
 
-                                            <div className="pt-2">
-                                                <Button href={`/events/${event.id}`} className="text-small w-full py-2.5">
+                                            <div className="pt-1">
+                                                <Button href={`/events/${event.id}`} className="text-[10px] sm:text-small w-full py-1 sm:py-2">
                                                     Detail Event
                                                 </Button>
                                             </div>
