@@ -13,15 +13,21 @@ class LocationSeeder extends Seeder
     public function run(): void
     {
         $locations = [
-            'Surakarta',
-            'Yogyakarta',
-            'Semarang',
             'Jakarta',
             'Surabaya',
+            'Bandung',
+            'Medan',
+            'Semarang',
+            'Makassar',
+            'Denpasar',
+            'Surakarta',
+            'Yogyakarta',
+            'Balikpapan',
+            'Samarinda',
         ];
 
         foreach ($locations as $location) {
-            Location::create(['name' => $location]);
+            Location::firstOrCreate(['name' => $location]);
         }
     }
 }
