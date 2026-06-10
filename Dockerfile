@@ -2,6 +2,11 @@
 FROM php:8.4-alpine AS builder
 WORKDIR /app
 
+ARG VITE_APP_NAME
+ARG VITE_GOOGLE_MAPS_API_KEY
+ENV VITE_APP_NAME=$VITE_APP_NAME
+ENV VITE_GOOGLE_MAPS_API_KEY=$VITE_GOOGLE_MAPS_API_KEY
+
 # Install system dependencies, Node.js, and npm
 RUN sed -i 's/https/http/g' /etc/apk/repositories \
     && apk add --no-cache nodejs npm git
