@@ -40,17 +40,7 @@ class EventManagementController extends Controller
         ]);
     }
 
-    public function index(Request $request)
-    {
-        $events = Event::with('category')
-            ->where('user_id', $request->user()->id)
-            ->latest()
-            ->paginate(10);
-            
-        return Inertia::render('Dashboard/Events/Index', [
-            'events' => $events
-        ]);
-    }
+
 
     public function create()
     {
@@ -73,7 +63,7 @@ class EventManagementController extends Controller
 
         $event->save();
 
-        return redirect()->route('dashboard.events.index')->with('success', 'Event created successfully.');
+        return redirect()->route('dashboard')->with('success', 'Event created successfully.');
     }
 
     public function edit(Request $request, Event $event)
@@ -119,7 +109,7 @@ class EventManagementController extends Controller
 
         $event->save();
 
-        return redirect()->route('dashboard.events.index')->with('success', 'Event updated successfully.');
+        return redirect()->route('dashboard')->with('success', 'Event updated successfully.');
     }
 
     public function destroy(Request $request, Event $event)
@@ -134,7 +124,7 @@ class EventManagementController extends Controller
 
         $event->delete();
 
-        return redirect()->route('dashboard.events.index')->with('success', 'Event deleted successfully.');
+        return redirect()->route('dashboard')->with('success', 'Event deleted successfully.');
     }
 
     public function show(Request $request, Event $event)

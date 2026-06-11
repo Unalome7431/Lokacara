@@ -65,9 +65,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile/avatar/{filename}', [AvatarController::class, 'show'])->name('profile.avatar.show');
     
     // Module 3: Organizer Hub - Event Management
-    Route::get('/dashboard/events', [EventManagementController::class, 'index'])->name('dashboard.events.index');
-    Route::get('/dashboard/events/create', [EventManagementController::class, 'create'])->name('dashboard.events.create');
-    Route::post('/dashboard/events', [EventManagementController::class, 'store'])->name('dashboard.events.store');
+    Route::get('/create', [EventManagementController::class, 'create'])->name('dashboard.events.create');
+    Route::post('/create', [EventManagementController::class, 'store'])->name('dashboard.events.store');
     Route::get('/dashboard/events/{event}/edit', [EventManagementController::class, 'edit'])->name('dashboard.events.edit');
     Route::post('/dashboard/events/{event}', [EventManagementController::class, 'update'])->name('dashboard.events.update');
     Route::delete('/dashboard/events/{event}', [EventManagementController::class, 'destroy'])->name('dashboard.events.destroy');
