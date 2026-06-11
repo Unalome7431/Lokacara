@@ -133,7 +133,7 @@ class EventManagementController extends Controller
             abort(403);
         }
 
-        $event->load('category');
+        $event->load('category', 'user');
         $totalAttendees = $event->eventRegistrations()->count();
         $checkedInAttendees = $event->eventRegistrations()->whereNotNull('checked_in_at')->count();
         $remainingCapacity = $event->capacity ? ($event->capacity - $totalAttendees) : null;
