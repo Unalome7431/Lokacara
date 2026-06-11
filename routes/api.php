@@ -35,6 +35,7 @@ Route::get('/events/{event}', [DiscoveryController::class, 'show']);
 Route::middleware('guest')->group(function () {
     Route::post('/auth/register', [AuthController::class, 'register']);
     Route::post('/auth/login', [AuthController::class, 'login']);
+    Route::post('/auth/google', [AuthController::class, 'googleLogin']);
     Route::post('/admin/auth/login', [AdminAuthController::class, 'login']);
     Route::post('/auth/password/email', [AuthController::class, 'forgotPassword']);
     Route::post('/auth/password/reset', [AuthController::class, 'resetPassword']);
