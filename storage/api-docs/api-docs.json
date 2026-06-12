@@ -581,6 +581,68 @@
                 }
             }
         },
+        "/api/auth/google": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Login or register via Google ID token (mobile)",
+                "operationId": "b4100edbd2cb3a3e92b4d231c5df59cc",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "token"
+                                ],
+                                "properties": {
+                                    "token": {
+                                        "type": "string",
+                                        "example": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjFiZDM2..."
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Login successful"
+                                        },
+                                        "user": {
+                                            "$ref": "#/components/schemas/User"
+                                        },
+                                        "token": {
+                                            "type": "string",
+                                            "example": "1|abc123token..."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid Google token"
+                    },
+                    "403": {
+                        "description": "Account suspended"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
         "/api/auth/logout": {
             "post": {
                 "tags": [

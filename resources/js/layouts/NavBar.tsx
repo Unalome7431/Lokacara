@@ -10,7 +10,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import defaultAvatar from '@/../../public/avatars/default.png';
 import faviconUrl from '@/../../public/favicon.svg';
 import Button from '@/components/ui/Button';
-import { fetchCitySuggestions, INDONESIAN_CITIES } from '@/lib/geocoding';
+import { fetchCitySuggestions, INDONESIAN_CITIES, reverseGeocode } from '@/lib/geocoding';
 
 interface NavBarProps {
     locationValue?: string;
@@ -28,14 +28,74 @@ export default function NavBar({
     const user = auth?.user;
     const isAuthenticated = !!user;
 
+    // Page context detection
+    const isHomePage = page.component === 'Home';
+    const isEventDetailsPage = page.component === 'Events/Show' || page.component === 'Dashboard/Events/Show';
+    const showLocationBar = isHomePage || isEventDetailsPage;
+
+    // Get event details if on details page
+    const event = page.props.event as any;
+    const [eventCity, setEventCity] = useState('');
+    const [isFetchingEventCity, setIsFetchingEventCity] = useState(false);
+
+    useEffect(() => {
+        if (!event || event.type !== 'offline') {
+            setEventCity('');
+            setIsFetchingEventCity(false);
+            return;
+        }
+
+        const lat = parseFloat(event.latitude);
+        const lng = parseFloat(event.longitude);
+
+        if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
+            setIsFetchingEventCity(true);
+            reverseGeocode(lat, lng)
+                .then((city) => {
+                    setEventCity(city);
+                })
+                .catch((err) => {
+                    console.error('Failed to geocode event location', err);
+                    setEventCity(event.location_name || 'Tidak Ditentukan');
+                })
+                .finally(() => {
+                    setIsFetchingEventCity(false);
+                });
+        } else {
+            setEventCity(event.location_name || 'Tidak Ditentukan');
+            setIsFetchingEventCity(false);
+        }
+    }, [event]);
+
+    const eventLocation = useMemo(() => {
+        if (!event) return '';
+        if (event.type === 'online') {
+            return event.platform_name || 'Online';
+        }
+        if (isFetchingEventCity) {
+            return 'Loading...';
+        }
+        return eventCity || event.location_name || 'Tidak Ditentukan';
+    }, [event, eventCity, isFetchingEventCity]);
+
     // Dropdown state
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-    // Sync state with props during render
+    // Sync state with props or page context
     const [prevLocationValue, setPrevLocationValue] = useState(locationValue);
     const [locationInput, setLocationInput] = useState(locationValue || '');
 
-    if (locationValue !== prevLocationValue) {
+    // Sync input depending on page
+    useEffect(() => {
+        if (isEventDetailsPage) {
+            setLocationInput(eventLocation);
+        } else if (isHomePage) {
+            setLocationInput(locationValue || '');
+        }
+    }, [isHomePage, isEventDetailsPage, locationValue, eventLocation]);
+
+    // Sync state changes on home page
+    if (isHomePage && locationValue !== prevLocationValue) {
         setPrevLocationValue(locationValue);
         setLocationInput(locationValue || '');
     }
@@ -47,24 +107,24 @@ export default function NavBar({
 
     // Close dropdown on click outside
     useEffect(() => {
-        function handleClickOutside(event: MouseEvent) {
+        function handleClickOutside(e: MouseEvent) {
             if (
                 locationContainerRef.current &&
-                !locationContainerRef.current.contains(event.target as Node)
+                !locationContainerRef.current.contains(e.target as Node)
             ) {
                 setShowDropdown(false);
-                setLocationInput(locationValue || '');
+                setLocationInput(isHomePage ? (locationValue || '') : (isEventDetailsPage ? eventLocation : ''));
             }
         }
         document.addEventListener('mousedown', handleClickOutside);
 
         return () =>
             document.removeEventListener('mousedown', handleClickOutside);
-    }, [locationValue]);
+    }, [locationValue, isHomePage, isEventDetailsPage, eventLocation]);
 
     // Sync/fetch suggestions when input changes
     useEffect(() => {
-        if (!locationInput.trim()) {
+        if (!isHomePage || !locationInput.trim()) {
             setTimeout(() => {
                 setApiSuggestions([]);
             }, 0);
@@ -81,28 +141,28 @@ export default function NavBar({
         }, 300);
 
         return () => clearTimeout(timeout);
-    }, [locationInput]);
+    }, [locationInput, isHomePage]);
 
     // Compute local matches and combined suggestions in render phase
     const localSuggestions = useMemo(() => {
-        if (!locationInput.trim()) {
+        if (!isHomePage || !locationInput.trim()) {
             return [];
         }
 
         return INDONESIAN_CITIES.filter((city) =>
             city.toLowerCase().includes(locationInput.toLowerCase()),
         ).slice(0, 5);
-    }, [locationInput]);
+    }, [locationInput, isHomePage]);
 
     const suggestions = useMemo(() => {
-        if (!locationInput.trim()) {
+        if (!isHomePage || !locationInput.trim()) {
             return [];
         }
 
         return Array.from(
             new Set([...localSuggestions, ...apiSuggestions]),
         ).slice(0, 8);
-    }, [locationInput, localSuggestions, apiSuggestions]);
+    }, [locationInput, localSuggestions, apiSuggestions, isHomePage]);
 
     return (
         <>
@@ -142,79 +202,94 @@ export default function NavBar({
                         />
                     </div>
 
-                    <div className="h-4 w-px shrink-0 bg-gray-200"></div>
+                    {showLocationBar && (
+                        <>
+                            <div className="h-4 w-px shrink-0 bg-gray-200"></div>
 
-                    {/* Location Input */}
-                    <div
-                        className="relative flex flex-1 items-center gap-2"
-                        ref={locationContainerRef}
-                    >
-                        <MapPin className="h-4 w-4 shrink-0 text-gray-400" />
-                        <input
-                            type="text"
-                            name="location"
-                            value={locationInput}
-                            onChange={(e) => setLocationInput(e.target.value)}
-                            onFocus={() => {
-                                setShowDropdown(true);
-                                setLocationInput('');
-                            }}
-                            onClick={() => {
-                                setShowDropdown(true);
-                                setLocationInput('');
-                            }}
-                            placeholder="Lokasi"
-                            autoComplete="off"
-                            className="w-full border-0 bg-transparent font-brand text-base font-normal text-gray-700 placeholder-gray-400 outline-none focus:ring-0 focus:outline-none"
-                        />
+                            {/* Location Input */}
+                            <div
+                                className="relative flex flex-1 items-center gap-2"
+                                ref={locationContainerRef}
+                            >
+                                <MapPin className="h-4 w-4 shrink-0 text-gray-400" />
+                                <input
+                                    type="text"
+                                    name="location"
+                                    value={locationInput}
+                                    onChange={(e) => {
+                                        if (isHomePage) {
+                                            setLocationInput(e.target.value);
+                                        }
+                                    }}
+                                    onFocus={() => {
+                                        if (isHomePage) {
+                                            setShowDropdown(true);
+                                            setLocationInput('');
+                                        }
+                                    }}
+                                    onClick={() => {
+                                        if (isHomePage) {
+                                            setShowDropdown(true);
+                                            setLocationInput('');
+                                        }
+                                    }}
+                                    placeholder="Lokasi"
+                                    autoComplete="off"
+                                    disabled={!isHomePage}
+                                    className={`w-full border-0 bg-transparent font-brand text-base font-normal text-gray-700 placeholder-gray-400 outline-none focus:ring-0 focus:outline-none ${
+                                        !isHomePage ? 'cursor-default text-gray-500' : ''
+                                    }`}
+                                />
 
-                        {showDropdown && (
-                            <div className="border-neutral-150 absolute top-full right-0 left-0 z-50 mt-2 overflow-hidden rounded-2xl border bg-white py-1 shadow-xl">
-                                {onUseCurrentLocation &&
-                                    !locationInput.trim() && (
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                onUseCurrentLocation();
-                                                setShowDropdown(false);
-                                            }}
-                                            className={`flex w-full cursor-pointer items-center gap-2 px-4 py-2.5 text-left text-base font-semibold text-primary-500 transition-colors hover:bg-neutral-50 ${
-                                                suggestions.length > 0
-                                                    ? 'border-b border-neutral-100'
-                                                    : ''
-                                            }`}
-                                        >
-                                            <MapPin
-                                                size={16}
-                                                className="animate-bounce text-primary-500"
-                                            />
-                                            <span>Gunakan lokasi saat ini</span>
-                                        </button>
-                                    )}
+                                {isHomePage && showDropdown && (
+                                    <div className="border-neutral-150 absolute top-full right-0 left-0 z-50 mt-2 overflow-hidden rounded-2xl border bg-white py-1 shadow-xl">
+                                        {onUseCurrentLocation &&
+                                            !locationInput.trim() && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        onUseCurrentLocation();
+                                                        setShowDropdown(false);
+                                                    }}
+                                                    className={`flex w-full cursor-pointer items-center gap-2 px-4 py-2.5 text-left text-base font-semibold text-primary-500 transition-colors hover:bg-neutral-50 ${
+                                                        suggestions.length > 0
+                                                            ? 'border-b border-neutral-100'
+                                                            : ''
+                                                    }`}
+                                                >
+                                                    <MapPin
+                                                        size={16}
+                                                        className="animate-bounce text-primary-500"
+                                                    />
+                                                    <span>Gunakan lokasi saat ini</span>
+                                                </button>
+                                            )}
 
-                                {suggestions.length > 0
-                                    ? suggestions.map((city) => (
-                                          <button
-                                              key={city}
-                                              type="button"
-                                              onClick={() => {
-                                                  setLocationInput(city);
-                                                  onLocationSubmit?.(city);
-                                                  setShowDropdown(false);
-                                              }}
-                                              className="w-full cursor-pointer px-4 py-2 text-left text-base font-semibold text-neutral-700 transition-colors hover:bg-neutral-50"
-                                          >
-                                              {city}
-                                          </button>
-                                      ))
-                                    : locationInput.trim() && (
-                                          <div className="px-4 py-2 text-base font-semibold text-neutral-400">
-                                              Kota tidak ditemukan
-                                          </div>
-                                      )}
+                                        {suggestions.length > 0
+                                            ? suggestions.map((city) => (
+                                                  <button
+                                                      key={city}
+                                                      type="button"
+                                                      onClick={() => {
+                                                          setLocationInput(city);
+                                                          onLocationSubmit?.(city);
+                                                          setShowDropdown(false);
+                                                      }}
+                                                      className="w-full cursor-pointer px-4 py-2 text-left text-base font-semibold text-neutral-700 transition-colors hover:bg-neutral-50"
+                                                  >
+                                                      {city}
+                                                  </button>
+                                              ))
+                                            : locationInput.trim() && (
+                                                  <div className="px-4 py-2 text-base font-semibold text-neutral-400">
+                                                      Kota tidak ditemukan
+                                                  </div>
+                                              )}
+                                    </div>
+                                )}
                             </div>
-                        )}
-                    </div>
+                        </>
+                    )}
 
                     <button type="submit" className="hidden" />
                 </form>

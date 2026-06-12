@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Str;
 use App\Models\User;
+use Laravel\Socialite\Facades\Socialite;
 use OpenApi\Attributes as OA;
 
 class AuthController extends Controller
@@ -124,6 +125,76 @@ class AuthController extends Controller
             'message' => 'Login successful',
             'user' => $user,
             'token' => $token,
+        ], 200);
+    }
+
+    #[OA\Post(
+        path: '/api/auth/google',
+        summary: 'Login or register via Google ID token (mobile)',
+        tags: ['Authentication'],
+    )]
+    #[OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(
+            required: ['token'],
+            properties: [
+                new OA\Property(property: 'token', type: 'string', example: 'eyJhbGciOiJSUzI1NiIsImtpZCI6IjFiZDM2...'),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Login successful',
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'message', type: 'string', example: 'Login successful'),
+                new OA\Property(property: 'user', ref: '#/components/schemas/User'),
+                new OA\Property(property: 'token', type: 'string', example: '1|abc123token...'),
+            ]
+        )
+    )]
+    #[OA\Response(response: 401, description: 'Invalid Google token')]
+    #[OA\Response(response: 403, description: 'Account suspended')]
+    #[OA\Response(response: 422, description: 'Validation error')]
+    public function googleLogin(Request $request)
+    {
+        $request->validate([
+            'token' => 'required|string',
+        ]);
+
+        try {
+            $googleUser = Socialite::driver('google')->userFromToken($request->token);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Invalid Google token'
+            ], 401);
+        }
+
+        $user = User::updateOrCreate(
+            ['email' => $googleUser->getEmail()],
+            [
+                'name'              => $googleUser->getName() ?? $googleUser->getEmail(),
+                'password'          => bcrypt(Str::random(32)),
+                'email_verified_at' => now(),
+                'role'              => 'user',
+                'provider'          => 'google',
+                'provider_id'       => $googleUser->getId(),
+                'avatar_url'        => $googleUser->getAvatar(),
+            ]
+        );
+
+        if ($user->suspended_at) {
+            return response()->json([
+                'message' => 'Your account has been suspended. Please contact support.'
+            ], 403);
+        }
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'message' => 'Login successful',
+            'user'    => $user->fresh(),
+            'token'   => $token,
         ], 200);
     }
 
