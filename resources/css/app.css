@@ -7,8 +7,10 @@
     --radius-md: 0.5rem;
     --radius-sm: 0.25rem;
 
+    /* Main Font */
     --font-brand: 'Plus Jakarta Sans', ui-sans-serif, system-ui;
 
+    /* Color Palette */
     --color-primary-100: #CFDEFC;
     --color-primary-200: #9EBDFA;
     --color-primary-300: #6E9CF7;
@@ -39,7 +41,7 @@
     --color-gray-800: #333333;
     --color-gray-900: #1A1A1A;
 
-
+    /* Web Headings Typography */
     --text-h1-web: 4rem;
     --text-h1-web--font-weight: 800;
     --text-h2-web: 3.5rem;
@@ -52,7 +54,8 @@
     --text-h5-web--font-weight: 600;
     --text-h6-web: 1.5rem;
     --text-h6-web--font-weight: 600;
-    
+
+    /* Mobile Headings Typography */
     --text-h1-mobile: 3rem;
     --text-h1-mobile--font-weight: 800;
     --text-h2-mobile: 2.5rem;
@@ -66,12 +69,22 @@
     --text-h6-mobile: 1.25rem;
     --text-h6-mobile--font-weight: 600;
 
+    /* Base Text Typography */
     --text-large: 1.25rem;
     --text-base: 1rem;
     --text-small: 0.75rem;
     --text-small--font-weight: 500;
     --text-micro: 0.6275rem;
     --text-micro--font-weight: 500;
+
+    --animate-logo-wave: logo-wave 0.6s ease-in-out;
+
+    @keyframes logo-wave {
+        0%, 100% { transform: rotate(0deg); }
+        25% { transform: rotate(12deg); }
+        50% { transform: rotate(-10deg); }
+        75% { transform: rotate(5deg); }
+    }
 }
 
 @layer base {
@@ -102,3 +115,34 @@
         @apply text-h6-mobile lg:text-h6-web font-brand;
     }
 }
+
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis-scrolling iframe {
+  pointer-events: none;
+}
+
+/* Hide scrollbar globally across all pages and elements */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+

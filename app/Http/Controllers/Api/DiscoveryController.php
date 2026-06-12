@@ -6,9 +6,28 @@ use App\Http\Controllers\Controller;
 use App\Models\Event;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use OpenApi\Attributes as OA;
 
 class DiscoveryController extends Controller
 {
+    #[OA\Get(
+        path: '/api/events/feed',
+        summary: 'Get popular upcoming events feed',
+        tags: ['Discovery'],
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'List of popular upcoming events',
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(
+                    property: 'data',
+                    type: 'array',
+                    items: new OA\Items(ref: '#/components/schemas/Event')
+                ),
+            ]
+        )
+    )]
     public function index()
     {
         // Upcoming events with minimum view_count of 50, sorted by popularity (view_count / capacity)
@@ -22,6 +41,38 @@ class DiscoveryController extends Controller
         return response()->json(['data' => $events], 200);
     }
 
+    #[OA\Get(
+        path: '/api/events/search',
+        summary: 'Search events by keyword and/or category',
+        tags: ['Discovery'],
+    )]
+    #[OA\Parameter(
+        name: 'keyword',
+        in: 'query',
+        description: 'Search keyword (matches event title)',
+        required: false,
+        schema: new OA\Schema(type: 'string')
+    )]
+    #[OA\Parameter(
+        name: 'category_id',
+        in: 'query',
+        description: 'Filter by category ID',
+        required: false,
+        schema: new OA\Schema(type: 'integer')
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Paginated list of events',
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'data', type: 'array', items: new OA\Items(ref: '#/components/schemas/Event')),
+                new OA\Property(property: 'current_page', type: 'integer'),
+                new OA\Property(property: 'last_page', type: 'integer'),
+                new OA\Property(property: 'per_page', type: 'integer'),
+                new OA\Property(property: 'total', type: 'integer'),
+            ]
+        )
+    )]
     public function search(Request $request)
     {
         $query = Event::with(['category', 'user'])->where('start_datetime', '>=', now());
@@ -40,6 +91,29 @@ class DiscoveryController extends Controller
         return response()->json($events, 200);
     }
 
+    #[OA\Get(
+        path: '/api/events/{event}',
+        summary: 'Get event details with registration status',
+        tags: ['Discovery'],
+    )]
+    #[OA\Parameter(
+        name: 'event',
+        in: 'path',
+        description: 'Event ID',
+        required: true,
+        schema: new OA\Schema(type: 'integer')
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Event details',
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'event', ref: '#/components/schemas/Event'),
+                new OA\Property(property: 'is_registered', type: 'boolean', example: false),
+            ]
+        )
+    )]
+    #[OA\Response(response: 404, description: 'Event not found')]
     public function show(Request $request, Event $event)
     {
         // View Count Anti-Spam (tracked by IP or User ID)

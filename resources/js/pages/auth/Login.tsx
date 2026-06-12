@@ -1,10 +1,12 @@
 import { useForm, Head } from '@inertiajs/react';
+import { Eye, EyeOff } from 'lucide-react';
+import { useState } from 'react';
 import faviconUrl from '@/../../public/favicon.svg';
 import googleIconUrl from '@/assets/icons/material-icon-theme_google.svg';
 import Button from '@/components/ui/Button';
 
-
 export default function Login() {
+    const [showPassword, setShowPassword] = useState(false);
     const { data, setData, post, processing, errors } = useForm({
         email: '',
         password: '',
@@ -16,93 +18,113 @@ export default function Login() {
     };
 
     return (
-      <div className='flex justify-center items-center h-screen w-screen'>
-        <div className='relative min-w-115 mx-10 my-auto rounded-2xl'>
-          <div className='absolute -inset-0.75 bg-linear-to-br from-primary-500 to-secondary-400 rounded-2xl opacity-50 drop-shadow-2xl'></div>
+        <div className='flex justify-center items-center min-h-screen w-screen bg-gray-50/50 p-4'>
+            <div className='relative w-full max-w-[420px] mx-auto rounded-3xl shadow-xl shadow-gray-200/50 bg-white overflow-hidden'>
+                {/* Subtle gradient border effect */}
+                <div className='absolute -inset-px bg-linear-to-br from-primary-400 to-secondary-300 rounded-3xl opacity-35 pointer-events-none'></div>
 
-          <div className='relative px-10 pt-20 pb-10 border rounded-[calc(1rem-3px)] bg-white'>
-              <Head title="Login" />
-              <h4 className='text-center text-primary-500 font-bold'>Masuk</h4>
+                <div className='relative px-8 pt-16 pb-10 bg-white rounded-3xl flex flex-col items-stretch'>
+                    <Head title="Masuk" />
+                    
+                    <h2 className='text-center text-primary-500 font-extrabold text-[2.5rem] leading-none mb-6 font-brand'>
+                        Masuk
+                    </h2>
 
-              {/* Google OAuth Button */}
-              <div className='relative text-center mt-5 mb-3'>
-                <div className='absolute -inset-0.5 bg-linear-to-br from-primary-500 to-secondary-400 rounded opacity-50'></div>
-                <a 
-                    href="/auth/google" 
-                    className='relative flex items-center justify-center px-5 py-2.5 border rounded-xs bg-white w-full text-gray-500 text-base font-normal box-border font-brand'
-                >
-                  <img src={googleIconUrl} alt="Google" className='absolute left-5 w-6 h-6' />
-                  <span>Masuk dengan <span className='text-primary-500 font-semibold'>Google</span></span>
-                </a>
-              </div>
-              
-              <div className='relative flex justify-center w-full my-3'>
-                <div className='absolute top-2.5 h-px w-full bg-gray-500 rounded-2xl'></div>
-                <span className='relative text-gray-500 text-center bg-white px-3 text-small font-normal'>atau</span>
-              </div>
+                    {/* Google OAuth Button */}
+                    <div className='relative text-center mb-6'>
+                        <a 
+                            href="/auth/google" 
+                            className='relative flex items-center justify-center py-3.5 border border-gray-200 rounded-lg bg-white w-full text-gray-600 text-base font-normal box-border font-brand hover:bg-gray-50 transition-colors duration-200'
+                        >
+                            <img src={googleIconUrl} alt="Google" className='absolute left-5 w-5 h-5' />
+                            <span>
+                                Masuk dengan <span className='text-primary-500 font-semibold'>Google</span>
+                            </span>
+                        </a>
+                    </div>
+                    
+                    {/* Divider */}
+                    <div className='relative flex justify-center items-center w-full mb-6'>
+                        <div className='absolute inset-0 flex items-center'>
+                            <div className='w-full border-t border-gray-200'></div>
+                        </div>
+                        <span className='relative bg-white px-4 text-gray-400 text-small font-normal font-brand'>atau</span>
+                    </div>
 
-              {/* Manual Login Form */}
-              <form onSubmit={submit} className='flex flex-col gap-3.5'>
-                  <div>
-                      <input
-                          id="email"
-                          type="email"
-                          name="email"
-                          placeholder='Email'
-                          value={data.email}
-                          onChange={(e) => setData('email', e.target.value)}
-                          required
-                          className='w-full px-5 py-2.5 box-border text-base font-brand font-normal placeholder-gray-500 bg-secondary-100 rounded'
-                      />
-                      {errors.email && (
-                          <div className='text-red-500 mt-1.5 text-micro'>
-                              {errors.email}
-                          </div>
-                      )}
-                  </div>
-                  
-                  <div>
-                      <input
-                          id="password"
-                          type="password"
-                          name="password"
-                          placeholder='Kata Sandi'
-                          value={data.password}
-                          onChange={(e) => setData('password', e.target.value)}
-                          required
-                          className='w-full px-5 py-2.5 box-border text-base font-brand font-normal placeholder-gray-500 bg-secondary-100 rounded'
-                      />
-                      {errors.password && (
-                          <div className='text-red-500 mt-1.5 text-micro'>
-                              {errors.password}
-                          </div>
-                      )}
+                    {/* Manual Login Form */}
+                    <form onSubmit={submit} className='flex flex-col gap-4'>
+                        <div>
+                            <input
+                                id="email"
+                                type="email"
+                                name="email"
+                                placeholder='Email / Nomor Telepon'
+                                value={data.email}
+                                onChange={(e) => setData('email', e.target.value)}
+                                required
+                                className='w-full px-4 py-3.5 box-border text-base font-brand font-normal placeholder-gray-400 bg-secondary-100 rounded-lg border border-transparent focus:border-primary-500 focus:bg-white focus:outline-none transition-all duration-200'
+                            />
+                            {errors.email && (
+                                <div className='text-red-500 mt-1.5 text-micro'>
+                                    {errors.email}
+                                </div>
+                            )}
+                        </div>
+                        
+                        <div>
+                            <div className='relative w-full'>
+                                <input
+                                    id="password"
+                                    type={showPassword ? 'text' : 'password'}
+                                    name="password"
+                                    placeholder='Kata Sandi'
+                                    value={data.password}
+                                    onChange={(e) => setData('password', e.target.value)}
+                                    required
+                                    className='w-full pl-4 pr-12 py-3.5 box-border text-base font-brand font-normal placeholder-gray-400 bg-secondary-100 rounded-lg border border-transparent focus:border-primary-500 focus:bg-white focus:outline-none transition-all duration-200'
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className='absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none cursor-pointer'
+                                >
+                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
+                            </div>
+                            {errors.password && (
+                                <div className='text-red-500 mt-1.5 text-micro'>
+                                    {errors.password}
+                                </div>
+                            )}
 
-                      <div className='flex justify-end mt-2'>
-                        <a href="" className='text-small font-normal font-brand text-gray-500 hover:underline text-right'>Lupa Kata Sandi?</a>
-                      </div>
-                  </div>
-                  
-                  <Button 
-                      type="submit" 
-                      disabled={processing} 
-                      className={`p-2.5 mt-5 text-large ${processing ? 'cursor-not-allowed' : 'cursor-pointer'}`}
-                  >
-                      Masuk
-                  </Button>
-              </form>
+                            <div className='flex justify-end mt-2.5'>
+                                <a href="" className='text-small font-semibold font-brand text-gray-400 hover:text-gray-600 hover:underline text-right'>
+                                    Lupa Kata Sandi?
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <Button 
+                            type="submit" 
+                            disabled={processing} 
+                            className={`w-full mt-4 py-3.5 text-large ${processing ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
+                        >
+                            Masuk
+                        </Button>
+                    </form>
 
-              <div className='flex justify-center text-base font-normal font-brand mt-4'>
-                <span className='text-gray-500'>
-                  Belum memiliki akun? <a href="/register" className='text-primary-500 font-bold hover:underline'>Daftar</a>
-                </span>
-              </div>
+                    <div className='flex justify-center text-base font-normal font-brand mt-6'>
+                        <span className='text-gray-500'>
+                            Belum memiliki akun? <a href="/register" className='text-primary-500 font-bold hover:underline'>Daftar</a>
+                        </span>
+                    </div>
 
-              <div className='flex justify-center mt-20'>
-                <img src={faviconUrl} alt="Lokacara" className='w-12.5 h-15.5'/>
-              </div>
-          </div>
+                    <div className='flex justify-center mt-12 mb-4'>
+                        <img src={faviconUrl} alt="Lokacara" className='w-12 h-14'/>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
     );
 }
+
