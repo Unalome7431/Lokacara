@@ -1,26 +1,27 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\DiscoveryController;
-use App\Http\Controllers\Api\DashboardController;
-use App\Http\Controllers\Api\EventRegistrationController;
-use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\AdminAuthController;
-use App\Http\Controllers\Api\ProfileController;
-use App\Http\Controllers\Api\EventManagementApiController;
-use App\Http\Controllers\Api\AttendanceApiController;
-use App\Http\Controllers\Api\CommunicationApiController;
-use App\Http\Controllers\Api\ModerationApiController;
 use App\Http\Controllers\Api\AdminModerationApiController;
-use App\Http\Controllers\Api\CertificateApiController;
-use App\Http\Controllers\Api\CategoryController;
-use App\Http\Controllers\Api\ConfigController;
-use App\Http\Controllers\Api\LocationController;
-use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\AttendanceApiController;
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BookmarkController;
+use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\CertificateApiController;
+use App\Http\Controllers\Api\CommunicationApiController;
+use App\Http\Controllers\Api\ConfigController;
+use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\DiscoveryController;
+use App\Http\Controllers\Api\EventManagementApiController;
+use App\Http\Controllers\Api\EventRegistrationController;
+use App\Http\Controllers\Api\LocationController;
+use App\Http\Controllers\Api\ModerationApiController;
+use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\AvatarController;
 use App\Http\Controllers\PosterController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/locations', [LocationController::class, 'index']);
@@ -47,14 +48,14 @@ Route::post('/auth/refresh', [AuthController::class, 'refresh']);
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::post('/auth/password/change', [AuthController::class, 'changePassword']);
-    
+
     // Profile
     Route::get('/profile', [ProfileController::class, 'show']);
     Route::patch('/profile', [ProfileController::class, 'update']);
     Route::post('/profile/avatar', [ProfileController::class, 'uploadAvatar']);
     Route::get('/profile/avatar/{filename}', [AvatarController::class, 'show']);
     Route::delete('/user', [ProfileController::class, 'destroy']);
-    
+
     // Other Protected Routes
     Route::get('/user', function (Request $request) {
         return $request->user();
@@ -62,7 +63,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index']);
     Route::post('/events/{event}/join', [EventRegistrationController::class, 'store']);
     Route::delete('/events/{event}/join', [EventRegistrationController::class, 'destroy']);
-    
+
     // Module 3: Organizer Hub - Event Management
     Route::get('/organizer/events', [EventManagementApiController::class, 'index']);
     Route::post('/organizer/events', [EventManagementApiController::class, 'store']);
@@ -89,6 +90,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Bookmarks
     Route::get('/bookmarks', [BookmarkController::class, 'index']);
+    Route::post('/bookmarks/{event}', [BookmarkController::class, 'store']);
+    Route::delete('/bookmarks/{event}', [BookmarkController::class, 'destroy']);
+
+    // User Settings
+    Route::patch('/user/settings', [UserController::class, 'updateSettings']);
 });
 
 // Module 6: Moderation (Admin)
