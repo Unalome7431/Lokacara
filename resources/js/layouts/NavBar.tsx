@@ -5,6 +5,7 @@ import {
     User as UserIcon,
     Settings,
     LogOut,
+    LogIn,
 } from 'lucide-react';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import defaultAvatar from '@/../../public/avatars/default.png';
@@ -360,7 +361,7 @@ export default function NavBar({
 
                             {/* Profile Dropdown Menu */}
                             {isDropdownOpen && (
-                                <div className="border-neutral-150 animate-in fade-in slide-in-from-top-3 absolute right-0 z-50 mt-2 w-48 rounded-2xl border bg-white py-1.5 shadow-lg duration-200">
+                                <div className="border-neutral-150 animate-in fade-in slide-in-from-top-3 absolute right-0 z-50 mt-2 w-48 overflow-hidden rounded-2xl border bg-white py-1.5 shadow-lg duration-200">
                                     <Link
                                         href="/dashboard"
                                         onClick={() => setIsDropdownOpen(false)}
@@ -404,12 +405,41 @@ export default function NavBar({
                             )}
                         </div>
                     ) : (
-                        <a
-                            href="/login"
-                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-gray-100 bg-gray-50 p-1 text-gray-400 transition-colors duration-200 hover:text-primary-500"
-                        >
-                            <UserIcon size={18} />
-                        </a>
+                        <div className="relative">
+                            <button
+                                onClick={() =>
+                                    setIsDropdownOpen(!isDropdownOpen)
+                                }
+                                className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-100 bg-gray-50 p-1 text-gray-400 transition-colors duration-200 hover:text-primary-500"
+                            >
+                                <UserIcon size={18} />
+                            </button>
+
+                            {/* Backdrop for click away */}
+                            {isDropdownOpen && (
+                                <div
+                                    className="fixed inset-0 z-40 bg-transparent"
+                                    onClick={() => setIsDropdownOpen(false)}
+                                />
+                            )}
+
+                            {/* Guest Dropdown Menu */}
+                            {isDropdownOpen && (
+                                <div className="border-neutral-150 animate-in fade-in slide-in-from-top-3 absolute right-0 z-50 mt-2 w-48 overflow-hidden rounded-2xl border bg-white py-1.5 shadow-lg duration-200">
+                                    <Link
+                                        href="/login"
+                                        onClick={() => setIsDropdownOpen(false)}
+                                        className="flex w-full cursor-pointer items-center gap-2.5 border-0 bg-transparent px-4 py-2.5 text-left text-small font-bold text-neutral-800 transition-colors duration-150 hover:bg-gray-50 focus:outline-none"
+                                    >
+                                        <LogIn
+                                            size={16}
+                                            className="shrink-0 text-neutral-500"
+                                        />
+                                        <span>Masuk</span>
+                                    </Link>
+                                </div>
+                            )}
+                        </div>
                     )}
                 </div>
             </nav>
