@@ -429,7 +429,7 @@ export default function Dashboard({
                                                             href={`/events/${event.id}`}
                                                             className="flex flex-grow items-center justify-center rounded-full bg-primary-500 py-1.5 text-center text-[10px] font-bold text-white transition-colors hover:bg-primary-600 sm:py-2 sm:text-small"
                                                         >
-                                                            Lihat Detail
+                                                            Detail Event
                                                         </Link>
                                                         <Link
                                                             href={`/events/${event.id}/ticket`}
