@@ -141,9 +141,9 @@ export default function Dashboard({
                     {/* Dashboard Navigation & Search */}
                     <div className="mb-8 flex flex-col justify-between gap-6 border-b border-neutral-200 pb-4 md:flex-row md:items-center">
                         {/* Tab Toggles */}
-                        <div className="relative flex shrink-0 w-full sm:w-[500px] md:w-[540px] gap-0 rounded-2xl bg-neutral-100 p-1 overflow-hidden">
+                        <div className="relative flex w-full shrink-0 gap-0 overflow-hidden rounded-2xl bg-neutral-100 p-1 sm:w-[500px] md:w-[540px]">
                             {/* Moving highlight pill */}
-                            <div 
+                            <div
                                 className="absolute top-1 bottom-1 rounded-xl bg-white shadow-sm transition-all duration-300 ease-in-out"
                                 style={{
                                     left: `calc(${['Event Terbuat', 'Event Tersimpan', 'Sertifikat'].indexOf(activeTab)} * (100% / 3) + 4px)`,
@@ -175,7 +175,7 @@ export default function Dashboard({
                                             setActiveTab(tab);
                                             setSearchQuery('');
                                         }}
-                                        className={`relative z-10 flex-1 flex cursor-pointer items-center justify-center gap-1.5 sm:gap-2 rounded-xl border-0 px-2 sm:px-4 py-2.5 text-xs sm:text-small font-bold whitespace-nowrap transition-colors duration-300 ${
+                                        className={`relative z-10 flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border-0 px-2 py-2.5 text-xs font-bold whitespace-nowrap transition-colors duration-300 sm:gap-2 sm:px-4 sm:text-small ${
                                             isActive
                                                 ? 'text-primary-500'
                                                 : 'text-gray-500 hover:text-neutral-900'
@@ -183,7 +183,7 @@ export default function Dashboard({
                                     >
                                         <span>{tab}</span>
                                         <span
-                                            className={`rounded-full px-1.5 py-0.5 text-[9px] sm:text-micro font-extrabold transition-colors duration-300 ${
+                                            className={`rounded-full px-1.5 py-0.5 text-[9px] font-extrabold transition-colors duration-300 sm:text-micro ${
                                                 isActive
                                                     ? 'bg-primary-50 text-primary-600'
                                                     : 'bg-neutral-200 text-gray-600'
@@ -219,8 +219,8 @@ export default function Dashboard({
                     {/* Content Tab Bodies */}
                     <div className="min-h-[300px]">
                         {/* Event Terbuat Tab */}
-                        {activeTab === 'Event Terbuat' && (
-                            hosted_events.length === 0 ? (
+                        {activeTab === 'Event Terbuat' &&
+                            (hosted_events.length === 0 ? (
                                 <div className="animate-in fade-in flex flex-col items-center justify-center gap-4 rounded-3xl border border-neutral-200 bg-white px-4 py-20 text-center shadow-sm duration-200">
                                     <div className="bg-primary-50 flex h-16 w-16 items-center justify-center rounded-full text-primary-500">
                                         <Calendar size={28} />
@@ -243,14 +243,18 @@ export default function Dashboard({
                                     </Link>
                                 </div>
                             ) : filteredHostedEvents.length === 0 ? (
-                                <div className="animate-in fade-in flex h-[325px] sm:h-[370px] lg:h-[400px] w-full flex-col items-center justify-center gap-4 rounded-3xl border border-neutral-200 bg-white px-4 text-center shadow-sm duration-200">
-                                    <Search size={28} className="text-gray-400 animate-pulse" />
+                                <div className="animate-in fade-in flex h-[325px] w-full flex-col items-center justify-center gap-4 rounded-3xl border border-neutral-200 bg-white px-4 text-center shadow-sm duration-200 sm:h-[370px] lg:h-[400px]">
+                                    <Search
+                                        size={28}
+                                        className="animate-pulse text-gray-400"
+                                    />
                                     <div className="flex flex-col gap-1">
                                         <h4 className="text-base font-bold text-neutral-800">
                                             Event Tidak Ditemukan
                                         </h4>
                                         <p className="max-w-[280px] text-small text-gray-400">
-                                            Tidak ada event yang cocok dengan kata kunci pencarian Anda.
+                                            Tidak ada event yang cocok dengan
+                                            kata kunci pencarian Anda.
                                         </p>
                                     </div>
                                 </div>
@@ -299,9 +303,11 @@ export default function Dashboard({
                                                                 size={12}
                                                                 className="shrink-0 text-gray-400"
                                                             />
-                                                            {event.type === 'online'
+                                                            {event.type ===
+                                                            'online'
                                                                 ? 'Online'
-                                                                : event.location_name || 'Lokasi Offline'}
+                                                                : event.location_name ||
+                                                                  'Lokasi Offline'}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -317,12 +323,11 @@ export default function Dashboard({
                                         </div>
                                     ))}
                                 </div>
-                            )
-                        )}
+                            ))}
 
                         {/* Event Tersimpan Tab */}
-                        {activeTab === 'Event Tersimpan' && (
-                            joined_events.length === 0 ? (
+                        {activeTab === 'Event Tersimpan' &&
+                            (joined_events.length === 0 ? (
                                 <div className="animate-in fade-in flex flex-col items-center justify-center gap-4 rounded-3xl border border-neutral-200 bg-white px-4 py-20 text-center shadow-sm duration-200">
                                     <div className="bg-primary-50 flex h-16 w-16 items-center justify-center rounded-full text-primary-500">
                                         <Bookmark size={28} />
@@ -344,14 +349,18 @@ export default function Dashboard({
                                     </Link>
                                 </div>
                             ) : filteredJoinedEvents.length === 0 ? (
-                                <div className="animate-in fade-in flex h-[325px] sm:h-[370px] lg:h-[400px] w-full flex-col items-center justify-center gap-4 rounded-3xl border border-neutral-200 bg-white px-4 text-center shadow-sm duration-200">
-                                    <Search size={28} className="text-gray-400 animate-pulse" />
+                                <div className="animate-in fade-in flex h-[325px] w-full flex-col items-center justify-center gap-4 rounded-3xl border border-neutral-200 bg-white px-4 text-center shadow-sm duration-200 sm:h-[370px] lg:h-[400px]">
+                                    <Search
+                                        size={28}
+                                        className="animate-pulse text-gray-400"
+                                    />
                                     <div className="flex flex-col gap-1">
                                         <h4 className="text-base font-bold text-neutral-800">
                                             Event Tidak Ditemukan
                                         </h4>
                                         <p className="max-w-[280px] text-small text-gray-400">
-                                            Tidak ada event yang cocok dengan kata kunci pencarian Anda.
+                                            Tidak ada event yang cocok dengan
+                                            kata kunci pencarian Anda.
                                         </p>
                                     </div>
                                 </div>
@@ -407,9 +416,11 @@ export default function Dashboard({
                                                                     size={12}
                                                                     className="shrink-0 text-gray-400"
                                                                 />
-                                                                {event.type === 'online'
+                                                                {event.type ===
+                                                                'online'
                                                                     ? 'Online'
-                                                                    : event.location_name || 'Lokasi Offline'}
+                                                                    : event.location_name ||
+                                                                      'Lokasi Offline'}
                                                             </span>
                                                         </div>
                                                     </div>
@@ -435,8 +446,7 @@ export default function Dashboard({
                                         );
                                     })}
                                 </div>
-                            )
-                        )}
+                            ))}
 
                         {/* Sertifikat Tab */}
                         {activeTab === 'Sertifikat' &&

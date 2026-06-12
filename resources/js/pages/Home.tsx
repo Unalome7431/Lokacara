@@ -34,6 +34,7 @@ interface Event {
         id: number;
         name: string;
     };
+    price: number;
 }
 
 interface Category {
@@ -799,9 +800,10 @@ export default function Home({
                                                     key={`${event.id}-clone-${idx}`}
                                                     className="border-neutral-150 group relative flex h-[325px] w-[calc((100%-24px)/2)] shrink-0 flex-col justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:h-[370px] lg:h-[400px] lg:w-[calc((100%-72px)/4)]"
                                                 >
-                                                    {/* "FREE" Badge on Top-Left of image */}
                                                     <div className="absolute top-4 left-4 z-10 rounded-md bg-secondary-400 px-3 py-1 text-[0.6275rem] font-extrabold text-secondary-900 shadow-sm">
-                                                        FREE
+                                                        {event.price === 0
+                                                            ? 'GRATIS'
+                                                            : `Rp ${Number(event.price).toLocaleString('id-ID')}`}
                                                     </div>
 
                                                     <div className="relative h-[140px] w-full shrink-0 overflow-hidden border-b border-gray-100 bg-gray-50 sm:h-[170px] lg:aspect-3/2 lg:h-auto">
@@ -933,9 +935,10 @@ export default function Home({
                                                 key={`${event.id}-clone-${idx}`}
                                                 className="border-neutral-150 group relative flex h-[325px] w-[calc((100%-24px)/2)] shrink-0 flex-col justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:h-[370px] lg:h-[400px] lg:w-[calc((100%-72px)/4)]"
                                             >
-                                                {/* "FREE" Badge on Top-Left of image */}
                                                 <div className="absolute top-4 left-4 z-10 rounded-md bg-secondary-400 px-3 py-1 text-[0.6275rem] font-extrabold text-secondary-900 shadow-sm">
-                                                    FREE
+                                                    {event.price === 0
+                                                            ? 'GRATIS'
+                                                            : `Rp ${Number(event.price).toLocaleString('id-ID')}`}
                                                 </div>
 
                                                 <div className="relative h-[140px] w-full shrink-0 overflow-hidden border-b border-gray-100 bg-gray-50 sm:h-[170px] lg:aspect-3/2 lg:h-auto">
@@ -1107,9 +1110,10 @@ export default function Home({
                                             key={event.id}
                                             className="border-neutral-150 group relative flex h-[140px] w-full flex-row justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:h-[170px] lg:h-[400px] lg:flex-col"
                                         >
-                                            {/* "FREE" Badge on Top-Left of image */}
                                             <div className="absolute top-3 left-3 z-10 rounded-md bg-secondary-400 px-3 py-1 text-[0.6275rem] font-extrabold text-secondary-900 shadow-sm sm:top-4 lg:top-4">
-                                                FREE
+                                                {event.price === 0
+                                                            ? 'GRATIS'
+                                                            : `Rp ${Number(event.price).toLocaleString('id-ID')}`}
                                             </div>
 
                                             <div className="lg:aspect-none relative aspect-square h-full w-[140px] shrink-0 overflow-hidden border-r border-gray-100 bg-gray-50 sm:w-[170px] lg:h-[180px] lg:w-full lg:border-r-0 lg:border-b">

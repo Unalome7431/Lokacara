@@ -10,7 +10,11 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import defaultAvatar from '@/../../public/avatars/default.png';
 import faviconUrl from '@/../../public/favicon.svg';
 import Button from '@/components/ui/Button';
-import { fetchCitySuggestions, INDONESIAN_CITIES, reverseGeocode } from '@/lib/geocoding';
+import {
+    fetchCitySuggestions,
+    INDONESIAN_CITIES,
+    reverseGeocode,
+} from '@/lib/geocoding';
 
 interface NavBarProps {
     locationValue?: string;
@@ -30,7 +34,9 @@ export default function NavBar({
 
     // Page context detection
     const isHomePage = page.component === 'Home';
-    const isEventDetailsPage = page.component === 'Events/Show' || page.component === 'Dashboard/Events/Show';
+    const isEventDetailsPage =
+        page.component === 'Events/Show' ||
+        page.component === 'Dashboard/Events/Show';
     const showLocationBar = isHomePage || isEventDetailsPage;
 
     // Get event details if on details page
@@ -42,6 +48,7 @@ export default function NavBar({
         if (!event || event.type !== 'offline') {
             setEventCity('');
             setIsFetchingEventCity(false);
+
             return;
         }
 
@@ -68,13 +75,18 @@ export default function NavBar({
     }, [event]);
 
     const eventLocation = useMemo(() => {
-        if (!event) return '';
+        if (!event) {
+            return '';
+        }
+
         if (event.type === 'online') {
             return event.platform_name || 'Online';
         }
+
         if (isFetchingEventCity) {
             return 'Loading...';
         }
+
         return eventCity || event.location_name || 'Tidak Ditentukan';
     }, [event, eventCity, isFetchingEventCity]);
 
@@ -113,7 +125,13 @@ export default function NavBar({
                 !locationContainerRef.current.contains(e.target as Node)
             ) {
                 setShowDropdown(false);
-                setLocationInput(isHomePage ? (locationValue || '') : (isEventDetailsPage ? eventLocation : ''));
+                setLocationInput(
+                    isHomePage
+                        ? locationValue || ''
+                        : isEventDetailsPage
+                          ? eventLocation
+                          : '',
+                );
             }
         }
         document.addEventListener('mousedown', handleClickOutside);
@@ -237,7 +255,9 @@ export default function NavBar({
                                     autoComplete="off"
                                     disabled={!isHomePage}
                                     className={`w-full border-0 bg-transparent font-brand text-base font-normal text-gray-700 placeholder-gray-400 outline-none focus:ring-0 focus:outline-none ${
-                                        !isHomePage ? 'cursor-default text-gray-500' : ''
+                                        !isHomePage
+                                            ? 'cursor-default text-gray-500'
+                                            : ''
                                     }`}
                                 />
 
@@ -261,7 +281,9 @@ export default function NavBar({
                                                         size={16}
                                                         className="animate-bounce text-primary-500"
                                                     />
-                                                    <span>Gunakan lokasi saat ini</span>
+                                                    <span>
+                                                        Gunakan lokasi saat ini
+                                                    </span>
                                                 </button>
                                             )}
 
@@ -271,9 +293,15 @@ export default function NavBar({
                                                       key={city}
                                                       type="button"
                                                       onClick={() => {
-                                                          setLocationInput(city);
-                                                          onLocationSubmit?.(city);
-                                                          setShowDropdown(false);
+                                                          setLocationInput(
+                                                              city,
+                                                          );
+                                                          onLocationSubmit?.(
+                                                              city,
+                                                          );
+                                                          setShowDropdown(
+                                                              false,
+                                                          );
                                                       }}
                                                       className="w-full cursor-pointer px-4 py-2 text-left text-base font-semibold text-neutral-700 transition-colors hover:bg-neutral-50"
                                                   >
