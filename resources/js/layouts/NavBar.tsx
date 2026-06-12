@@ -46,8 +46,10 @@ export default function NavBar({
 
     useEffect(() => {
         if (!event || event.type !== 'offline') {
-            setEventCity('');
-            setIsFetchingEventCity(false);
+            queueMicrotask(() => {
+                setEventCity('');
+                setIsFetchingEventCity(false);
+            });
 
             return;
         }
@@ -56,7 +58,7 @@ export default function NavBar({
         const lng = parseFloat(event.longitude);
 
         if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
-            setIsFetchingEventCity(true);
+            queueMicrotask(() => setIsFetchingEventCity(true));
             reverseGeocode(lat, lng)
                 .then((city) => {
                     setEventCity(city);
@@ -69,8 +71,10 @@ export default function NavBar({
                     setIsFetchingEventCity(false);
                 });
         } else {
-            setEventCity(event.location_name || 'Tidak Ditentukan');
-            setIsFetchingEventCity(false);
+            queueMicrotask(() => {
+                setEventCity(event.location_name || 'Tidak Ditentukan');
+                setIsFetchingEventCity(false);
+            });
         }
     }, [event]);
 
@@ -100,9 +104,9 @@ export default function NavBar({
     // Sync input depending on page
     useEffect(() => {
         if (isEventDetailsPage) {
-            setLocationInput(eventLocation);
+            queueMicrotask(() => setLocationInput(eventLocation));
         } else if (isHomePage) {
-            setLocationInput(locationValue || '');
+            queueMicrotask(() => setLocationInput(locationValue || ''));
         }
     }, [isHomePage, isEventDetailsPage, locationValue, eventLocation]);
 
