@@ -262,8 +262,11 @@ export default function Create({ categories }: CreateProps) {
             data.description,
             '---',
             organizer ? `**Penyelenggara:** ${organizer}` : '',
-            tags.filter(t => t.trim() !== '').length > 0
-                ? `**Tags:** ${tags.filter(t => t.trim() !== '').map(t => `#${t.trim()}`).join(', ')}`
+            tags.filter((t) => t.trim() !== '').length > 0
+                ? `**Tags:** ${tags
+                      .filter((t) => t.trim() !== '')
+                      .map((t) => `#${t.trim()}`)
+                      .join(', ')}`
                 : '',
             contactLines ? `**Kontak:**\n${contactLines}` : '',
         ]
@@ -304,14 +307,14 @@ export default function Create({ categories }: CreateProps) {
     };
 
     return (
-        <div className="flex min-h-screen flex-col justify-between bg-white animate-in fade-in duration-200">
+        <div className="animate-in fade-in flex min-h-screen flex-col justify-between bg-white duration-200">
             <div className="flex-grow">
                 <NavBar />
                 <Head title="Buat Event Baru" />
 
                 <form
                     onSubmit={(e) => submit(e)}
-                    className="mx-auto flex max-w-[1080px] flex-col gap-10 px-4 py-10 pb-16 pt-28 md:px-8"
+                    className="mx-auto flex max-w-[1080px] flex-col gap-10 px-4 py-10 pt-28 pb-16 md:px-8"
                 >
                     <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-12">
                         {/* LEFT COLUMN: Poster, Tags, Capacity, Dates, Access */}
@@ -324,7 +327,7 @@ export default function Create({ categories }: CreateProps) {
 
                                 <div
                                     onClick={triggerFileInput}
-                                    className="relative flex aspect-16/9 w-full cursor-pointer flex-col items-center justify-center gap-3 overflow-hidden rounded-3xl border-2 border-dashed border-neutral-300 bg-white p-6 text-center transition-all duration-300 hover:border-primary-400 hover:bg-primary-50/10 shadow-xs"
+                                    className="hover:bg-primary-50/10 relative flex aspect-16/9 w-full cursor-pointer flex-col items-center justify-center gap-3 overflow-hidden rounded-3xl border-2 border-dashed border-neutral-300 bg-white p-6 text-center shadow-xs transition-all duration-300 hover:border-primary-400"
                                 >
                                     {posterPreview ? (
                                         <img
@@ -335,8 +338,14 @@ export default function Create({ categories }: CreateProps) {
                                     ) : (
                                         <div className="flex flex-col items-center justify-center gap-2">
                                             <div className="flex items-center gap-1.5 text-secondary-500">
-                                                <Camera size={24} className="stroke-[1.5]" />
-                                                <Plus size={16} className="stroke-[2.5]" />
+                                                <Camera
+                                                    size={24}
+                                                    className="stroke-[1.5]"
+                                                />
+                                                <Plus
+                                                    size={16}
+                                                    className="stroke-[2.5]"
+                                                />
                                             </div>
                                             <span className="font-brand text-base font-bold text-gray-500">
                                                 Unggah Poster (16:9)
@@ -344,7 +353,7 @@ export default function Create({ categories }: CreateProps) {
                                         </div>
                                     )}
                                 </div>
-                                <span className="text-xs text-center font-semibold text-gray-400">
+                                <span className="text-center text-xs font-semibold text-gray-400">
                                     ukuran maksimal 5mb, png, jpg, svg
                                 </span>
 
@@ -365,7 +374,7 @@ export default function Create({ categories }: CreateProps) {
                                     <Upload size={16} />
                                 </button>
                                 {errors.poster && (
-                                    <span className="text-xs font-bold text-red-500 mt-1 pl-1">
+                                    <span className="mt-1 pl-1 text-xs font-bold text-red-500">
                                         {errors.poster}
                                     </span>
                                 )}
@@ -381,22 +390,34 @@ export default function Create({ categories }: CreateProps) {
 
                                 <div className="flex flex-col gap-3">
                                     {tags.map((tag, index) => (
-                                        <div key={index} className="flex gap-2 items-center">
-                                            <div className="flex-grow flex items-center rounded-full border border-neutral-100 bg-white px-5 py-3 shadow-xs">
-                                                <span className="text-secondary-500 font-extrabold mr-1.5 select-none">#</span>
+                                        <div
+                                            key={index}
+                                            className="flex items-center gap-2"
+                                        >
+                                            <div className="flex flex-grow items-center rounded-full border border-neutral-100 bg-white px-5 py-3 shadow-xs">
+                                                <span className="mr-1.5 font-extrabold text-secondary-500 select-none">
+                                                    #
+                                                </span>
                                                 <input
                                                     type="text"
                                                     placeholder="tag"
                                                     value={tag}
-                                                    onChange={(e) => updateTag(index, e.target.value)}
-                                                    className="w-full border-0 p-0 outline-none text-base font-semibold placeholder-gray-400 focus:ring-0 text-neutral-800 bg-transparent"
+                                                    onChange={(e) =>
+                                                        updateTag(
+                                                            index,
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    className="w-full border-0 bg-transparent p-0 text-base font-semibold text-neutral-800 placeholder-gray-400 outline-none focus:ring-0"
                                                 />
                                             </div>
                                             {tags.length > 1 && (
                                                 <button
                                                     type="button"
-                                                    onClick={() => removeTag(index)}
-                                                    className="shrink-0 rounded-full border border-neutral-200 bg-white p-2.5 text-red-500 hover:bg-red-50 transition-all duration-200 cursor-pointer active:scale-95"
+                                                    onClick={() =>
+                                                        removeTag(index)
+                                                    }
+                                                    className="shrink-0 cursor-pointer rounded-full border border-neutral-200 bg-white p-2.5 text-red-500 transition-all duration-200 hover:bg-red-50 active:scale-95"
                                                 >
                                                     <Trash2 size={16} />
                                                 </button>
@@ -431,12 +452,16 @@ export default function Create({ categories }: CreateProps) {
                                     <div className="flex items-center gap-3 rounded-full border border-neutral-100 bg-white p-1 px-1.5 shadow-xs">
                                         <button
                                             type="button"
-                                            onMouseDown={() => startStepper(decrementCapacity)}
+                                            onMouseDown={() =>
+                                                startStepper(decrementCapacity)
+                                            }
                                             onMouseUp={stopStepper}
                                             onMouseLeave={stopStepper}
-                                            onTouchStart={() => startStepper(decrementCapacity)}
+                                            onTouchStart={() =>
+                                                startStepper(decrementCapacity)
+                                            }
                                             onTouchEnd={stopStepper}
-                                            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-0 bg-secondary-500 text-white transition-colors hover:bg-secondary-600 active:scale-95 select-none"
+                                            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-0 bg-secondary-500 text-white transition-colors select-none hover:bg-secondary-600 active:scale-95"
                                         >
                                             <Minus size={16} strokeWidth={3} />
                                         </button>
@@ -444,25 +469,32 @@ export default function Create({ categories }: CreateProps) {
                                             type="number"
                                             value={data.capacity}
                                             onChange={(e) =>
-                                                setData('capacity', Number(e.target.value))
+                                                setData(
+                                                    'capacity',
+                                                    Number(e.target.value),
+                                                )
                                             }
-                                            className="w-12 border-0 p-0 text-center text-lg font-bold text-neutral-800 outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                            className="w-12 [appearance:textfield] border-0 p-0 text-center text-lg font-bold text-neutral-800 outline-none focus:ring-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                                         />
                                         <button
                                             type="button"
-                                            onMouseDown={() => startStepper(incrementCapacity)}
+                                            onMouseDown={() =>
+                                                startStepper(incrementCapacity)
+                                            }
                                             onMouseUp={stopStepper}
                                             onMouseLeave={stopStepper}
-                                            onTouchStart={() => startStepper(incrementCapacity)}
+                                            onTouchStart={() =>
+                                                startStepper(incrementCapacity)
+                                            }
                                             onTouchEnd={stopStepper}
-                                            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-0 bg-primary-500 text-white transition-colors hover:bg-primary-600 active:scale-95 select-none"
+                                            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-0 bg-primary-500 text-white transition-colors select-none hover:bg-primary-600 active:scale-95"
                                         >
                                             <Plus size={16} strokeWidth={3} />
                                         </button>
                                     </div>
                                 </div>
                                 {errors.capacity && (
-                                    <span className="text-xs font-bold text-red-500 mt-1 pl-1">
+                                    <span className="mt-1 pl-1 text-xs font-bold text-red-500">
                                         {errors.capacity}
                                     </span>
                                 )}
@@ -478,38 +510,46 @@ export default function Create({ categories }: CreateProps) {
 
                                 <div className="flex flex-col gap-3">
                                     <div className="flex flex-col gap-1.5">
-                                        <label className="text-xs font-bold uppercase tracking-wide text-gray-400 pl-1">
+                                        <label className="pl-1 text-xs font-bold tracking-wide text-gray-400 uppercase">
                                             Mulai
                                         </label>
                                         <input
                                             type="datetime-local"
                                             value={data.start_datetime}
                                             onChange={(e) =>
-                                                setData('start_datetime', e.target.value)
+                                                setData(
+                                                    'start_datetime',
+                                                    e.target.value,
+                                                )
                                             }
                                             required
-                                            className="w-full rounded-full border-0 bg-white px-5 py-3 font-semibold text-neutral-800 shadow-xs focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                            className="w-full rounded-full border-0 bg-white px-5 py-3 font-semibold text-neutral-800 shadow-xs focus:ring-2 focus:ring-primary-500 focus:outline-none"
                                         />
                                         {errors.start_datetime && (
-                                            <span className="text-xs font-bold text-red-500 mt-1 pl-1">
+                                            <span className="mt-1 pl-1 text-xs font-bold text-red-500">
                                                 {errors.start_datetime}
                                             </span>
                                         )}
                                     </div>
 
                                     <div className="flex flex-col gap-1.5">
-                                        <label className="text-xs font-bold uppercase tracking-wide text-gray-400 pl-1">
+                                        <label className="pl-1 text-xs font-bold tracking-wide text-gray-400 uppercase">
                                             Selesai
                                         </label>
                                         <input
                                             type="datetime-local"
                                             value={data.end_datetime}
-                                            onChange={(e) => setData('end_datetime', e.target.value)}
+                                            onChange={(e) =>
+                                                setData(
+                                                    'end_datetime',
+                                                    e.target.value,
+                                                )
+                                            }
                                             required
-                                            className="w-full rounded-full border-0 bg-white px-5 py-3 font-semibold text-neutral-800 shadow-xs focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                            className="w-full rounded-full border-0 bg-white px-5 py-3 font-semibold text-neutral-800 shadow-xs focus:ring-2 focus:ring-primary-500 focus:outline-none"
                                         />
                                         {errors.end_datetime && (
-                                            <span className="text-xs font-bold text-red-500 mt-1 pl-1">
+                                            <span className="mt-1 pl-1 text-xs font-bold text-red-500">
                                                 {errors.end_datetime}
                                             </span>
                                         )}
@@ -524,11 +564,13 @@ export default function Create({ categories }: CreateProps) {
                                         Akses Event
                                     </span>
 
-                                    <div className="relative flex rounded-full border border-neutral-100 bg-white p-0.5 shadow-xs w-48 h-9 overflow-hidden shrink-0 select-none">
+                                    <div className="relative flex h-9 w-48 shrink-0 overflow-hidden rounded-full border border-neutral-100 bg-white p-0.5 shadow-xs select-none">
                                         {/* Sliding background */}
                                         <div
                                             className={`absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-2px)] rounded-full bg-primary-500 transition-all duration-300 ease-in-out ${
-                                                isFree ? 'translate-x-0' : 'translate-x-full'
+                                                isFree
+                                                    ? 'translate-x-0'
+                                                    : 'translate-x-full'
                                             }`}
                                         />
                                         <button
@@ -537,7 +579,7 @@ export default function Create({ categories }: CreateProps) {
                                                 setIsFree(true);
                                                 setData('price', 0);
                                             }}
-                                            className={`relative z-10 w-1/2 rounded-full border-0 py-1 text-xs font-bold transition-colors duration-300 ${isFree ? 'text-white cursor-default' : 'cursor-pointer text-neutral-500 hover:text-neutral-800 bg-transparent'}`}
+                                            className={`relative z-10 w-1/2 rounded-full border-0 py-1 text-xs font-bold transition-colors duration-300 ${isFree ? 'cursor-default text-white' : 'cursor-pointer bg-transparent text-neutral-500 hover:text-neutral-800'}`}
                                         >
                                             Gratis
                                         </button>
@@ -550,7 +592,7 @@ export default function Create({ categories }: CreateProps) {
                                                     setData('price', 10000);
                                                 }
                                             }}
-                                            className={`relative z-10 w-1/2 rounded-full border-0 py-1 text-xs font-bold transition-colors duration-300 ${!isFree ? 'text-white cursor-default' : 'cursor-pointer text-neutral-500 hover:text-neutral-800 bg-transparent'}`}
+                                            className={`relative z-10 w-1/2 rounded-full border-0 py-1 text-xs font-bold transition-colors duration-300 ${!isFree ? 'cursor-default text-white' : 'cursor-pointer bg-transparent text-neutral-500 hover:text-neutral-800'}`}
                                         >
                                             Berbayar
                                         </button>
@@ -559,20 +601,25 @@ export default function Create({ categories }: CreateProps) {
 
                                 {!isFree && (
                                     <div className="animate-in fade-in mt-2 flex flex-col gap-1.5 duration-200">
-                                        <label className="text-xs font-bold uppercase tracking-wide text-gray-400 pl-1">
+                                        <label className="pl-1 text-xs font-bold tracking-wide text-gray-400 uppercase">
                                             Harga Tiket (Rp)
                                         </label>
                                         <input
                                             type="number"
                                             value={data.price}
-                                            onChange={(e) => setData('price', Number(e.target.value))}
+                                            onChange={(e) =>
+                                                setData(
+                                                    'price',
+                                                    Number(e.target.value),
+                                                )
+                                            }
                                             required
                                             min={10000}
                                             placeholder="Contoh: 10000"
-                                            className="w-full rounded-full border-0 bg-white px-5 py-3 font-semibold text-neutral-800 shadow-xs focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                            className="w-full rounded-full border-0 bg-white px-5 py-3 font-semibold text-neutral-800 shadow-xs focus:ring-2 focus:ring-primary-500 focus:outline-none"
                                         />
                                         {errors.price && (
-                                            <span className="text-xs font-bold text-red-500 mt-1 pl-1">
+                                            <span className="mt-1 pl-1 text-xs font-bold text-red-500">
                                                 {errors.price}
                                             </span>
                                         )}
@@ -592,12 +639,14 @@ export default function Create({ categories }: CreateProps) {
                                     type="text"
                                     placeholder="Nama Event"
                                     value={data.title}
-                                    onChange={(e) => setData('title', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('title', e.target.value)
+                                    }
                                     required
-                                    className="w-full rounded-full border-0 bg-primary-100/30 px-6 py-4 font-brand text-base font-semibold placeholder-neutral-450 transition-all duration-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 text-neutral-800"
+                                    className="placeholder-neutral-450 w-full rounded-full border-0 bg-primary-100/30 px-6 py-4 font-brand text-base font-semibold text-neutral-800 transition-all duration-200 focus:bg-white focus:ring-2 focus:ring-primary-500 focus:outline-none"
                                 />
                                 {errors.title && (
-                                    <span className="text-xs font-bold text-red-500 mt-1 pl-1">
+                                    <span className="mt-1 pl-1 text-xs font-bold text-red-500">
                                         {errors.title}
                                     </span>
                                 )}
@@ -608,29 +657,61 @@ export default function Create({ categories }: CreateProps) {
                                 <h3 className="font-brand text-2xl font-black text-neutral-900">
                                     Kategori
                                 </h3>
-                                <div className="relative" ref={categoryDropdownRef}>
+                                <div
+                                    className="relative"
+                                    ref={categoryDropdownRef}
+                                >
                                     <div
-                                        onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
-                                        className="w-full rounded-full border-0 bg-primary-100/30 px-6 py-4 font-brand text-base font-semibold text-neutral-600 transition-all duration-200 hover:bg-primary-100/50 cursor-pointer flex justify-between items-center"
+                                        onClick={() =>
+                                            setIsCategoryDropdownOpen(
+                                                !isCategoryDropdownOpen,
+                                            )
+                                        }
+                                        className="flex w-full cursor-pointer items-center justify-between rounded-full border-0 bg-primary-100/30 px-6 py-4 font-brand text-base font-semibold text-neutral-600 transition-all duration-200 hover:bg-primary-100/50"
                                     >
-                                        <span className={data.category_id ? 'text-neutral-800' : 'text-neutral-500'}>
-                                            {categories.find(c => String(c.id) === String(data.category_id))?.name || 'Kategori'}
+                                        <span
+                                            className={
+                                                data.category_id
+                                                    ? 'text-neutral-800'
+                                                    : 'text-neutral-500'
+                                            }
+                                        >
+                                            {categories.find(
+                                                (c) =>
+                                                    String(c.id) ===
+                                                    String(data.category_id),
+                                            )?.name || 'Kategori'}
                                         </span>
-                                        <span className="font-bold text-secondary-500 text-sm transition-transform duration-200" style={{ transform: isCategoryDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                                        <span
+                                            className="text-sm font-bold text-secondary-500 transition-transform duration-200"
+                                            style={{
+                                                transform:
+                                                    isCategoryDropdownOpen
+                                                        ? 'rotate(180deg)'
+                                                        : 'rotate(0deg)',
+                                            }}
+                                        >
                                             ▼
                                         </span>
                                     </div>
                                     {isCategoryDropdownOpen && (
-                                        <div className="absolute z-50 w-full mt-2 rounded-2xl border border-neutral-100 bg-white py-1.5 shadow-lg max-h-60 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-150">
+                                        <div className="animate-in fade-in slide-in-from-top-2 absolute z-50 mt-2 max-h-60 w-full overflow-y-auto rounded-2xl border border-neutral-100 bg-white py-1.5 shadow-lg duration-150">
                                             {categories.map((cat) => (
                                                 <div
                                                     key={cat.id}
                                                     onClick={() => {
-                                                        setData('category_id', String(cat.id));
-                                                        setIsCategoryDropdownOpen(false);
+                                                        setData(
+                                                            'category_id',
+                                                            String(cat.id),
+                                                        );
+                                                        setIsCategoryDropdownOpen(
+                                                            false,
+                                                        );
                                                     }}
-                                                    className={`px-6 py-3 cursor-pointer text-base font-semibold transition-colors duration-150 ${
-                                                        String(data.category_id) === String(cat.id)
+                                                    className={`cursor-pointer px-6 py-3 text-base font-semibold transition-colors duration-150 ${
+                                                        String(
+                                                            data.category_id,
+                                                        ) === String(cat.id)
                                                             ? 'bg-primary-50 text-primary-600'
                                                             : 'text-neutral-700 hover:bg-neutral-50'
                                                     }`}
@@ -640,10 +721,15 @@ export default function Create({ categories }: CreateProps) {
                                             ))}
                                         </div>
                                     )}
-                                    <input type="hidden" name="category_id" value={data.category_id} required />
+                                    <input
+                                        type="hidden"
+                                        name="category_id"
+                                        value={data.category_id}
+                                        required
+                                    />
                                 </div>
                                 {errors.category_id && (
-                                    <span className="text-xs font-bold text-red-500 mt-1 pl-1">
+                                    <span className="mt-1 pl-1 text-xs font-bold text-red-500">
                                         {errors.category_id}
                                     </span>
                                 )}
@@ -658,8 +744,10 @@ export default function Create({ categories }: CreateProps) {
                                     type="text"
                                     placeholder="Nama penyelenggara/EO"
                                     value={organizer}
-                                    onChange={(e) => setOrganizer(e.target.value)}
-                                    className="w-full rounded-full border-0 bg-primary-100/30 px-6 py-4 font-brand text-base font-semibold placeholder-neutral-450 transition-all duration-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 text-neutral-800"
+                                    onChange={(e) =>
+                                        setOrganizer(e.target.value)
+                                    }
+                                    className="placeholder-neutral-450 w-full rounded-full border-0 bg-primary-100/30 px-6 py-4 font-brand text-base font-semibold text-neutral-800 transition-all duration-200 focus:bg-white focus:ring-2 focus:ring-primary-500 focus:outline-none"
                                 />
                             </div>
 
@@ -671,33 +759,46 @@ export default function Create({ categories }: CreateProps) {
                                 <div className="flex flex-col gap-4 rounded-3xl bg-primary-100/30 p-6">
                                     <div className="flex flex-col gap-3">
                                         {contacts.map((contact, index) => (
-                                            <div key={index} className="flex gap-2 items-center">
-                                                <div className="flex-grow flex rounded-full border border-neutral-100 bg-white shadow-xs overflow-hidden">
+                                            <div
+                                                key={index}
+                                                className="flex items-center gap-2"
+                                            >
+                                                <div className="flex flex-grow overflow-hidden rounded-full border border-neutral-100 bg-white shadow-xs">
                                                     <input
                                                         type="text"
                                                         placeholder="Nama"
                                                         value={contact.name}
                                                         onChange={(e) =>
-                                                            updateContact(index, 'name', e.target.value)
+                                                            updateContact(
+                                                                index,
+                                                                'name',
+                                                                e.target.value,
+                                                            )
                                                         }
-                                                        className="w-3/5 px-5 py-3 bg-transparent border-0 outline-none text-base font-semibold placeholder-gray-400 focus:ring-0 text-neutral-800"
+                                                        className="w-3/5 border-0 bg-transparent px-5 py-3 text-base font-semibold text-neutral-800 placeholder-gray-400 outline-none focus:ring-0"
                                                     />
-                                                    <div className="w-px bg-neutral-200 my-2 shrink-0"></div>
+                                                    <div className="my-2 w-px shrink-0 bg-neutral-200"></div>
                                                     <input
                                                         type="text"
                                                         placeholder="No. Telepon / E-mail"
                                                         value={contact.info}
                                                         onChange={(e) =>
-                                                            updateContact(index, 'info', e.target.value)
+                                                            updateContact(
+                                                                index,
+                                                                'info',
+                                                                e.target.value,
+                                                            )
                                                         }
-                                                        className="w-2/5 px-5 py-3 bg-transparent border-0 outline-none text-base font-semibold placeholder-gray-400 focus:ring-0 pl-4 text-neutral-800"
+                                                        className="w-2/5 border-0 bg-transparent px-5 py-3 pl-4 text-base font-semibold text-neutral-800 placeholder-gray-400 outline-none focus:ring-0"
                                                     />
                                                 </div>
                                                 {contacts.length > 1 && (
                                                     <button
                                                         type="button"
-                                                        onClick={() => removeContact(index)}
-                                                        className="shrink-0 rounded-full border border-neutral-200 bg-white p-2.5 text-red-500 hover:bg-red-50 transition-all duration-200 cursor-pointer active:scale-95"
+                                                        onClick={() =>
+                                                            removeContact(index)
+                                                        }
+                                                        className="shrink-0 cursor-pointer rounded-full border border-neutral-200 bg-white p-2.5 text-red-500 transition-all duration-200 hover:bg-red-50 active:scale-95"
                                                     >
                                                         <Trash2 size={16} />
                                                     </button>
@@ -732,25 +833,37 @@ export default function Create({ categories }: CreateProps) {
                                             Lokasi
                                         </label>
 
-                                        <div className="flex flex-col items-center gap-4 sm:flex-row w-full">
-                                            <div className="relative flex rounded-full border border-neutral-100 bg-white p-0.5 shadow-xs shrink-0 w-48 h-9 overflow-hidden select-none">
+                                        <div className="flex w-full flex-col items-center gap-4 sm:flex-row">
+                                            <div className="relative flex h-9 w-48 shrink-0 overflow-hidden rounded-full border border-neutral-100 bg-white p-0.5 shadow-xs select-none">
                                                 {/* Sliding background */}
                                                 <div
                                                     className={`absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-2px)] rounded-full bg-primary-500 transition-all duration-300 ease-in-out ${
-                                                        data.type === 'online' ? 'translate-x-0' : 'translate-x-full'
+                                                        data.type === 'online'
+                                                            ? 'translate-x-0'
+                                                            : 'translate-x-full'
                                                     }`}
                                                 />
                                                 <button
                                                     type="button"
-                                                    onClick={() => setData('type', 'online')}
-                                                    className={`relative z-10 w-1/2 rounded-full border-0 py-1.5 text-xs font-bold transition-colors duration-300 ${data.type === 'online' ? 'text-white cursor-default' : 'cursor-pointer text-neutral-500 hover:text-neutral-800 bg-transparent'}`}
+                                                    onClick={() =>
+                                                        setData(
+                                                            'type',
+                                                            'online',
+                                                        )
+                                                    }
+                                                    className={`relative z-10 w-1/2 rounded-full border-0 py-1.5 text-xs font-bold transition-colors duration-300 ${data.type === 'online' ? 'cursor-default text-white' : 'cursor-pointer bg-transparent text-neutral-500 hover:text-neutral-800'}`}
                                                 >
                                                     Online
                                                 </button>
                                                 <button
                                                     type="button"
-                                                    onClick={() => setData('type', 'offline')}
-                                                    className={`relative z-10 w-1/2 rounded-full border-0 py-1.5 text-xs font-bold transition-colors duration-300 ${data.type === 'offline' ? 'text-white cursor-default' : 'cursor-pointer text-neutral-500 hover:text-neutral-800 bg-transparent'}`}
+                                                    onClick={() =>
+                                                        setData(
+                                                            'type',
+                                                            'offline',
+                                                        )
+                                                    }
+                                                    className={`relative z-10 w-1/2 rounded-full border-0 py-1.5 text-xs font-bold transition-colors duration-300 ${data.type === 'offline' ? 'cursor-default text-white' : 'cursor-pointer bg-transparent text-neutral-500 hover:text-neutral-800'}`}
                                                 >
                                                     Offline
                                                 </button>
@@ -761,27 +874,43 @@ export default function Create({ categories }: CreateProps) {
                                                     type="text"
                                                     placeholder="Link Zoom/Gmeet/apapun"
                                                     value={data.link}
-                                                    onChange={(e) => setData('link', e.target.value)}
+                                                    onChange={(e) =>
+                                                        setData(
+                                                            'link',
+                                                            e.target.value,
+                                                        )
+                                                    }
                                                     required
-                                                    className="w-full flex-grow rounded-full border-0 bg-white px-5 py-2.5 text-base font-medium shadow-xs focus:outline-none focus:ring-2 focus:ring-primary-500 text-neutral-800"
+                                                    className="w-full flex-grow rounded-full border-0 bg-white px-5 py-2.5 text-base font-medium text-neutral-800 shadow-xs focus:ring-2 focus:ring-primary-500 focus:outline-none"
                                                 />
                                             ) : isLoaded ? (
                                                 <div className="w-full flex-grow">
                                                     <Autocomplete
-                                                        onLoad={(autocomplete) => {
-                                                            autocompleteRef.current = autocomplete;
+                                                        onLoad={(
+                                                            autocomplete,
+                                                        ) => {
+                                                            autocompleteRef.current =
+                                                                autocomplete;
                                                         }}
-                                                        onPlaceChanged={handlePlaceChanged}
+                                                        onPlaceChanged={
+                                                            handlePlaceChanged
+                                                        }
                                                     >
                                                         <input
                                                             type="text"
                                                             placeholder="Cari Alamat atau Nama Tempat..."
-                                                            value={data.location_name}
+                                                            value={
+                                                                data.location_name
+                                                            }
                                                             onChange={(e) =>
-                                                                setData('location_name', e.target.value)
+                                                                setData(
+                                                                    'location_name',
+                                                                    e.target
+                                                                        .value,
+                                                                )
                                                             }
                                                             required
-                                                            className="w-full rounded-full border-0 bg-white px-5 py-2.5 text-base font-medium shadow-xs focus:outline-none focus:ring-2 focus:ring-primary-500 text-neutral-800"
+                                                            className="w-full rounded-full border-0 bg-white px-5 py-2.5 text-base font-medium text-neutral-800 shadow-xs focus:ring-2 focus:ring-primary-500 focus:outline-none"
                                                         />
                                                     </Autocomplete>
                                                 </div>
@@ -795,12 +924,12 @@ export default function Create({ categories }: CreateProps) {
                                             )}
                                         </div>
                                         {errors.location_name && (
-                                            <span className="text-xs font-bold text-red-500 mt-1 pl-1">
+                                            <span className="mt-1 pl-1 text-xs font-bold text-red-500">
                                                 {errors.location_name}
                                             </span>
                                         )}
                                         {errors.link && (
-                                            <span className="text-xs font-bold text-red-500 mt-1 pl-1">
+                                            <span className="mt-1 pl-1 text-xs font-bold text-red-500">
                                                 {errors.link}
                                             </span>
                                         )}
@@ -822,7 +951,8 @@ export default function Create({ categories }: CreateProps) {
                                                         }}
                                                         zoom={15}
                                                         onLoad={(map) => {
-                                                            mapRef.current = map;
+                                                            mapRef.current =
+                                                                map;
                                                         }}
                                                         options={{
                                                             disableDefaultUI: true,
@@ -836,7 +966,9 @@ export default function Create({ categories }: CreateProps) {
                                                                 lng: data.longitude,
                                                             }}
                                                             draggable={true}
-                                                            onDragEnd={handleMarkerDragEnd}
+                                                            onDragEnd={
+                                                                handleMarkerDragEnd
+                                                            }
                                                         />
                                                     </GoogleMap>
                                                 ) : (
@@ -846,13 +978,14 @@ export default function Create({ categories }: CreateProps) {
                                                             className="animate-bounce text-primary-500"
                                                         />
                                                         <span className="font-brand text-sm font-bold text-gray-500">
-                                                            Memuat Google Maps...
+                                                            Memuat Google
+                                                            Maps...
                                                         </span>
                                                     </div>
                                                 )}
                                             </div>
                                             {data.address && (
-                                                <div className="text-xs mt-1 px-1 font-semibold text-neutral-500">
+                                                <div className="mt-1 px-1 text-xs font-semibold text-neutral-500">
                                                     <span className="font-extrabold text-neutral-800">
                                                         Alamat Lengkap:
                                                     </span>{' '}
@@ -871,14 +1004,17 @@ export default function Create({ categories }: CreateProps) {
                                             placeholder="Tulis deskripsi event secara detail di sini..."
                                             value={data.description}
                                             onChange={(e) =>
-                                                setData('description', e.target.value)
+                                                setData(
+                                                    'description',
+                                                    e.target.value,
+                                                )
                                             }
                                             required
                                             rows={6}
-                                            className="w-full rounded-3xl border-0 bg-white px-5 py-4 font-brand text-base font-medium leading-relaxed placeholder-neutral-450 shadow-xs focus:outline-none focus:ring-2 focus:ring-primary-500 text-neutral-800"
+                                            className="placeholder-neutral-450 w-full rounded-3xl border-0 bg-white px-5 py-4 font-brand text-base leading-relaxed font-medium text-neutral-800 shadow-xs focus:ring-2 focus:ring-primary-500 focus:outline-none"
                                         />
                                         {errors.description && (
-                                            <span className="text-xs font-bold text-red-500 mt-1 pl-1">
+                                            <span className="mt-1 pl-1 text-xs font-bold text-red-500">
                                                 {errors.description}
                                             </span>
                                         )}
@@ -893,7 +1029,10 @@ export default function Create({ categories }: CreateProps) {
                                     onClick={(e) => submit(e)}
                                     className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border-0 bg-secondary-500 py-4 text-lg font-bold text-neutral-900 shadow-md transition-all duration-200 hover:bg-secondary-600 active:scale-[0.99]"
                                 >
-                                    <Inbox size={20} className="text-neutral-900" />
+                                    <Inbox
+                                        size={20}
+                                        className="text-neutral-900"
+                                    />
                                     <span>Simpan Draf</span>
                                 </button>
 

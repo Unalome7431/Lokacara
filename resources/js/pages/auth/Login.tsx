@@ -18,113 +18,144 @@ export default function Login() {
     };
 
     return (
-        <div className='flex justify-center items-center min-h-screen w-screen bg-gray-50/50 p-4'>
-            <div className='relative w-full max-w-[420px] mx-auto rounded-3xl shadow-xl shadow-gray-200/50 bg-white overflow-hidden'>
+        <div className="flex min-h-screen w-screen items-center justify-center bg-gray-50/50 p-4">
+            <div className="relative mx-auto w-full max-w-[420px] overflow-hidden rounded-3xl bg-white shadow-xl shadow-gray-200/50">
                 {/* Subtle gradient border effect */}
-                <div className='absolute -inset-px bg-linear-to-br from-primary-400 to-secondary-300 rounded-3xl opacity-35 pointer-events-none'></div>
+                <div className="pointer-events-none absolute -inset-px rounded-3xl bg-linear-to-br from-primary-400 to-secondary-300 opacity-35"></div>
 
-                <div className='relative px-8 pt-16 pb-10 bg-white rounded-3xl flex flex-col items-stretch'>
+                <div className="relative flex flex-col items-stretch rounded-3xl bg-white px-8 pt-16 pb-10">
                     <Head title="Masuk" />
-                    
-                    <h2 className='text-center text-primary-500 font-extrabold text-[2.5rem] leading-none mb-6 font-brand'>
+
+                    <h2 className="mb-6 text-center font-brand text-[2.5rem] leading-none font-extrabold text-primary-500">
                         Masuk
                     </h2>
 
                     {/* Google OAuth Button */}
-                    <div className='relative text-center mb-6'>
-                        <a 
-                            href="/auth/google" 
-                            className='relative flex items-center justify-center py-3.5 border border-gray-200 rounded-lg bg-white w-full text-gray-600 text-base font-normal box-border font-brand hover:bg-gray-50 transition-colors duration-200'
+                    <div className="relative mb-6 text-center">
+                        <a
+                            href="/auth/google"
+                            className="relative box-border flex w-full items-center justify-center rounded-lg border border-gray-200 bg-white py-3.5 font-brand text-base font-normal text-gray-600 transition-colors duration-200 hover:bg-gray-50"
                         >
-                            <img src={googleIconUrl} alt="Google" className='absolute left-5 w-5 h-5' />
+                            <img
+                                src={googleIconUrl}
+                                alt="Google"
+                                className="absolute left-5 h-5 w-5"
+                            />
                             <span>
-                                Masuk dengan <span className='text-primary-500 font-semibold'>Google</span>
+                                Masuk dengan{' '}
+                                <span className="font-semibold text-primary-500">
+                                    Google
+                                </span>
                             </span>
                         </a>
                     </div>
-                    
+
                     {/* Divider */}
-                    <div className='relative flex justify-center items-center w-full mb-6'>
-                        <div className='absolute inset-0 flex items-center'>
-                            <div className='w-full border-t border-gray-200'></div>
+                    <div className="relative mb-6 flex w-full items-center justify-center">
+                        <div className="absolute inset-0 flex items-center">
+                            <div className="w-full border-t border-gray-200"></div>
                         </div>
-                        <span className='relative bg-white px-4 text-gray-400 text-small font-normal font-brand'>atau</span>
+                        <span className="relative bg-white px-4 font-brand text-small font-normal text-gray-400">
+                            atau
+                        </span>
                     </div>
 
                     {/* Manual Login Form */}
-                    <form onSubmit={submit} className='flex flex-col gap-4'>
+                    <form onSubmit={submit} className="flex flex-col gap-4">
                         <div>
                             <input
                                 id="email"
                                 type="email"
                                 name="email"
-                                placeholder='Email / Nomor Telepon'
+                                placeholder="Email / Nomor Telepon"
                                 value={data.email}
-                                onChange={(e) => setData('email', e.target.value)}
+                                onChange={(e) =>
+                                    setData('email', e.target.value)
+                                }
                                 required
-                                className='w-full px-4 py-3.5 box-border text-base font-brand font-normal placeholder-gray-400 bg-secondary-100 rounded-lg border border-transparent focus:border-primary-500 focus:bg-white focus:outline-none transition-all duration-200'
+                                className="box-border w-full rounded-lg border border-transparent bg-secondary-100 px-4 py-3.5 font-brand text-base font-normal placeholder-gray-400 transition-all duration-200 focus:border-primary-500 focus:bg-white focus:outline-none"
                             />
                             {errors.email && (
-                                <div className='text-red-500 mt-1.5 text-micro'>
+                                <div className="mt-1.5 text-micro text-red-500">
                                     {errors.email}
                                 </div>
                             )}
                         </div>
-                        
+
                         <div>
-                            <div className='relative w-full'>
+                            <div className="relative w-full">
                                 <input
                                     id="password"
                                     type={showPassword ? 'text' : 'password'}
                                     name="password"
-                                    placeholder='Kata Sandi'
+                                    placeholder="Kata Sandi"
                                     value={data.password}
-                                    onChange={(e) => setData('password', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('password', e.target.value)
+                                    }
                                     required
-                                    className='w-full pl-4 pr-12 py-3.5 box-border text-base font-brand font-normal placeholder-gray-400 bg-secondary-100 rounded-lg border border-transparent focus:border-primary-500 focus:bg-white focus:outline-none transition-all duration-200'
+                                    className="box-border w-full rounded-lg border border-transparent bg-secondary-100 py-3.5 pr-12 pl-4 font-brand text-base font-normal placeholder-gray-400 transition-all duration-200 focus:border-primary-500 focus:bg-white focus:outline-none"
                                 />
                                 <button
                                     type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className='absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none cursor-pointer'
+                                    onClick={() =>
+                                        setShowPassword(!showPassword)
+                                    }
+                                    className="absolute top-1/2 right-4 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-gray-600 focus:outline-none"
                                 >
-                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    {showPassword ? (
+                                        <EyeOff size={18} />
+                                    ) : (
+                                        <Eye size={18} />
+                                    )}
                                 </button>
                             </div>
                             {errors.password && (
-                                <div className='text-red-500 mt-1.5 text-micro'>
+                                <div className="mt-1.5 text-micro text-red-500">
                                     {errors.password}
                                 </div>
                             )}
 
-                            <div className='flex justify-end mt-2.5'>
-                                <a href="" className='text-small font-semibold font-brand text-gray-400 hover:text-gray-600 hover:underline text-right'>
+                            <div className="mt-2.5 flex justify-end">
+                                <a
+                                    href=""
+                                    className="text-right font-brand text-small font-semibold text-gray-400 hover:text-gray-600 hover:underline"
+                                >
                                     Lupa Kata Sandi?
                                 </a>
                             </div>
                         </div>
-                        
-                        <Button 
-                            type="submit" 
-                            disabled={processing} 
-                            className={`w-full mt-4 py-3.5 text-large ${processing ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
+
+                        <Button
+                            type="submit"
+                            disabled={processing}
+                            className={`mt-4 w-full py-3.5 text-large ${processing ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`}
                         >
                             Masuk
                         </Button>
                     </form>
 
-                    <div className='flex justify-center text-base font-normal font-brand mt-6'>
-                        <span className='text-gray-500'>
-                            Belum memiliki akun? <a href="/register" className='text-primary-500 font-bold hover:underline'>Daftar</a>
+                    <div className="mt-6 flex justify-center font-brand text-base font-normal">
+                        <span className="text-gray-500">
+                            Belum memiliki akun?{' '}
+                            <a
+                                href="/register"
+                                className="font-bold text-primary-500 hover:underline"
+                            >
+                                Daftar
+                            </a>
                         </span>
                     </div>
 
-                    <div className='flex justify-center mt-12 mb-4'>
-                        <img src={faviconUrl} alt="Lokacara" className='w-12 h-14'/>
+                    <div className="mt-12 mb-4 flex justify-center">
+                        <img
+                            src={faviconUrl}
+                            alt="Lokacara"
+                            className="h-14 w-12"
+                        />
                     </div>
                 </div>
             </div>
         </div>
     );
 }
-
