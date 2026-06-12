@@ -50,7 +50,7 @@ Route::get('/auth/google', [GoogleController::class, 'redirectToGoogle'])->name(
 Route::get('/auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
 
 // Protected Routes
-Route::middleware(['auth', 'verified', 'profile.completed'])->group(function () {
+Route::middleware(['auth', 'profile.completed'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/events/{event}/join', [EventRegistrationController::class, 'store'])->name('events.join');
 });

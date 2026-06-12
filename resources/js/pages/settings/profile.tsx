@@ -1,4 +1,4 @@
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { User, Lock, Camera, Info, ShieldAlert } from 'lucide-react';
 import React, { useState } from 'react';
 import defaultAvatar from '@/../../public/avatars/default.png';
@@ -11,6 +11,7 @@ interface UserData {
     name: string;
     email: string;
     avatar_url?: string;
+    email_verified_at?: string | null;
 }
 
 interface PageProps {
@@ -21,11 +22,15 @@ interface PageProps {
 
 export default function Profile() {
     const page = usePage();
-    const { auth } = page.props as any as PageProps;
+    const { auth, flash } = page.props as any;
     const user = auth?.user;
 
     const [activeTab, setActiveTab] = useState<'Akun' | 'Tentang'>('Akun');
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+
+    const handleSendOtp = () => {
+        router.post('/settings/send-otp');
+    };
 
     // Form 1: Profile Details Form
     const profileForm = useForm({
@@ -106,6 +111,48 @@ export default function Profile() {
                             {/* Akun Settings Section */}
                             {activeTab === 'Akun' && (
                                 <div className="animate-in fade-in flex flex-col gap-8 duration-200">
+                                    {/* Flash Message Alerts */}
+                                    {flash?.success && (
+                                        <div className="animate-in fade-in rounded-2xl border border-green-200 bg-green-50 p-4 text-small font-bold text-green-700 duration-200">
+                                            {flash.success}
+                                        </div>
+                                    )}
+                                    {flash?.warning && (
+                                        <div className="animate-in fade-in rounded-2xl border border-amber-200 bg-amber-50 p-4 text-small font-bold text-amber-700 duration-200">
+                                            {flash.warning}
+                                        </div>
+                                    )}
+                                    {flash?.error && (
+                                        <div className="animate-in fade-in rounded-2xl border border-red-200 bg-red-50 p-4 text-small font-bold text-red-700 duration-200">
+                                            {flash.error}
+                                        </div>
+                                    )}
+
+                                    {/* Unverified Email Alert Banner */}
+                                    {user && !user.email_verified_at && (
+                                        <div className="animate-in fade-in flex flex-col justify-between gap-4 rounded-3xl border border-secondary-300 bg-secondary-100/30 p-6 shadow-sm duration-200 sm:flex-row sm:items-center">
+                                            <div className="flex-grow">
+                                                <h4 className="font-brand text-base font-black text-secondary-900">
+                                                    Email Anda Belum
+                                                    Diverifikasi
+                                                </h4>
+                                                <p className="mt-1 text-[0.7rem] font-medium text-secondary-800">
+                                                    Verifikasi email Anda untuk
+                                                    dapat membuat event baru dan
+                                                    bergabung dengan event
+                                                    berbayar.
+                                                </p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={handleSendOtp}
+                                                className="cursor-pointer rounded-full bg-secondary-500 px-5 py-2.5 text-small font-bold whitespace-nowrap text-white shadow-md transition-colors hover:bg-secondary-600 focus:outline-none"
+                                            >
+                                                Verifikasi Sekarang
+                                            </button>
+                                        </div>
+                                    )}
+
                                     {/* Form 1: Edit Profile Form */}
                                     <form
                                         onSubmit={handleUpdateProfile}
