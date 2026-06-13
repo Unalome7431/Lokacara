@@ -3,13 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Str;
-use App\Models\User;
+use Laravel\Sanctum\PersonalAccessToken;
 use Laravel\Socialite\Facades\Socialite;
 use OpenApi\Attributes as OA;
 
@@ -103,9 +104,9 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        if (!Auth::attempt($request->only('email', 'password'))) {
+        if (! Auth::attempt($request->only('email', 'password'))) {
             return response()->json([
-                'message' => 'Invalid login details'
+                'message' => 'Invalid login details',
             ], 401);
         }
 
@@ -114,8 +115,9 @@ class AuthController extends Controller
         // Check if user is suspended
         if ($user->suspended_at) {
             Auth::guard('web')->logout(); // Ensure not logged in on web guard too if mixed
+
             return response()->json([
-                'message' => 'Your account is suspended.'
+                'message' => 'Your account is suspended.',
             ], 403);
         }
 
@@ -166,26 +168,38 @@ class AuthController extends Controller
             $googleUser = Socialite::driver('google')->userFromToken($request->token);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Invalid Google token'
+                'message' => 'Invalid Google token',
             ], 401);
         }
 
-        $user = User::updateOrCreate(
-            ['email' => $googleUser->getEmail()],
-            [
-                'name'              => $googleUser->getName() ?? $googleUser->getEmail(),
-                'password'          => bcrypt(Str::random(32)),
+        $email = $googleUser->getEmail();
+        if (empty($email)) {
+            $email = 'google_'.$googleUser->getId().'@placeholder.local';
+        }
+
+        $user = User::where('provider', 'google')
+            ->where('provider_id', $googleUser->getId())
+            ->first();
+
+        if (! $user && $googleUser->getEmail()) {
+            $user = User::where('email', $googleUser->getEmail())->first();
+        }
+
+        if (! $user) {
+            $user = User::create([
+                'name' => $googleUser->getName() ?? 'User',
+                'email' => $email,
+                'provider' => 'google',
+                'provider_id' => $googleUser->getId(),
                 'email_verified_at' => now(),
-                'role'              => 'user',
-                'provider'          => 'google',
-                'provider_id'       => $googleUser->getId(),
-                'avatar_url'        => $googleUser->getAvatar(),
-            ]
-        );
+                'password' => bcrypt(Str::random(32)),
+                'avatar_url' => $googleUser->getAvatar(),
+            ]);
+        }
 
         if ($user->suspended_at) {
             return response()->json([
-                'message' => 'Your account has been suspended. Please contact support.'
+                'message' => 'Your account has been suspended. Please contact support.',
             ], 403);
         }
 
@@ -193,8 +207,8 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Login successful',
-            'user'    => $user->fresh(),
-            'token'   => $token,
+            'user' => $user->fresh(),
+            'token' => $token,
         ], 200);
     }
 
@@ -220,7 +234,7 @@ class AuthController extends Controller
         $request->user()->currentAccessToken()->delete();
 
         return response()->json([
-            'message' => 'Logged out successfully'
+            'message' => 'Logged out successfully',
         ], 200);
     }
 
@@ -244,7 +258,7 @@ class AuthController extends Controller
     {
         $bearerToken = $request->bearerToken();
 
-        if (!$bearerToken) {
+        if (! $bearerToken) {
             return response()->json(['message' => 'Token not provided'], 401);
         }
 
@@ -253,19 +267,19 @@ class AuthController extends Controller
             [$id, $plainText] = explode('|', $bearerToken, 2);
         }
 
-        if (!$id || !is_numeric($id)) {
+        if (! $id || ! is_numeric($id)) {
             return response()->json(['message' => 'Invalid token format'], 401);
         }
 
-        $accessToken = \Laravel\Sanctum\PersonalAccessToken::find($id);
+        $accessToken = PersonalAccessToken::find($id);
 
-        if (!$accessToken) {
+        if (! $accessToken) {
             return response()->json(['message' => 'Invalid token'], 401);
         }
 
         $user = $accessToken->tokenable;
 
-        if (!$user) {
+        if (! $user) {
             return response()->json(['message' => 'User not found'], 401);
         }
 
@@ -318,7 +332,7 @@ class AuthController extends Controller
 
         $user = $request->user();
 
-        if (!Hash::check($validated['old_password'], $user->password)) {
+        if (! Hash::check($validated['old_password'], $user->password)) {
             return response()->json([
                 'message' => 'The given data was invalid.',
                 'errors' => [
@@ -412,7 +426,7 @@ class AuthController extends Controller
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function ($user, $password) {
                 $user->forceFill([
-                    'password' => Hash::make($password)
+                    'password' => Hash::make($password),
                 ])->setRememberToken(Str::random(60));
 
                 $user->save();
@@ -426,4 +440,3 @@ class AuthController extends Controller
             : response()->json(['email' => [__($status)]], 400);
     }
 }
-
