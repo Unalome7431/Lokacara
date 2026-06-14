@@ -272,7 +272,7 @@ export default function Dashboard({
                                                     : `Rp ${Number(event.price).toLocaleString('id-ID')}`}
                                             </div>
 
-                                            <div className="relative h-[180px] w-full shrink-0 overflow-hidden border-b border-gray-100 bg-gray-50 sm:h-[200px] lg:h-[220px]">
+                                            <div className="relative h-[170px] w-full shrink-0 overflow-hidden border-b border-gray-100 bg-gray-50 sm:h-[190px] lg:h-[210px]">
                                                 <img
                                                     src={
                                                         event.poster_url ||
@@ -283,7 +283,7 @@ export default function Dashboard({
                                                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                                                 />
                                             </div>
-                                            <div className="flex h-[160px] sm:h-[170px] lg:h-[180px] shrink-0 flex-col justify-between p-4">
+                                            <div className="flex h-[170px] sm:h-[180px] lg:h-[190px] shrink-0 flex-col justify-between p-4">
                                                 <div className="flex flex-col gap-1.5">
                                                     <h4 className="line-clamp-2 h-[34px] overflow-hidden text-xs leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[40px] sm:text-sm lg:h-[48px] lg:text-base">
                                                         {event.title}
@@ -387,7 +387,7 @@ export default function Dashboard({
                                                         : `Rp ${Number(event.price).toLocaleString('id-ID')}`}
                                                 </div>
 
-                                                <div className="relative h-[180px] w-full shrink-0 overflow-hidden border-b border-gray-100 bg-gray-50 sm:h-[200px] lg:h-[220px]">
+                                                <div className="relative h-[170px] w-full shrink-0 overflow-hidden border-b border-gray-100 bg-gray-50 sm:h-[190px] lg:h-[210px]">
                                                     <img
                                                         src={
                                                             event.poster_url ||
@@ -398,7 +398,7 @@ export default function Dashboard({
                                                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                                                     />
                                                 </div>
-                                                <div className="flex h-[160px] sm:h-[170px] lg:h-[180px] shrink-0 flex-col justify-between p-4">
+                                                <div className="flex h-[170px] sm:h-[180px] lg:h-[190px] shrink-0 flex-col justify-between p-4">
                                                     <div className="flex flex-col gap-1.5">
                                                         <h4 className="line-clamp-2 h-[34px] overflow-hidden text-xs leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[40px] sm:text-sm lg:h-[48px] lg:text-base">
                                                             {event.title}
