@@ -35,14 +35,14 @@ export default function EventCard({event, isDetail = true}: EventCardProps) {
   }).format(dateObj);
 
   return(
-    <div className='w-full border border-neutral-200 rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] bg-white overflow-hidden flex flex-col h-[410px]'>
-      <div className='w-full h-[180px] shrink-0'>
+    <div className='w-full max-w-[300px] mx-auto shrink-0 border border-neutral-200 rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] bg-white overflow-hidden flex flex-col h-[340px] sm:h-[370px] lg:h-[400px]'>
+      <div className='w-full h-[180px] sm:h-[200px] lg:h-[220px] shrink-0'>
         <img src={event.cover??DefaultCover} alt={event.title} className='w-full h-full object-cover'/>
       </div>
 
-      <div className='p-6 pb-8 flex flex-col justify-between flex-grow'>
+      <div className='h-[160px] sm:h-[170px] lg:h-[180px] shrink-0 p-4 flex flex-col justify-between'>
         <div>
-          <h6 className='text-base font-brand font-bold text-primary-500 leading-tight mb-2 line-clamp-3 h-[72px]'>
+          <h6 className='text-xs sm:text-sm lg:text-base font-brand font-bold text-primary-500 leading-tight mb-2 line-clamp-2 h-[34px] sm:h-[40px] lg:h-[48px]'>
             {event.title}
           </h6>
           
@@ -50,7 +50,7 @@ export default function EventCard({event, isDetail = true}: EventCardProps) {
             {formattedDate}
           </span>
           
-          <span className='text-micro font-brand text-gray-300 font-normal leading-snug block'>
+          <span className='text-micro font-brand text-gray-300 font-normal leading-snug block line-clamp-2 overflow-hidden h-[32px]'>
             {event.location_name}
           </span>
         </div>

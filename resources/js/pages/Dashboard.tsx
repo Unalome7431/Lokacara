@@ -263,7 +263,7 @@ export default function Dashboard({
                                     {filteredHostedEvents.map((event) => (
                                         <div
                                             key={event.id}
-                                            className="border-neutral-150 group relative flex h-[325px] w-full flex-col justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:h-[370px] lg:h-[400px]"
+                                            className="border-neutral-150 group relative flex h-[340px] w-full max-w-[300px] mx-auto flex-col justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:h-[370px] lg:h-[400px]"
                                         >
                                             {/* "FREE" or price Badge on Top-Left of image */}
                                             <div className="absolute top-4 left-4 z-10 rounded-md bg-secondary-400 px-3 py-1 text-[0.6275rem] font-extrabold text-secondary-900 shadow-sm">
@@ -272,7 +272,7 @@ export default function Dashboard({
                                                     : `Rp ${Number(event.price).toLocaleString('id-ID')}`}
                                             </div>
 
-                                            <div className="relative h-[140px] w-full shrink-0 overflow-hidden border-b border-gray-100 bg-gray-50 sm:h-[170px] lg:aspect-3/2 lg:h-auto">
+                                            <div className="relative h-[180px] w-full shrink-0 overflow-hidden border-b border-gray-100 bg-gray-50 sm:h-[200px] lg:h-[220px]">
                                                 <img
                                                     src={
                                                         event.poster_url ||
@@ -283,9 +283,9 @@ export default function Dashboard({
                                                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                                                 />
                                             </div>
-                                            <div className="flex flex-grow flex-col justify-between gap-2 p-4">
+                                            <div className="flex h-[160px] sm:h-[170px] lg:h-[180px] shrink-0 flex-col justify-between p-4">
                                                 <div className="flex flex-col gap-1.5">
-                                                    <h4 className="line-clamp-2 h-[34px] overflow-hidden text-xs leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[40px] sm:text-sm lg:line-clamp-3 lg:h-[66px] lg:text-base">
+                                                    <h4 className="line-clamp-2 h-[34px] overflow-hidden text-xs leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[40px] sm:text-sm lg:h-[48px] lg:text-base">
                                                         {event.title}
                                                     </h4>
                                                     <div className="flex flex-col gap-1 border-t border-gray-100/50 pt-1.5 text-[10px] font-semibold text-gray-400 sm:text-micro">
@@ -298,16 +298,18 @@ export default function Dashboard({
                                                                 event.start_datetime,
                                                             )}
                                                         </span>
-                                                        <span className="flex items-center gap-1.5">
+                                                        <span className="flex items-start gap-1.5">
                                                             <MapPin
                                                                 size={12}
-                                                                className="shrink-0 text-gray-400"
+                                                                className="mt-0.5 shrink-0 text-gray-400"
                                                             />
-                                                            {event.type ===
-                                                            'online'
-                                                                ? 'Online'
-                                                                : event.location_name ||
-                                                                  'Lokasi Offline'}
+                                                            <span className="line-clamp-2 overflow-hidden">
+                                                                {event.type ===
+                                                                'online'
+                                                                    ? 'Online'
+                                                                    : event.location_name ||
+                                                                      'Lokasi Offline'}
+                                                            </span>
                                                         </span>
                                                     </div>
                                                 </div>
@@ -376,7 +378,7 @@ export default function Dashboard({
                                         return (
                                             <div
                                                 key={reg.id}
-                                                className="border-neutral-150 group relative flex h-[325px] w-full flex-col justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:h-[370px] lg:h-[400px]"
+                                                className="border-neutral-150 group relative flex h-[340px] w-full max-w-[300px] mx-auto flex-col justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:h-[370px] lg:h-[400px]"
                                             >
                                                 {/* "FREE" or price Badge on Top-Left of image */}
                                                 <div className="absolute top-4 left-4 z-10 rounded-md bg-secondary-400 px-3 py-1 text-[0.6275rem] font-extrabold text-secondary-900 shadow-sm">
@@ -385,7 +387,7 @@ export default function Dashboard({
                                                         : `Rp ${Number(event.price).toLocaleString('id-ID')}`}
                                                 </div>
 
-                                                <div className="relative h-[140px] w-full shrink-0 overflow-hidden border-b border-gray-100 bg-gray-50 sm:h-[170px] lg:aspect-3/2 lg:h-auto">
+                                                <div className="relative h-[180px] w-full shrink-0 overflow-hidden border-b border-gray-100 bg-gray-50 sm:h-[200px] lg:h-[220px]">
                                                     <img
                                                         src={
                                                             event.poster_url ||
@@ -396,9 +398,9 @@ export default function Dashboard({
                                                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                                                     />
                                                 </div>
-                                                <div className="flex flex-grow flex-col justify-between gap-2 p-4">
+                                                <div className="flex h-[160px] sm:h-[170px] lg:h-[180px] shrink-0 flex-col justify-between p-4">
                                                     <div className="flex flex-col gap-1.5">
-                                                        <h4 className="line-clamp-2 h-[34px] overflow-hidden text-xs leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[40px] sm:text-sm lg:line-clamp-3 lg:h-[66px] lg:text-base">
+                                                        <h4 className="line-clamp-2 h-[34px] overflow-hidden text-xs leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[40px] sm:text-sm lg:h-[48px] lg:text-base">
                                                             {event.title}
                                                         </h4>
                                                         <div className="flex flex-col gap-1 border-t border-gray-100/50 pt-1.5 text-[10px] font-semibold text-gray-400 sm:text-micro">
@@ -411,16 +413,18 @@ export default function Dashboard({
                                                                     event.start_datetime,
                                                                 )}
                                                             </span>
-                                                            <span className="flex items-center gap-1.5">
+                                                            <span className="flex items-start gap-1.5">
                                                                 <MapPin
                                                                     size={12}
-                                                                    className="shrink-0 text-gray-400"
+                                                                    className="mt-0.5 shrink-0 text-gray-400"
                                                                 />
-                                                                {event.type ===
-                                                                'online'
-                                                                    ? 'Online'
-                                                                    : event.location_name ||
-                                                                      'Lokasi Offline'}
+                                                                <span className="line-clamp-2 overflow-hidden">
+                                                                    {event.type ===
+                                                                    'online'
+                                                                        ? 'Online'
+                                                                        : event.location_name ||
+                                                                          'Lokasi Offline'}
+                                                                </span>
                                                             </span>
                                                         </div>
                                                     </div>
