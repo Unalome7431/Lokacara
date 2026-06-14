@@ -11,6 +11,11 @@ class EventRegistrationController extends Controller
 
     public function store($eventId)
     {
+        $event = \App\Models\Event::findOrFail($eventId);
+        if ($event->price > 0 && !auth()->user()->email_verified_at) {
+            return redirect()->back()->with('error', 'Anda harus memverifikasi email untuk bergabung dengan event berbayar.');
+        }
+
         $success = $this->registrationService->joinEvent($eventId);
 
         if (!$success) {

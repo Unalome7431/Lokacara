@@ -44,6 +44,10 @@ class EventManagementController extends Controller
 
     public function create()
     {
+        if (!auth()->user()->email_verified_at) {
+            return redirect()->route('profile.edit')->with('error', 'Anda harus memverifikasi email untuk membuat event.');
+        }
+
         $categories = Category::all();
         return Inertia::render('Dashboard/Events/Create', [
             'categories' => $categories
@@ -52,6 +56,10 @@ class EventManagementController extends Controller
 
     public function store(Request $request)
     {
+        if (!$request->user()->email_verified_at) {
+            return redirect()->route('profile.edit')->with('error', 'Anda harus memverifikasi email untuk membuat event.');
+        }
+
         $validated = $this->validateEvent($request);
         
         $event = new Event($validated);
