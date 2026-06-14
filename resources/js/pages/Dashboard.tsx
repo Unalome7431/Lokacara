@@ -8,6 +8,8 @@ import {
     Plus,
     FileText,
     ExternalLink,
+    ChevronLeft,
+    ChevronRight,
 } from 'lucide-react';
 import { useState } from 'react';
 import defaultAvatar from '@/../../public/avatars/default.png';
@@ -87,6 +89,11 @@ export default function Dashboard({
         );
     };
 
+    const [currentPage, setCurrentPage] = useState(1);
+
+    // Items per page based on active tab
+    const itemsPerPage = activeTab === 'Sertifikat' ? 9 : 12;
+
     // Client-side searches
     const filteredHostedEvents = hosted_events.filter((event) =>
         event.title?.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -95,6 +102,121 @@ export default function Dashboard({
     const filteredJoinedEvents = joined_events.filter((reg) =>
         reg.event?.title?.toLowerCase().includes(searchQuery.toLowerCase()),
     );
+
+    // Total pages calculation
+    const getActiveTabTotalPages = () => {
+        if (activeTab === 'Event Terbuat') {
+            return Math.ceil(filteredHostedEvents.length / itemsPerPage);
+        } else if (activeTab === 'Event Tersimpan') {
+            return Math.ceil(filteredJoinedEvents.length / itemsPerPage);
+        } else {
+            return Math.ceil(certificates.length / itemsPerPage);
+        }
+    };
+
+    const totalPages = getActiveTabTotalPages();
+
+    // Paginated slices
+    const paginatedHostedEvents = filteredHostedEvents.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage,
+    );
+
+    const paginatedJoinedEvents = filteredJoinedEvents.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage,
+    );
+
+    const paginatedCertificates = certificates.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage,
+    );
+
+    // Get the page numbers to display, limiting to a maximum of 5 pages
+    const getPageNumbers = () => {
+        const maxPageButtons = 5;
+
+        if (totalPages <= maxPageButtons) {
+            return Array.from({ length: totalPages }, (_, idx) => idx + 1);
+        }
+
+        let startPage = Math.max(1, currentPage - 2);
+        const endPage = Math.min(totalPages, startPage + 4);
+
+        if (endPage - startPage < 4) {
+            startPage = Math.max(1, endPage - 4);
+        }
+
+        return Array.from(
+            { length: endPage - startPage + 1 },
+            (_, idx) => startPage + idx,
+        );
+    };
+
+    const renderPagination = () => {
+        if (totalPages <= 1) {
+            return null;
+        }
+
+        return (
+            <div className="mt-4 flex items-center justify-between border-t border-neutral-100 pt-6">
+                <span className="text-micro font-semibold text-gray-400">
+                    Halaman {currentPage} dari {totalPages}
+                </span>
+
+                <div className="flex gap-2">
+                    <button
+                        type="button"
+                        onClick={() =>
+                            setCurrentPage((prev) => Math.max(1, prev - 1))
+                        }
+                        disabled={currentPage === 1}
+                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border text-micro font-bold ${
+                            currentPage === 1
+                                ? 'border-neutral-150 cursor-not-allowed bg-neutral-50 text-gray-300'
+                                : 'cursor-pointer border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50'
+                        }`}
+                        title="Sebelumnya"
+                    >
+                        <ChevronLeft size={16} />
+                    </button>
+
+                    {getPageNumbers().map((pageNumber) => (
+                        <button
+                            key={pageNumber}
+                            type="button"
+                            onClick={() => setCurrentPage(pageNumber)}
+                            className={`flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg border text-micro font-bold ${
+                                currentPage === pageNumber
+                                    ? 'border-primary-500 bg-primary-500 text-white shadow-sm'
+                                    : 'border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50'
+                            }`}
+                        >
+                            {pageNumber}
+                        </button>
+                    ))}
+
+                    <button
+                        type="button"
+                        onClick={() =>
+                            setCurrentPage((prev) =>
+                                Math.min(totalPages, prev + 1),
+                            )
+                        }
+                        disabled={currentPage === totalPages}
+                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border text-micro font-bold ${
+                            currentPage === totalPages
+                                ? 'border-neutral-150 cursor-not-allowed bg-neutral-50 text-gray-300'
+                                : 'cursor-pointer border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50'
+                        }`}
+                        title="Selanjutnya"
+                    >
+                        <ChevronRight size={16} />
+                    </button>
+                </div>
+            </div>
+        );
+    };
 
     return (
         <div className="flex min-h-screen flex-col justify-between bg-neutral-50/50">
@@ -174,6 +296,7 @@ export default function Dashboard({
                                         onClick={() => {
                                             setActiveTab(tab);
                                             setSearchQuery('');
+                                            setCurrentPage(1);
                                         }}
                                         className={`relative z-10 flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border-0 px-2 py-2.5 text-xs font-bold whitespace-nowrap transition-colors duration-300 sm:gap-2 sm:px-4 sm:text-small ${
                                             isActive
@@ -203,9 +326,10 @@ export default function Dashboard({
                                     type="text"
                                     placeholder="Cari nama event..."
                                     value={searchQuery}
-                                    onChange={(e) =>
-                                        setSearchQuery(e.target.value)
-                                    }
+                                    onChange={(e) => {
+                                        setSearchQuery(e.target.value);
+                                        setCurrentPage(1);
+                                    }}
                                     className="w-full rounded-2xl border border-neutral-200 bg-white py-2.5 pr-10 pl-4 text-base font-medium text-gray-700 placeholder-gray-400 transition-colors focus:border-primary-500 focus:ring-0 focus:outline-none"
                                 />
                                 <Search
@@ -259,71 +383,74 @@ export default function Dashboard({
                                     </div>
                                 </div>
                             ) : (
-                                <div className="animate-in fade-in grid grid-cols-1 gap-6 duration-200 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                                    {filteredHostedEvents.map((event) => (
-                                        <div
-                                            key={event.id}
-                                            className="border-neutral-150 group relative flex h-[340px] w-full max-w-[300px] mx-auto flex-col justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:h-[370px] lg:h-[400px]"
-                                        >
-                                            {/* "FREE" or price Badge on Top-Left of image */}
-                                            <div className="absolute top-4 left-4 z-10 rounded-md bg-secondary-400 px-3 py-1 text-[0.6275rem] font-extrabold text-secondary-900 shadow-sm">
-                                                {event.price === 0
-                                                    ? 'FREE'
-                                                    : `Rp ${Number(event.price).toLocaleString('id-ID')}`}
-                                            </div>
+                                <div className="flex flex-col gap-6">
+                                    <div className="animate-in fade-in grid grid-cols-1 gap-6 duration-200 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                                        {paginatedHostedEvents.map((event) => (
+                                            <div
+                                                key={event.id}
+                                                className="border-neutral-150 group relative mx-auto flex h-[340px] w-full max-w-[300px] flex-col justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:h-[370px] lg:h-[400px]"
+                                            >
+                                                {/* "FREE" or price Badge on Top-Left of image */}
+                                                <div className="absolute top-4 left-4 z-10 rounded-md bg-secondary-400 px-3 py-1 text-[0.6275rem] font-extrabold text-secondary-900 shadow-sm">
+                                                    {event.price === 0
+                                                        ? 'FREE'
+                                                        : `Rp ${Number(event.price).toLocaleString('id-ID')}`}
+                                                </div>
 
-                                            <div className="relative h-[170px] w-full shrink-0 overflow-hidden border-b border-gray-100 bg-gray-50 sm:h-[190px] lg:h-[210px]">
-                                                <img
-                                                    src={
-                                                        event.poster_url ||
-                                                        DefaultCover
-                                                    }
-                                                    alt={event.title}
-                                                    draggable="false"
-                                                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                                />
-                                            </div>
-                                            <div className="flex h-[170px] sm:h-[180px] lg:h-[190px] shrink-0 flex-col justify-between p-4">
-                                                <div className="flex flex-col gap-1.5">
-                                                    <h4 className="line-clamp-2 h-[34px] overflow-hidden text-xs leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[40px] sm:text-sm lg:h-[48px] lg:text-base">
-                                                        {event.title}
-                                                    </h4>
-                                                    <div className="flex flex-col gap-1 border-t border-gray-100/50 pt-1.5 text-[10px] font-semibold text-gray-400 sm:text-micro">
-                                                        <span className="flex items-center gap-1.5">
-                                                            <Calendar
-                                                                size={12}
-                                                                className="shrink-0 text-gray-400"
-                                                            />
-                                                            {formatShortDate(
-                                                                event.start_datetime,
-                                                            )}
-                                                        </span>
-                                                        <span className="flex items-start gap-1.5">
-                                                            <MapPin
-                                                                size={12}
-                                                                className="mt-0.5 shrink-0 text-gray-400"
-                                                            />
-                                                            <span className="line-clamp-2 overflow-hidden">
-                                                                {event.type ===
-                                                                'online'
-                                                                    ? 'Online'
-                                                                    : event.location_name ||
-                                                                      'Lokasi Offline'}
+                                                <div className="relative h-[170px] w-full shrink-0 overflow-hidden border-b border-gray-100 bg-gray-50 sm:h-[190px] lg:h-[210px]">
+                                                    <img
+                                                        src={
+                                                            event.poster_url ||
+                                                            DefaultCover
+                                                        }
+                                                        alt={event.title}
+                                                        draggable="false"
+                                                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                    />
+                                                </div>
+                                                <div className="flex h-[170px] shrink-0 flex-col justify-between p-4 sm:h-[180px] lg:h-[190px]">
+                                                    <div className="flex flex-col gap-1.5">
+                                                        <h4 className="line-clamp-2 h-[34px] overflow-hidden text-xs leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[40px] sm:text-sm lg:h-[48px] lg:text-base">
+                                                            {event.title}
+                                                        </h4>
+                                                        <div className="flex flex-col gap-1 border-t border-gray-100/50 pt-1.5 text-[10px] font-semibold text-gray-400 sm:text-micro">
+                                                            <span className="flex items-center gap-1.5">
+                                                                <Calendar
+                                                                    size={12}
+                                                                    className="shrink-0 text-gray-400"
+                                                                />
+                                                                {formatShortDate(
+                                                                    event.start_datetime,
+                                                                )}
                                                             </span>
-                                                        </span>
+                                                            <span className="flex items-start gap-1.5">
+                                                                <MapPin
+                                                                    size={12}
+                                                                    className="mt-0.5 shrink-0 text-gray-400"
+                                                                />
+                                                                <span className="line-clamp-2 overflow-hidden">
+                                                                    {event.type ===
+                                                                    'online'
+                                                                        ? 'Online'
+                                                                        : event.location_name ||
+                                                                          'Lokasi Offline'}
+                                                                </span>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="pt-1">
+                                                        <Button
+                                                            href={`/dashboard/events/${event.id}`}
+                                                            className="w-full py-1.5 text-[10px] sm:py-2 sm:text-small"
+                                                        >
+                                                            Detail Event
+                                                        </Button>
                                                     </div>
                                                 </div>
-                                                <div className="pt-1">
-                                                    <Button
-                                                        href={`/dashboard/events/${event.id}`}
-                                                        className="w-full py-1.5 text-[10px] sm:py-2 sm:text-small"
-                                                    >
-                                                        Detail Event
-                                                    </Button>
-                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
+                                    {renderPagination()}
                                 </div>
                             ))}
 
@@ -367,88 +494,95 @@ export default function Dashboard({
                                     </div>
                                 </div>
                             ) : (
-                                <div className="animate-in fade-in grid grid-cols-1 gap-6 duration-200 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                                    {filteredJoinedEvents.map((reg) => {
-                                        const event = reg.event;
+                                <div className="flex flex-col gap-6">
+                                    <div className="animate-in fade-in grid grid-cols-1 gap-6 duration-200 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                                        {paginatedJoinedEvents.map((reg) => {
+                                            const event = reg.event;
 
-                                        if (!event) {
-                                            return null;
-                                        }
+                                            if (!event) {
+                                                return null;
+                                            }
 
-                                        return (
-                                            <div
-                                                key={reg.id}
-                                                className="border-neutral-150 group relative flex h-[340px] w-full max-w-[300px] mx-auto flex-col justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:h-[370px] lg:h-[400px]"
-                                            >
-                                                {/* "FREE" or price Badge on Top-Left of image */}
-                                                <div className="absolute top-4 left-4 z-10 rounded-md bg-secondary-400 px-3 py-1 text-[0.6275rem] font-extrabold text-secondary-900 shadow-sm">
-                                                    {event.price === 0
-                                                        ? 'FREE'
-                                                        : `Rp ${Number(event.price).toLocaleString('id-ID')}`}
-                                                </div>
+                                            return (
+                                                <div
+                                                    key={reg.id}
+                                                    className="border-neutral-150 group relative mx-auto flex h-[340px] w-full max-w-[300px] flex-col justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:h-[370px] lg:h-[400px]"
+                                                >
+                                                    {/* "FREE" or price Badge on Top-Left of image */}
+                                                    <div className="absolute top-4 left-4 z-10 rounded-md bg-secondary-400 px-3 py-1 text-[0.6275rem] font-extrabold text-secondary-900 shadow-sm">
+                                                        {event.price === 0
+                                                            ? 'FREE'
+                                                            : `Rp ${Number(event.price).toLocaleString('id-ID')}`}
+                                                    </div>
 
-                                                <div className="relative h-[170px] w-full shrink-0 overflow-hidden border-b border-gray-100 bg-gray-50 sm:h-[190px] lg:h-[210px]">
-                                                    <img
-                                                        src={
-                                                            event.poster_url ||
-                                                            DefaultCover
-                                                        }
-                                                        alt={event.title}
-                                                        draggable="false"
-                                                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                                    />
-                                                </div>
-                                                <div className="flex h-[170px] sm:h-[180px] lg:h-[190px] shrink-0 flex-col justify-between p-4">
-                                                    <div className="flex flex-col gap-1.5">
-                                                        <h4 className="line-clamp-2 h-[34px] overflow-hidden text-xs leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[40px] sm:text-sm lg:h-[48px] lg:text-base">
-                                                            {event.title}
-                                                        </h4>
-                                                        <div className="flex flex-col gap-1 border-t border-gray-100/50 pt-1.5 text-[10px] font-semibold text-gray-400 sm:text-micro">
-                                                            <span className="flex items-center gap-1.5">
-                                                                <Calendar
-                                                                    size={12}
-                                                                    className="shrink-0 text-gray-400"
-                                                                />
-                                                                {formatShortDate(
-                                                                    event.start_datetime,
-                                                                )}
-                                                            </span>
-                                                            <span className="flex items-start gap-1.5">
-                                                                <MapPin
-                                                                    size={12}
-                                                                    className="mt-0.5 shrink-0 text-gray-400"
-                                                                />
-                                                                <span className="line-clamp-2 overflow-hidden">
-                                                                    {event.type ===
-                                                                    'online'
-                                                                        ? 'Online'
-                                                                        : event.location_name ||
-                                                                          'Lokasi Offline'}
+                                                    <div className="relative h-[170px] w-full shrink-0 overflow-hidden border-b border-gray-100 bg-gray-50 sm:h-[190px] lg:h-[210px]">
+                                                        <img
+                                                            src={
+                                                                event.poster_url ||
+                                                                DefaultCover
+                                                            }
+                                                            alt={event.title}
+                                                            draggable="false"
+                                                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                        />
+                                                    </div>
+                                                    <div className="flex h-[170px] shrink-0 flex-col justify-between p-4 sm:h-[180px] lg:h-[190px]">
+                                                        <div className="flex flex-col gap-1.5">
+                                                            <h4 className="line-clamp-2 h-[34px] overflow-hidden text-xs leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[40px] sm:text-sm lg:h-[48px] lg:text-base">
+                                                                {event.title}
+                                                            </h4>
+                                                            <div className="flex flex-col gap-1 border-t border-gray-100/50 pt-1.5 text-[10px] font-semibold text-gray-400 sm:text-micro">
+                                                                <span className="flex items-center gap-1.5">
+                                                                    <Calendar
+                                                                        size={
+                                                                            12
+                                                                        }
+                                                                        className="shrink-0 text-gray-400"
+                                                                    />
+                                                                    {formatShortDate(
+                                                                        event.start_datetime,
+                                                                    )}
                                                                 </span>
-                                                            </span>
+                                                                <span className="flex items-start gap-1.5">
+                                                                    <MapPin
+                                                                        size={
+                                                                            12
+                                                                        }
+                                                                        className="mt-0.5 shrink-0 text-gray-400"
+                                                                    />
+                                                                    <span className="line-clamp-2 overflow-hidden">
+                                                                        {event.type ===
+                                                                        'online'
+                                                                            ? 'Online'
+                                                                            : event.location_name ||
+                                                                              'Lokasi Offline'}
+                                                                    </span>
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex gap-2 pt-1">
+                                                            <Link
+                                                                href={`/events/${event.id}`}
+                                                                className="flex flex-grow items-center justify-center rounded-full bg-primary-500 py-1.5 text-center text-[10px] font-bold text-white transition-colors hover:bg-primary-600 sm:py-2 sm:text-small"
+                                                            >
+                                                                Detail Event
+                                                            </Link>
+                                                            <Link
+                                                                href={`/events/${event.id}/ticket`}
+                                                                className="flex items-center justify-center rounded-full bg-neutral-100 px-3 text-neutral-800 transition-colors hover:bg-neutral-200"
+                                                                title="Lihat Tiket QR"
+                                                            >
+                                                                <FileText
+                                                                    size={14}
+                                                                />
+                                                            </Link>
                                                         </div>
                                                     </div>
-                                                    <div className="flex gap-2 pt-1">
-                                                        <Link
-                                                            href={`/events/${event.id}`}
-                                                            className="flex flex-grow items-center justify-center rounded-full bg-primary-500 py-1.5 text-center text-[10px] font-bold text-white transition-colors hover:bg-primary-600 sm:py-2 sm:text-small"
-                                                        >
-                                                            Detail Event
-                                                        </Link>
-                                                        <Link
-                                                            href={`/events/${event.id}/ticket`}
-                                                            className="flex items-center justify-center rounded-full bg-neutral-100 px-3 text-neutral-800 transition-colors hover:bg-neutral-200"
-                                                            title="Lihat Tiket QR"
-                                                        >
-                                                            <FileText
-                                                                size={14}
-                                                            />
-                                                        </Link>
-                                                    </div>
                                                 </div>
-                                            </div>
-                                        );
-                                    })}
+                                            );
+                                        })}
+                                    </div>
+                                    {renderPagination()}
                                 </div>
                             ))}
 
@@ -471,37 +605,40 @@ export default function Dashboard({
                                     </div>
                                 </div>
                             ) : (
-                                <div className="animate-in fade-in grid grid-cols-1 gap-6 duration-200 md:grid-cols-2 lg:grid-cols-3">
-                                    {certificates.map((cert) => (
-                                        <div
-                                            key={cert.id}
-                                            className="flex flex-col gap-4 rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm transition-all duration-200 hover:border-primary-200"
-                                        >
-                                            <div className="bg-primary-50 flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-primary-500">
-                                                <Award size={22} />
-                                            </div>
-                                            <div className="flex flex-col gap-1">
-                                                <span className="text-micro font-bold tracking-wider text-gray-400 uppercase">
-                                                    E-SERTIFIKAT RESMI
-                                                </span>
-                                                <h4 className="text-base leading-tight font-extrabold text-neutral-900">
-                                                    {cert.eventRegistration
-                                                        ?.event?.title ||
-                                                        'Event Lokacara'}
-                                                </h4>
-                                            </div>
-
-                                            <a
-                                                href={`/certificates/${cert.id}/download`}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="mt-2 flex w-full items-center justify-center gap-1 rounded-full bg-primary-500 py-2 text-center text-micro font-bold text-white shadow-md transition-colors hover:bg-primary-600"
+                                <div className="flex flex-col gap-6">
+                                    <div className="animate-in fade-in grid grid-cols-1 gap-6 duration-200 md:grid-cols-2 lg:grid-cols-3">
+                                        {paginatedCertificates.map((cert) => (
+                                            <div
+                                                key={cert.id}
+                                                className="flex flex-col gap-4 rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm transition-all duration-200 hover:border-primary-200"
                                             >
-                                                <span>Unduh PDF</span>
-                                                <ExternalLink size={12} />
-                                            </a>
-                                        </div>
-                                    ))}
+                                                <div className="bg-primary-50 flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-primary-500">
+                                                    <Award size={22} />
+                                                </div>
+                                                <div className="flex flex-col gap-1">
+                                                    <span className="text-micro font-bold tracking-wider text-gray-400 uppercase">
+                                                        E-SERTIFIKAT RESMI
+                                                    </span>
+                                                    <h4 className="text-base leading-tight font-extrabold text-neutral-900">
+                                                        {cert.eventRegistration
+                                                            ?.event?.title ||
+                                                            'Event Lokacara'}
+                                                    </h4>
+                                                </div>
+
+                                                <a
+                                                    href={`/certificates/${cert.id}/download`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="mt-2 flex w-full items-center justify-center gap-1 rounded-full bg-primary-500 py-2 text-center text-micro font-bold text-white shadow-md transition-colors hover:bg-primary-600"
+                                                >
+                                                    <span>Unduh PDF</span>
+                                                    <ExternalLink size={12} />
+                                                </a>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    {renderPagination()}
                                 </div>
                             ))}
                     </div>

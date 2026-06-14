@@ -111,12 +111,14 @@ export default function Show({ event, isRegistered }: ShowProps) {
               .split('\n')
               .map((line) => {
                   const match = line.match(/^-\s*([^:]+):\s*(.*)/);
+
                   if (match) {
                       return {
                           name: match[1].trim(),
                           info: match[2].trim(),
                       };
                   }
+
                   return null;
               })
               .filter(Boolean) as { name: string; info: string }[])
@@ -124,6 +126,7 @@ export default function Show({ event, isRegistered }: ShowProps) {
 
     const getContactDetails = (info: string) => {
         const cleanInfo = info.trim();
+
         if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanInfo)) {
             return {
                 href: `mailto:${cleanInfo}`,
@@ -131,6 +134,7 @@ export default function Show({ event, isRegistered }: ShowProps) {
                 label: cleanInfo,
             };
         }
+
         if (
             /^(https?:\/\/)?([\w.-]+)\.([a-z]{2,6}\.?)(\/[\w.-]*)*\/?$/i.test(
                 cleanInfo,
@@ -139,34 +143,41 @@ export default function Show({ event, isRegistered }: ShowProps) {
             const href = cleanInfo.startsWith('http')
                 ? cleanInfo
                 : `https://${cleanInfo}`;
+
             return {
                 href,
                 type: 'web',
                 label: cleanInfo,
             };
         }
+
         if (/^\+?[\d\s()-.]{7,18}$/.test(cleanInfo)) {
             const digits = cleanInfo.replace(/[^\d+]/g, '');
             let href = `tel:${digits}`;
+
             if (
                 digits.startsWith('+62') ||
                 digits.startsWith('62') ||
                 digits.startsWith('08')
             ) {
                 let waNumber = digits;
+
                 if (waNumber.startsWith('08')) {
                     waNumber = '628' + waNumber.slice(2);
                 } else if (waNumber.startsWith('+')) {
                     waNumber = waNumber.slice(1);
                 }
+
                 href = `https://wa.me/${waNumber}`;
             }
+
             return {
                 href,
                 type: 'phone',
                 label: cleanInfo,
             };
         }
+
         return {
             href: null,
             type: 'general',
@@ -444,6 +455,7 @@ export default function Show({ event, isRegistered }: ShowProps) {
                                                             getContactDetails(
                                                                 contact.info,
                                                             );
+
                                                         return (
                                                             <div
                                                                 key={idx}

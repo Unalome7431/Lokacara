@@ -11,6 +11,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\OnboardingController;
+use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\AvatarController;
 use App\Http\Controllers\PosterController;
 use App\Http\Controllers\Web\EventManagementController;
@@ -31,19 +32,23 @@ if (!app()->runningUnitTests()) {
     // Login Routes
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [LoginController::class, 'login'])->name('login.store');
-
-    // Register Routes
-    Route::get('/register', [RegisterController::class, 'showRegisterForm'])->name('register');
-    Route::post('/register', [RegisterController::class, 'register'])->name('register.store');
 }
+
+// Register Routes
+Route::get('/register', [RegisterController::class, 'showRegisterForm'])->name('register');
+Route::post('/register', [RegisterController::class, 'register'])->name('register.store');
+
+// Password Reset Routes
+Route::get('/forgot-password', [PasswordResetController::class, 'showRequestForm'])->name('password.request');
+Route::post('/forgot-password', [PasswordResetController::class, 'sendOtp'])->name('password.email');
+Route::get('/forgot-password/otp', [PasswordResetController::class, 'showOtpForm'])->name('password.otp');
+Route::post('/forgot-password/otp', [PasswordResetController::class, 'verifyOtp'])->name('password.verify');
+Route::get('/reset-password', [PasswordResetController::class, 'showResetForm'])->name('password.reset_form');
+Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])->name('password.reset_update');
 
 // Admin Login
 Route::get('/admin/login', [AdminSessionController::class, 'create'])->middleware('guest')->name('admin.login');
 Route::post('/admin/login', [AdminSessionController::class, 'store'])->middleware('guest');
-
-// Onboarding Routes
-Route::get('/onboard', [OnboardingController::class, 'showOnboardingForm'])->name('onboard');
-Route::put('/onboard', [OnboardingController::class, 'onboard']);
 
 // Google OAuth Routes
 Route::get('/auth/google', [GoogleController::class, 'redirectToGoogle'])->name('login.google');
@@ -56,6 +61,10 @@ Route::middleware(['auth', 'profile.completed'])->group(function () {
 });
 
 Route::middleware(['auth'])->group(function () {
+    // Onboarding Routes
+    Route::get('/onboard', [OnboardingController::class, 'showOnboardingForm'])->name('onboard');
+    Route::put('/onboard', [OnboardingController::class, 'onboard']);
+
     // Profile Management
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit.web');
     Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update.web');

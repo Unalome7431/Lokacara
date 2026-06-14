@@ -209,16 +209,6 @@ export default function Ticket({ event, registration }: TicketProps) {
                                     className="h-full w-full object-contain"
                                 />
                             </div>
-
-                            {/* Token details */}
-                            <div className="flex flex-col gap-0.5">
-                                <span className="text-[0.6rem] font-bold tracking-wider text-gray-400 uppercase">
-                                    Token ID
-                                </span>
-                                <span className="max-w-[180px] font-mono text-micro font-bold break-all text-neutral-800">
-                                    {registration.qr_token}
-                                </span>
-                            </div>
                         </div>
                     </div>
 

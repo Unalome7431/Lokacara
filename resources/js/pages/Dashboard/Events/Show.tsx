@@ -1,4 +1,4 @@
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     Calendar,
     MapPin,
@@ -11,8 +11,11 @@ import {
     X,
     Camera,
     Eye,
+    XCircle,
+    RefreshCw,
 } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Html5Qrcode } from 'html5-qrcode';
 import DefaultCover from '@/../../public/covers/default_cover.jpg';
 import Footer from '@/layouts/Footer';
 import NavBar from '@/layouts/NavBar';
@@ -62,21 +65,79 @@ export default function Show({
     const flash = (page.props as any).flash || {};
 
     const [isScanModalOpen, setIsScanModalOpen] = useState(false);
+    const [scannerRunning, setScannerRunning] = useState(false);
+    const [isVerifying, setIsVerifying] = useState(false);
+    const [scanOutcome, setScanOutcome] = useState<{
+        type: 'success' | 'warning' | 'error' | 'idle';
+        message: string;
+    }>({ type: 'idle', message: '' });
 
-    // Form for scanning attendee QR tokens
-    const scanForm = useForm({
-        qr_token: '',
-    });
+    const qrCodeRegionId = 'html5qr-code-full-region';
 
-    const handleScanSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        scanForm.post(`/dashboard/events/${event.id}/attendance/scan`, {
-            preserveScroll: true,
-            onSuccess: () => {
-                scanForm.reset();
-            },
-        });
+    const startScanning = () => {
+        setScanOutcome({ type: 'idle', message: '' });
+        setIsVerifying(false);
+        setScannerRunning(true);
     };
+
+    const closeScanner = () => {
+        setIsScanModalOpen(false);
+        setScannerRunning(false);
+        setScanOutcome({ type: 'idle', message: '' });
+        setIsVerifying(false);
+    };
+
+    useEffect(() => {
+        if (!isScanModalOpen || !scannerRunning) return;
+
+        const html5QrCode = new Html5Qrcode(qrCodeRegionId);
+
+        html5QrCode.start(
+            { facingMode: 'environment' },
+            { fps: 10, qrbox: { width: 250, height: 250 } },
+            (decodedText) => {
+                html5QrCode.stop().then(() => {
+                    setScannerRunning(false);
+                    setIsVerifying(true);
+                    
+                    router.post(`/dashboard/events/${event.id}/attendance/scan`, {
+                        qr_token: decodedText
+                    }, {
+                        preserveScroll: true,
+                        onSuccess: (page) => {
+                            setIsVerifying(false);
+                            const updatedFlash = (page.props as any).flash || {};
+                            if (updatedFlash.success) {
+                                setScanOutcome({ type: 'success', message: updatedFlash.success });
+                            } else if (updatedFlash.warning) {
+                                setScanOutcome({ type: 'warning', message: updatedFlash.warning });
+                            }
+                        },
+                        onError: (err) => {
+                            setIsVerifying(false);
+                            setScanOutcome({ type: 'error', message: err.qr_token || 'Gagal memverifikasi tiket.' });
+                        },
+                    });
+                }).catch((err) => console.error('Gagal menghentikan scanner: ', err));
+            },
+            () => {
+                // Keep scanning silently on scan error/no QR detected
+            }
+        ).catch((err) => {
+            console.error('Gagal memulai scanner: ', err);
+            setScannerRunning(false);
+            setScanOutcome({
+                type: 'error',
+                message: 'Gagal mengakses kamera. Pastikan izin kamera telah diberikan.',
+            });
+        });
+
+        return () => {
+            if (html5QrCode.isScanning) {
+                html5QrCode.stop().catch((err) => console.error('Gagal menghentikan scanner: ', err));
+            }
+        };
+    }, [isScanModalOpen, scannerRunning]);
 
     // Helper to parse description metadata
     const parseDescription = (desc: string) => {
@@ -124,12 +185,14 @@ export default function Show({
               .split('\n')
               .map((line) => {
                   const match = line.match(/^-\s*([^:]+):\s*(.*)/);
+
                   if (match) {
                       return {
                           name: match[1].trim(),
                           info: match[2].trim(),
                       };
                   }
+
                   return null;
               })
               .filter(Boolean) as { name: string; info: string }[])
@@ -137,6 +200,7 @@ export default function Show({
 
     const getContactDetails = (info: string) => {
         const cleanInfo = info.trim();
+
         if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanInfo)) {
             return {
                 href: `mailto:${cleanInfo}`,
@@ -144,6 +208,7 @@ export default function Show({
                 label: cleanInfo,
             };
         }
+
         if (
             /^(https?:\/\/)?([\w.-]+)\.([a-z]{2,6}\.?)(\/[\w.-]*)*\/?$/i.test(
                 cleanInfo,
@@ -152,34 +217,41 @@ export default function Show({
             const href = cleanInfo.startsWith('http')
                 ? cleanInfo
                 : `https://${cleanInfo}`;
+
             return {
                 href,
                 type: 'web',
                 label: cleanInfo,
             };
         }
+
         if (/^\+?[\d\s()-.]{7,18}$/.test(cleanInfo)) {
             const digits = cleanInfo.replace(/[^\d+]/g, '');
             let href = `tel:${digits}`;
+
             if (
                 digits.startsWith('+62') ||
                 digits.startsWith('62') ||
                 digits.startsWith('08')
             ) {
                 let waNumber = digits;
+
                 if (waNumber.startsWith('08')) {
                     waNumber = '628' + waNumber.slice(2);
                 } else if (waNumber.startsWith('+')) {
                     waNumber = waNumber.slice(1);
                 }
+
                 href = `https://wa.me/${waNumber}`;
             }
+
             return {
                 href,
                 type: 'phone',
                 label: cleanInfo,
             };
         }
+
         return {
             href: null,
             type: 'general',
@@ -436,6 +508,7 @@ export default function Show({
                                                             getContactDetails(
                                                                 contact.info,
                                                             );
+
                                                         return (
                                                             <div
                                                                 key={idx}
@@ -548,9 +621,8 @@ export default function Show({
                                 <button
                                     type="button"
                                     onClick={() => {
-                                        scanForm.clearErrors();
-                                        scanForm.reset();
                                         setIsScanModalOpen(true);
+                                        startScanning();
                                     }}
                                     className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border-0 bg-primary-500 py-4 text-base font-bold text-white shadow-md transition-all duration-200 hover:bg-primary-600 active:scale-[0.99]"
                                 >
@@ -584,7 +656,7 @@ export default function Show({
                         {/* Backdrop */}
                         <div
                             className="animate-in fade-in fixed inset-0 bg-neutral-900/40 backdrop-blur-xs duration-200"
-                            onClick={() => setIsScanModalOpen(false)}
+                            onClick={closeScanner}
                         />
 
                         {/* Modal Container */}
@@ -600,86 +672,96 @@ export default function Show({
                                 </h4>
                                 <button
                                     type="button"
-                                    onClick={() => setIsScanModalOpen(false)}
+                                    onClick={closeScanner}
                                     className="flex cursor-pointer items-center justify-center rounded-full border-0 bg-neutral-100 p-1 text-neutral-500 hover:bg-neutral-200"
                                 >
                                     <X size={18} />
                                 </button>
                             </div>
 
-                            {/* Camera Frame Mock */}
+                            {/* Camera Viewport / Outcome States */}
                             <div className="relative flex aspect-square w-full flex-col items-center justify-center overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-950">
-                                <div className="absolute inset-10 flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-primary-500/60">
-                                    <div className="h-0.5 w-full animate-pulse bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]" />
-                                </div>
-                                <span className="z-10 mt-2 text-xs font-semibold tracking-wider text-white/60 uppercase">
-                                    Kamera Scanner Aktif (Simulasi)
-                                </span>
+                                {isVerifying ? (
+                                    <div className="flex flex-col items-center justify-center p-6 text-center text-white">
+                                        <RefreshCw className="mb-4 h-12 w-12 animate-spin text-primary-500" />
+                                        <h5 className="text-base font-bold text-white">Memverifikasi Tiket...</h5>
+                                        <p className="text-xs text-neutral-400 mt-1">Harap tunggu sebentar</p>
+                                    </div>
+                                ) : scanOutcome.type === 'idle' ? (
+                                    scannerRunning ? (
+                                        <div className="relative w-full h-full">
+                                            {/* html5-qrcode target region */}
+                                            <div id={qrCodeRegionId} className="w-full h-full object-cover [&_video]:!object-cover [&_video]:!w-full [&_video]:!h-full" />
+                                            
+                                            {/* Overlay scanning frame guide */}
+                                            <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-end pb-8">
+                                                <span className="text-[0.65rem] font-bold tracking-widest text-white/75 bg-neutral-900/60 px-3 py-1.5 rounded-full uppercase backdrop-blur-xs">
+                                                    Arahkan Kamera ke QR Code
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-col items-center justify-center p-6 text-center text-neutral-400">
+                                            <Camera size={40} className="mb-3 text-neutral-600" />
+                                            <span className="text-sm font-medium">Kamera dinonaktifkan</span>
+                                            <button
+                                                type="button"
+                                                onClick={startScanning}
+                                                className="mt-4 flex items-center gap-2 rounded-full bg-primary-500 px-4 py-2 text-xs font-bold text-white shadow-md hover:bg-primary-600 transition-colors"
+                                            >
+                                                <RefreshCw size={12} />
+                                                Mulai Scanner
+                                            </button>
+                                        </div>
+                                    )
+                                ) : (
+                                    /* Premium scan outcomes in Bahasa Indonesia */
+                                    <div className="flex flex-col items-center justify-center p-8 text-center w-full h-full animate-in fade-in zoom-in-95 duration-200">
+                                        {scanOutcome.type === 'success' && (
+                                            <div className="flex flex-col items-center animate-bounce">
+                                                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-green-500/10 text-green-500 mb-4 ring-8 ring-green-500/5">
+                                                    <CheckCircle2 size={44} />
+                                                </div>
+                                                <h5 className="text-lg font-black text-white mb-2">Check-in Berhasil!</h5>
+                                                <p className="text-sm text-neutral-300 max-w-[280px]">
+                                                    {scanOutcome.message}
+                                                </p>
+                                            </div>
+                                        )}
+                                        {scanOutcome.type === 'warning' && (
+                                            <div className="flex flex-col items-center animate-pulse">
+                                                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-yellow-500/10 text-yellow-500 mb-4 ring-8 ring-yellow-500/5">
+                                                    <AlertTriangle size={44} />
+                                                </div>
+                                                <h5 className="text-lg font-black text-white mb-2">Peringatan</h5>
+                                                <p className="text-sm text-neutral-300 max-w-[280px]">
+                                                    {scanOutcome.message}
+                                                </p>
+                                            </div>
+                                        )}
+                                        {scanOutcome.type === 'error' && (
+                                            <div className="flex flex-col items-center animate-pulse">
+                                                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-500/10 text-red-500 mb-4 ring-8 ring-red-500/5">
+                                                    <XCircle size={44} />
+                                                </div>
+                                                <h5 className="text-lg font-black text-white mb-2">Check-in Gagal</h5>
+                                                <p className="text-sm text-neutral-300 max-w-[280px]">
+                                                    {scanOutcome.message}
+                                                </p>
+                                            </div>
+                                        )}
+                                        
+                                        <button
+                                            type="button"
+                                            onClick={startScanning}
+                                            className="mt-6 flex items-center gap-2 rounded-full bg-white/10 border border-white/20 px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-white/20 transition-all active:scale-[0.98]"
+                                        >
+                                            <RefreshCw size={12} />
+                                            <span>Scan Tiket Lain</span>
+                                        </button>
+                                    </div>
+                                )}
                             </div>
-
-                            {/* Scanner alerts */}
-                            {scanForm.wasSuccessful && flash.success && (
-                                <div className="flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 p-3 text-xs font-bold text-green-700">
-                                    <CheckCircle2
-                                        size={16}
-                                        className="shrink-0"
-                                    />
-                                    <span>{flash.success}</span>
-                                </div>
-                            )}
-                            {flash.warning && (
-                                <div className="flex items-center gap-2 rounded-xl border border-yellow-200 bg-yellow-50 p-3 text-xs font-bold text-yellow-800">
-                                    <AlertTriangle
-                                        size={16}
-                                        className="shrink-0"
-                                    />
-                                    <span>{flash.warning}</span>
-                                </div>
-                            )}
-                            {scanForm.errors.qr_token && (
-                                <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-xs font-bold text-red-700">
-                                    <AlertTriangle
-                                        size={16}
-                                        className="shrink-0"
-                                    />
-                                    <span>{scanForm.errors.qr_token}</span>
-                                </div>
-                            )}
-
-                            {/* Input fields */}
-                            <form
-                                onSubmit={handleScanSubmit}
-                                className="flex flex-col gap-4"
-                            >
-                                <div className="flex flex-col gap-1.5">
-                                    <label className="font-brand text-xs font-bold tracking-wider text-neutral-700 uppercase">
-                                        Token Tiket UUID
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={scanForm.data.qr_token}
-                                        onChange={(e) =>
-                                            scanForm.setData(
-                                                'qr_token',
-                                                e.target.value,
-                                            )
-                                        }
-                                        required
-                                        placeholder="Contoh: 123e4567-e89b-12d3-a456-426614174000"
-                                        className="w-full rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-2.5 text-base placeholder-gray-400 transition-colors focus:border-primary-500 focus:bg-white focus:outline-none"
-                                    />
-                                </div>
-
-                                <button
-                                    type="submit"
-                                    disabled={scanForm.processing}
-                                    className="w-full cursor-pointer rounded-full border-0 bg-primary-500 py-2.5 text-base font-bold text-white shadow-md transition-colors hover:bg-primary-600 disabled:bg-primary-300"
-                                >
-                                    {scanForm.processing
-                                        ? 'Memproses...'
-                                        : 'Kirim Token Kehadiran'}
-                                </button>
-                            </form>
                         </div>
                     </div>
                 )}
