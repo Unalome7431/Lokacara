@@ -162,3 +162,9 @@ input::-ms-clear {
     display: none;
 }
 
+/* Force camera mirroring in QR code scanner view */
+#html5qr-code-full-region video {
+    transform: scaleX(-1) !important;
+    -webkit-transform: scaleX(-1) !important;
+}
+
