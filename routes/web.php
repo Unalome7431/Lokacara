@@ -50,7 +50,7 @@ Route::get('/auth/google', [GoogleController::class, 'redirectToGoogle'])->name(
 Route::get('/auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
 
 // Protected Routes
-Route::middleware(['auth', 'verified', 'profile.completed'])->group(function () {
+Route::middleware(['auth', 'profile.completed'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/events/{event}/join', [EventRegistrationController::class, 'store'])->name('events.join');
 });
@@ -65,13 +65,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile/avatar/{filename}', [AvatarController::class, 'show'])->name('profile.avatar.show');
     
     // Module 3: Organizer Hub - Event Management
-    Route::get('/dashboard/events', [EventManagementController::class, 'index'])->name('dashboard.events.index');
-    Route::get('/dashboard/events/create', [EventManagementController::class, 'create'])->name('dashboard.events.create');
-    Route::post('/dashboard/events', [EventManagementController::class, 'store'])->name('dashboard.events.store');
+    Route::get('/create', [EventManagementController::class, 'create'])->name('dashboard.events.create');
+    Route::post('/create', [EventManagementController::class, 'store'])->name('dashboard.events.store');
     Route::get('/dashboard/events/{event}/edit', [EventManagementController::class, 'edit'])->name('dashboard.events.edit');
     Route::post('/dashboard/events/{event}', [EventManagementController::class, 'update'])->name('dashboard.events.update');
     Route::delete('/dashboard/events/{event}', [EventManagementController::class, 'destroy'])->name('dashboard.events.destroy');
+    Route::get('/dashboard/events/{event}', [EventManagementController::class, 'show'])->name('dashboard.events.show');
     Route::get('/dashboard/events/{event}/attendees', [EventManagementController::class, 'attendees'])->name('dashboard.events.attendees');
+    Route::delete('/dashboard/events/{event}/attendees/{registration}', [EventManagementController::class, 'kickAttendee'])->name('dashboard.events.attendees.kick');
 
     // Module 4: Communications & Attendance
     Route::get('/events/{event}/ticket', [AttendanceController::class, 'ticket'])->name('events.ticket');

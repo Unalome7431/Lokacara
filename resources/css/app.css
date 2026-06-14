@@ -11,35 +11,35 @@
     --font-brand: 'Plus Jakarta Sans', ui-sans-serif, system-ui;
 
     /* Color Palette */
-    --color-primary-100: #CFDEFC;
-    --color-primary-200: #9EBDFA;
-    --color-primary-300: #6E9CF7;
-    --color-primary-400: #3D7AF5;
-    --color-primary-500: #0D59F2;
-    --color-primary-600: #0A47C2;
+    --color-primary-100: #cfdefc;
+    --color-primary-200: #9ebdfa;
+    --color-primary-300: #6e9cf7;
+    --color-primary-400: #3d7af5;
+    --color-primary-500: #0d59f2;
+    --color-primary-600: #0a47c2;
     --color-primary-700: #083691;
     --color-primary-800: #052461;
     --color-primary-900: #031230;
-    
-    --color-secondary-100: #FFEECC;
-    --color-secondary-200: #FFDD99;
-    --color-secondary-300: #FFCC66;
-    --color-secondary-400: #FFBB33;
-    --color-secondary-500: #FFAA00;
-    --color-secondary-600: #CC8800;
+
+    --color-secondary-100: #ffeecc;
+    --color-secondary-200: #ffdd99;
+    --color-secondary-300: #ffcc66;
+    --color-secondary-400: #ffbb33;
+    --color-secondary-500: #ffaa00;
+    --color-secondary-600: #cc8800;
     --color-secondary-700: #996600;
     --color-secondary-800: #664400;
     --color-secondary-900: #332200;
 
-    --color-gray-100: #E6E6E6;
-    --color-gray-200: #CCCCCC;
-    --color-gray-300: #B3B3B3;
+    --color-gray-100: #e6e6e6;
+    --color-gray-200: #cccccc;
+    --color-gray-300: #b3b3b3;
     --color-gray-400: #999999;
     --color-gray-500: #808080;
     --color-gray-600: #666666;
-    --color-gray-700: #4D4D4D;
+    --color-gray-700: #4d4d4d;
     --color-gray-800: #333333;
-    --color-gray-900: #1A1A1A;
+    --color-gray-900: #1a1a1a;
 
     /* Web Headings Typography */
     --text-h1-web: 4rem;
@@ -76,6 +76,24 @@
     --text-small--font-weight: 500;
     --text-micro: 0.6275rem;
     --text-micro--font-weight: 500;
+
+    --animate-logo-wave: logo-wave 0.6s ease-in-out;
+
+    @keyframes logo-wave {
+        0%,
+        100% {
+            transform: rotate(0deg);
+        }
+        25% {
+            transform: rotate(12deg);
+        }
+        50% {
+            transform: rotate(-10deg);
+        }
+        75% {
+            transform: rotate(5deg);
+        }
+    }
 }
 
 @layer base {
@@ -88,21 +106,52 @@
     }
 
     h1 {
-        @apply text-h1-mobile lg:text-h1-web font-brand;
+        @apply font-brand text-h1-mobile lg:text-h1-web;
     }
     h2 {
-        @apply text-h2-mobile lg:text-h2-web font-brand;
+        @apply font-brand text-h2-mobile lg:text-h2-web;
     }
     h3 {
-        @apply text-h3-mobile lg:text-h3-web font-brand;
+        @apply font-brand text-h3-mobile lg:text-h3-web;
     }
     h4 {
-        @apply text-h4-mobile lg:text-h4-web font-brand;
+        @apply font-brand text-h4-mobile lg:text-h4-web;
     }
     h5 {
-        @apply text-h5-mobile lg:text-h5-web font-brand;
+        @apply font-brand text-h5-mobile lg:text-h5-web;
     }
     h6 {
-        @apply text-h6-mobile lg:text-h6-web font-brand;
+        @apply font-brand text-h6-mobile lg:text-h6-web;
     }
+}
+
+html.lenis,
+html.lenis body {
+    height: auto;
+}
+
+.lenis-smooth {
+    scroll-behavior: auto !important;
+}
+
+.lenis-smooth [data-lenis-prevent] {
+    overscroll-behavior: contain;
+}
+
+.lenis-stopped {
+    overflow: hidden;
+}
+
+.lenis-scrolling iframe {
+    pointer-events: none;
+}
+
+/* Hide scrollbar globally across all pages and elements */
+* {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+*::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
 }

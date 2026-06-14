@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
-    'user_id', 'category_id', 'type', 'poster', 'title', 'description', 
+    'user_id', 'category_id', 'type', 'poster', 'title', 'description', 'price',
     'location_name', 'address', 'latitude', 'longitude', 
     'platform_name', 'link',
     'start_datetime', 'end_datetime', 'capacity', 'view_count'
@@ -20,6 +20,8 @@ class Event extends Model
 {
     /** @use HasFactory<EventFactory> */
     use HasFactory, SoftDeletes;
+
+    protected $appends = ['poster_url'];
     
     /**
      * @return array<string, string>
@@ -42,7 +44,7 @@ class Event extends Model
                         ? url("/api/posters/{$filename}") 
                         : route('poster.show', ['filename' => $filename]);
                 }
-                return null;
+                return asset('covers/default_cover.jpg');
             }
         );
     }
@@ -61,5 +63,9 @@ class Event extends Model
 
     public function category(): BelongsTo {
         return $this->belongsTo(Category::class);
+    }
+
+    public function bookmarks(): HasMany {
+        return $this->hasMany(Bookmark::class)->chaperone();
     }
 }

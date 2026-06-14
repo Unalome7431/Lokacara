@@ -29,6 +29,6 @@ class OnboardingController {
 
     $user->update($dataToUpdate);
 
-    return redirect()->route('dashboard');
+    return redirect()->route('home');
   }
 }

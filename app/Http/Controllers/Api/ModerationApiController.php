@@ -6,12 +6,42 @@ use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\EventReport;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
 class ModerationApiController extends Controller
 {
-    /**
-     * Report an event.
-     */
+    #[OA\Post(
+        path: '/api/events/{event}/report',
+        summary: 'Report an event for moderation review',
+        tags: ['Participant'],
+        security: [['sanctum' => []]]
+    )]
+    #[OA\Parameter(
+        name: 'event',
+        in: 'path',
+        description: 'Event ID',
+        required: true,
+        schema: new OA\Schema(type: 'integer')
+    )]
+    #[OA\RequestBody(
+        required: true,
+        content: new OA\JsonContent(
+            required: ['reason'],
+            properties: [
+                new OA\Property(property: 'reason', type: 'string', maxLength: 500, example: 'Inappropriate content'),
+            ]
+        )
+    )]
+    #[OA\Response(
+        response: 201,
+        description: 'Event reported',
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'message', type: 'string', example: 'Event reported successfully'),
+            ]
+        )
+    )]
+    #[OA\Response(response: 400, description: 'Already reported or cannot be reported')]
     public function reportEvent(Request $request, Event $event)
     {
         $validated = $request->validate([
