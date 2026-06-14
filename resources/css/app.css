@@ -101,6 +101,11 @@
         @apply border-neutral-200;
     }
 
+    html,
+    body {
+        @apply overflow-x-hidden w-full max-w-full;
+    }
+
     body {
         @apply bg-white text-neutral-900;
     }

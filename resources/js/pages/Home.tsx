@@ -878,10 +878,6 @@ export default function Home({
                             </div>
                         )}
 
-                        {/* Stationary Event Populer label */}
-                        <div className="absolute top-24 left-6 z-20 rounded-full border border-white/20 bg-white/20 px-4 py-1.5 text-small font-bold text-white backdrop-blur-md md:top-26 md:left-10">
-                            Event Populer
-                        </div>
 
                         <div ref={heroTrackRef} className="flex h-full w-full">
                             {displayHeroEvents.map((event, idx) => (
