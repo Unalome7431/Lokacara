@@ -189,7 +189,7 @@ export default function NavBar({
 
     return (
         <>
-            <nav className="fixed top-0 right-0 left-0 z-50 flex h-18 items-center justify-between border-b border-gray-100 bg-white px-6 py-4 shadow-sm">
+            <nav className="fixed top-0 right-0 left-0 z-50 flex h-18 items-center justify-between gap-4 sm:gap-6 border-b border-gray-100 bg-white px-4 sm:px-8 py-4 shadow-sm">
                 {/* Logo and Home Button */}
                 <a href="/" className="group flex shrink-0 items-center gap-2">
                     <img
@@ -197,7 +197,7 @@ export default function NavBar({
                         alt="Lokacara"
                         className="h-7.5 w-6 group-hover:animate-logo-wave"
                     />
-                    <span className="font-brand text-2xl font-black tracking-tight text-primary-500">
+                    <span className="hidden sm:inline font-brand text-2xl font-black tracking-tight text-primary-500">
                         lokacara
                     </span>
                 </a>
@@ -212,29 +212,29 @@ export default function NavBar({
                             onLocationSubmit(locationInput);
                         }
                     }}
-                    className="hidden w-full max-w-[480px] items-center gap-3 rounded-full border border-gray-200 bg-gray-50/50 px-5 py-2 transition-all duration-200 focus-within:border-primary-500 focus-within:bg-white focus-within:shadow-sm hover:bg-white md:flex"
+                    className="flex flex-1 max-w-[480px] items-center gap-1.5 sm:gap-3 rounded-full border border-gray-200 bg-gray-50/50 px-3 py-1.5 sm:px-5 sm:py-2 transition-all duration-200 focus-within:border-primary-500 focus-within:bg-white focus-within:shadow-sm hover:bg-white"
                 >
                     {/* Search Input */}
-                    <div className="flex flex-1 items-center gap-2">
-                        <Search className="h-4 w-4 shrink-0 text-gray-400" />
+                    <div className="flex flex-1 items-center gap-1.5 sm:gap-2">
+                        <Search className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0 text-gray-400" />
                         <input
                             type="text"
                             name="keyword"
                             placeholder="Cari"
-                            className="w-full border-0 bg-transparent font-brand text-base font-normal text-gray-700 placeholder-gray-400 outline-none focus:ring-0 focus:outline-none"
+                            className="w-full border-0 bg-transparent font-brand text-xs sm:text-base font-normal text-gray-700 placeholder-gray-400 outline-none focus:ring-0 focus:outline-none"
                         />
                     </div>
 
                     {showLocationBar && (
                         <>
-                            <div className="h-4 w-px shrink-0 bg-gray-200"></div>
+                            <div className="h-3.5 sm:h-4 w-px shrink-0 bg-gray-200"></div>
 
                             {/* Location Input */}
                             <div
-                                className="relative flex flex-1 items-center gap-2"
+                                className="relative flex flex-1 items-center gap-1.5 sm:gap-2"
                                 ref={locationContainerRef}
                             >
-                                <MapPin className="h-4 w-4 shrink-0 text-gray-400" />
+                                <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0 text-gray-400" />
                                 <input
                                     type="text"
                                     name="location"
@@ -259,7 +259,7 @@ export default function NavBar({
                                     placeholder="Lokasi"
                                     autoComplete="off"
                                     disabled={!isHomePage}
-                                    className={`w-full border-0 bg-transparent font-brand text-base font-normal text-gray-700 placeholder-gray-400 outline-none focus:ring-0 focus:outline-none ${
+                                    className={`w-full border-0 bg-transparent font-brand text-xs sm:text-base font-normal text-gray-700 placeholder-gray-400 outline-none focus:ring-0 focus:outline-none ${
                                         !isHomePage
                                             ? 'cursor-default text-gray-500'
                                             : ''
@@ -329,12 +329,14 @@ export default function NavBar({
 
                 {/* Actions (Create Event & Profile) */}
                 <div className="relative flex shrink-0 items-center gap-4">
-                    <Button
-                        href={isAuthenticated ? '/create' : '/login'}
-                        className="rounded-full px-6 py-2.5 text-small font-bold"
-                    >
-                        Buat Event
-                    </Button>
+                    <div className="hidden md:block">
+                        <Button
+                            href={isAuthenticated ? '/create' : '/login'}
+                            className="rounded-full px-6 py-2.5 text-small font-bold"
+                        >
+                            Buat Event
+                        </Button>
+                    </div>
 
                     {isAuthenticated ? (
                         <div className="relative">
