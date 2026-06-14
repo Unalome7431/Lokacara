@@ -6,6 +6,7 @@ import {
     CheckCircle2,
     Users,
     Eye,
+    AlertTriangle,
 } from 'lucide-react';
 import React, { useState } from 'react';
 import DefaultCover from '@/../../public/covers/default_cover.jpg';
@@ -55,6 +56,7 @@ export default function Show({ event, isRegistered }: ShowProps) {
     const isAuthenticated = !!user;
 
     const [isJoining, setIsJoining] = useState(false);
+    const [showVerificationWarning, setShowVerificationWarning] = useState(false);
 
     // Helper to parse description metadata
     const parseDescription = (desc: string) => {
@@ -209,6 +211,11 @@ export default function Show({ event, isRegistered }: ShowProps) {
 
     const handleJoinEvent = () => {
         if (isJoining) {
+            return;
+        }
+
+        if (event.price > 0 && !user?.email_verified_at) {
+            setShowVerificationWarning(true);
             return;
         }
 
@@ -564,7 +571,7 @@ export default function Show({ event, isRegistered }: ShowProps) {
                                         <div className="flex w-full items-center justify-center gap-2 rounded-full border border-green-200 bg-green-50 py-4 text-base font-bold text-green-700">
                                             <CheckCircle2
                                                 size={18}
-                                                className="text-green-600"
+                                                        className="text-green-600"
                                             />
                                             <span>Anda Sudah Terdaftar</span>
                                         </div>
@@ -580,28 +587,48 @@ export default function Show({ event, isRegistered }: ShowProps) {
                                 ) : (
                                     <>
                                         {isAuthenticated ? (
-                                            <button
-                                                type="button"
-                                                onClick={handleJoinEvent}
-                                                disabled={
-                                                    isJoining ||
-                                                    (remainingCapacity !==
-                                                        null &&
-                                                        remainingCapacity <= 0)
-                                                }
-                                                className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border-0 bg-primary-500 py-4 text-base font-bold text-white shadow-md transition-all duration-200 hover:bg-primary-600 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-neutral-300"
-                                            >
-                                                <span>
-                                                    {isJoining
-                                                        ? 'Mendaftar...'
-                                                        : remainingCapacity !==
-                                                                null &&
-                                                            remainingCapacity <=
-                                                                0
-                                                          ? 'Kuota Penuh'
-                                                          : 'Ikuti Event Sekarang'}
-                                                </span>
-                                            </button>
+                                            <div className="flex flex-col w-full">
+                                                <button
+                                                    type="button"
+                                                    onClick={handleJoinEvent}
+                                                    disabled={
+                                                        isJoining ||
+                                                        (remainingCapacity !==
+                                                            null &&
+                                                            remainingCapacity <= 0)
+                                                    }
+                                                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border-0 bg-primary-500 py-4 text-base font-bold text-white shadow-md transition-all duration-200 hover:bg-primary-600 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-neutral-300"
+                                                >
+                                                    <span>
+                                                        {isJoining
+                                                            ? 'Mendaftar...'
+                                                            : remainingCapacity !==
+                                                                    null &&
+                                                                remainingCapacity <=
+                                                                    0
+                                                               ? 'Kuota Penuh'
+                                                               : 'Ikuti Event Sekarang'}
+                                                    </span>
+                                                </button>
+                                                {showVerificationWarning && (
+                                                    <div className="flex flex-col gap-3 rounded-2xl border border-secondary-200 bg-secondary-100/40 p-4 text-neutral-800 mt-3">
+                                                        <div className="flex gap-2 text-secondary-800">
+                                                            <AlertTriangle size={18} className="shrink-0 mt-0.5" />
+                                                            <span className="text-xs font-bold uppercase tracking-wider">Verifikasi Diperlukan</span>
+                                                        </div>
+                                                        <p className="text-xs leading-relaxed text-neutral-700 font-medium">
+                                                            Anda harus memverifikasi email untuk bergabung dengan event berbayar demi keamanan transaksi.
+                                                        </p>
+                                                        <Link
+                                                            href="/settings/verify-email"
+                                                            className="flex w-full items-center justify-center gap-1.5 rounded-full bg-secondary-500 py-2.5 text-center text-xs font-bold text-neutral-900 shadow-sm transition-all duration-200 hover:bg-secondary-600 active:scale-[0.98]"
+                                                        >
+                                                            <span>Verifikasi Sekarang</span>
+                                                            <ArrowUpRight size={14} />
+                                                        </Link>
+                                                    </div>
+                                                )}
+                                            </div>
                                         ) : (
                                             <Link
                                                 href="/login"
