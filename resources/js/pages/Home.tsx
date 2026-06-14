@@ -237,8 +237,10 @@ export default function Home({
 
     useEffect(() => {
         const handleResize = () => {
-            if (window.innerWidth < 1024) {
+            if (window.innerWidth < 640) {
                 setCardsToShow(2);
+            } else if (window.innerWidth < 1024) {
+                setCardsToShow(3);
             } else {
                 setCardsToShow(4);
             }
@@ -963,7 +965,7 @@ export default function Home({
                                             {displayJoined.map((event, idx) => (
                                                 <div
                                                     key={`${event.id}-clone-${idx}`}
-                                                    className="border-neutral-150 group relative flex h-[325px] w-[calc((100%-24px)/2)] shrink-0 flex-col justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:h-[370px] lg:h-[400px] lg:w-[calc((100%-72px)/4)]"
+                                                    className="border-neutral-150 group relative flex h-[340px] w-[calc((100%-24px)/2)] shrink-0 flex-col justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:h-[370px] sm:w-[calc((100%-48px)/3)] lg:h-[400px] lg:w-[calc((100%-72px)/4)]"
                                                 >
                                                     <div className="absolute top-4 left-4 z-10 rounded-md bg-secondary-400 px-3 py-1 text-[0.6275rem] font-extrabold text-secondary-900 shadow-sm">
                                                         {event.price === 0
@@ -971,7 +973,7 @@ export default function Home({
                                                             : `Rp ${Number(event.price).toLocaleString('id-ID')}`}
                                                     </div>
 
-                                                    <div className="relative h-[140px] w-full shrink-0 overflow-hidden border-b border-gray-100 bg-gray-50 sm:h-[170px] lg:aspect-3/2 lg:h-auto">
+                                                    <div className="relative h-[180px] w-full shrink-0 overflow-hidden border-b border-gray-100 bg-gray-50 sm:h-[200px] lg:h-[220px]">
                                                         <img
                                                             src={
                                                                 event.poster_url ||
@@ -982,9 +984,9 @@ export default function Home({
                                                             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                                                         />
                                                     </div>
-                                                    <div className="flex flex-grow flex-col justify-between gap-2 p-4">
+                                                    <div className="flex h-[160px] sm:h-[170px] lg:h-[180px] shrink-0 flex-col justify-between p-4">
                                                         <div className="flex flex-col gap-1.5">
-                                                            <h4 className="line-clamp-2 h-[34px] overflow-hidden text-xs leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[40px] sm:text-sm lg:line-clamp-3 lg:h-[66px] lg:text-base">
+                                                            <h4 className="line-clamp-2 h-[34px] overflow-hidden text-xs leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[40px] sm:text-sm lg:h-[48px] lg:text-base">
                                                                 {event.title}
                                                             </h4>
                                                             <div className="flex flex-col gap-1 border-t border-gray-100/50 pt-1.5 text-[10px] font-semibold text-gray-400 sm:text-micro">
@@ -999,18 +1001,20 @@ export default function Home({
                                                                         event.start_datetime,
                                                                     )}
                                                                 </span>
-                                                                <span className="flex items-center gap-1.5">
+                                                                <span className="flex items-start gap-1.5">
                                                                     <MapPin
                                                                         size={
                                                                             12
                                                                         }
-                                                                        className="shrink-0 text-gray-400"
+                                                                        className="mt-0.5 shrink-0 text-gray-400"
                                                                     />
-                                                                    {event.type ===
-                                                                    'online'
-                                                                        ? 'Online'
-                                                                        : event.location_name ||
-                                                                          'Lokasi Offline'}
+                                                                    <span className="line-clamp-2 overflow-hidden">
+                                                                        {event.type ===
+                                                                        'online'
+                                                                            ? 'Online'
+                                                                            : event.location_name ||
+                                                                              'Lokasi Offline'}
+                                                                    </span>
                                                                 </span>
                                                             </div>
                                                         </div>
@@ -1098,7 +1102,7 @@ export default function Home({
                                         {displayNearby.map((event, idx) => (
                                             <div
                                                 key={`${event.id}-clone-${idx}`}
-                                                className="border-neutral-150 group relative flex h-[325px] w-[calc((100%-24px)/2)] shrink-0 flex-col justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:h-[370px] lg:h-[400px] lg:w-[calc((100%-72px)/4)]"
+                                                className="border-neutral-150 group relative flex h-[340px] w-[calc((100%-24px)/2)] shrink-0 flex-col justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:h-[370px] sm:w-[calc((100%-48px)/3)] lg:h-[400px] lg:w-[calc((100%-72px)/4)]"
                                             >
                                                 <div className="absolute top-4 left-4 z-10 rounded-md bg-secondary-400 px-3 py-1 text-[0.6275rem] font-extrabold text-secondary-900 shadow-sm">
                                                     {event.price === 0
@@ -1106,7 +1110,7 @@ export default function Home({
                                                         : `Rp ${Number(event.price).toLocaleString('id-ID')}`}
                                                 </div>
 
-                                                <div className="relative h-[140px] w-full shrink-0 overflow-hidden border-b border-gray-100 bg-gray-50 sm:h-[170px] lg:aspect-3/2 lg:h-auto">
+                                                <div className="relative h-[180px] w-full shrink-0 overflow-hidden border-b border-gray-100 bg-gray-50 sm:h-[200px] lg:h-[220px]">
                                                     <img
                                                         src={
                                                             event.poster_url ||
@@ -1117,9 +1121,9 @@ export default function Home({
                                                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                                                     />
                                                 </div>
-                                                <div className="flex flex-grow flex-col justify-between gap-2 p-4">
+                                                <div className="flex h-[160px] sm:h-[170px] lg:h-[180px] shrink-0 flex-col justify-between p-4">
                                                     <div className="flex flex-col gap-1.5">
-                                                        <h4 className="line-clamp-2 h-[34px] overflow-hidden text-xs leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[40px] sm:text-sm lg:line-clamp-3 lg:h-[66px] lg:text-base">
+                                                        <h4 className="line-clamp-2 h-[34px] overflow-hidden text-xs leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[40px] sm:text-sm lg:h-[48px] lg:text-base">
                                                             {event.title}
                                                         </h4>
                                                         <div className="flex flex-col gap-1 border-t border-gray-100/50 pt-1.5 text-[10px] font-semibold text-gray-400 sm:text-micro">
@@ -1132,16 +1136,18 @@ export default function Home({
                                                                     event.start_datetime,
                                                                 )}
                                                             </span>
-                                                            <span className="flex items-center gap-1.5">
+                                                            <span className="flex items-start gap-1.5">
                                                                 <MapPin
                                                                     size={12}
-                                                                    className="shrink-0 text-gray-400"
+                                                                    className="mt-0.5 shrink-0 text-gray-400"
                                                                 />
-                                                                {event.type ===
-                                                                'online'
-                                                                    ? 'Online'
-                                                                    : event.location_name ||
-                                                                      'Lokasi Offline'}
+                                                                <span className="line-clamp-2 overflow-hidden">
+                                                                    {event.type ===
+                                                                    'online'
+                                                                        ? 'Online'
+                                                                        : event.location_name ||
+                                                                          'Lokasi Offline'}
+                                                                </span>
                                                             </span>
                                                         </div>
                                                     </div>
@@ -1845,7 +1851,7 @@ export default function Home({
                                         paginatedCatalogEvents.map((event) => (
                                             <div
                                                 key={event.id}
-                                                className="border-neutral-150 group relative flex h-[140px] w-full flex-row justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:h-[170px] lg:h-[400px] lg:flex-col"
+                                                className="border-neutral-150 group relative flex h-[140px] w-full flex-row justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:h-[170px] lg:h-[400px] lg:max-w-[300px] lg:w-full lg:mx-auto lg:flex-col"
                                             >
                                                 <div className="absolute top-3 left-3 z-10 rounded-md bg-secondary-400 px-3 py-1 text-[0.6275rem] font-extrabold text-secondary-900 shadow-sm sm:top-4 lg:top-4">
                                                     {event.price === 0
@@ -1853,7 +1859,7 @@ export default function Home({
                                                         : `Rp ${Number(event.price).toLocaleString('id-ID')}`}
                                                 </div>
 
-                                                <div className="lg:aspect-none relative aspect-square h-full w-[140px] shrink-0 overflow-hidden border-r border-gray-100 bg-gray-50 sm:w-[170px] lg:h-[180px] lg:w-full lg:border-r-0 lg:border-b">
+                                                <div className="lg:aspect-none relative aspect-square h-full w-[140px] shrink-0 overflow-hidden border-r border-gray-100 bg-gray-50 sm:w-[170px] lg:h-[220px] lg:w-full lg:border-r-0 lg:border-b">
                                                     <img
                                                         src={
                                                             event.poster_url ||
@@ -1865,9 +1871,9 @@ export default function Home({
                                                     />
                                                 </div>
 
-                                                <div className="flex flex-grow flex-col justify-between gap-1 overflow-hidden p-3 sm:gap-2 sm:p-4 lg:gap-2 lg:p-4">
+                                                <div className="flex flex-grow lg:flex-none lg:h-[180px] lg:shrink-0 flex-col justify-between gap-1 overflow-hidden p-3 sm:gap-2 sm:p-4 lg:p-4">
                                                     <div className="flex flex-col gap-1 sm:gap-1.5">
-                                                        <h4 className="line-clamp-2 h-[36px] overflow-hidden text-xs leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[40px] sm:text-sm lg:line-clamp-3 lg:h-[66px] lg:text-base">
+                                                        <h4 className="line-clamp-2 h-[36px] overflow-hidden text-xs leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[40px] sm:text-sm lg:h-[48px] lg:text-base">
                                                             {event.title}
                                                         </h4>
 
@@ -1881,16 +1887,18 @@ export default function Home({
                                                                     event.start_datetime,
                                                                 )}
                                                             </span>
-                                                            <span className="flex items-center gap-1.5">
+                                                            <span className="flex items-start gap-1.5">
                                                                 <MapPin
                                                                     size={12}
-                                                                    className="shrink-0 text-gray-400"
+                                                                    className="mt-0.5 shrink-0 text-gray-400"
                                                                 />
-                                                                {event.type ===
-                                                                'online'
-                                                                    ? 'Online'
-                                                                    : event.location_name ||
-                                                                      'Lokasi Offline'}
+                                                                <span className="line-clamp-2 overflow-hidden">
+                                                                    {event.type ===
+                                                                    'online'
+                                                                        ? 'Online'
+                                                                        : event.location_name ||
+                                                                          'Lokasi Offline'}
+                                                                </span>
                                                             </span>
                                                         </div>
                                                     </div>
