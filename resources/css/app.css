@@ -155,3 +155,10 @@ html.lenis body {
 *::-webkit-scrollbar {
     display: none; /* Chrome, Safari, Opera */
 }
+
+/* Disable default browser password reveal eye icon and clear buttons */
+input::-ms-reveal,
+input::-ms-clear {
+    display: none;
+}
+

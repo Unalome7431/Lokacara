@@ -118,7 +118,7 @@ export default function Login() {
 
                             <div className="mt-2.5 flex justify-end">
                                 <a
-                                    href=""
+                                    href="/forgot-password"
                                     className="text-right font-brand text-small font-semibold text-gray-400 hover:text-gray-600 hover:underline"
                                 >
                                     Lupa Kata Sandi?

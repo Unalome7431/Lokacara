@@ -155,8 +155,8 @@ export default function Dashboard({
 
     const renderPagination = () => {
         if (totalPages <= 1) {
-return null;
-}
+            return null;
+        }
 
         return (
             <div className="mt-4 flex items-center justify-between border-t border-neutral-100 pt-6">

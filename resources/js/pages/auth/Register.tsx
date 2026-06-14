@@ -7,6 +7,7 @@ import Button from '@/components/ui/Button';
 
 export default function Register() {
     const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const { data, setData, post, processing, errors } = useForm({
         email: '',
         password: '',
@@ -92,14 +93,9 @@ export default function Register() {
                                     name="password"
                                     placeholder="Kata Sandi"
                                     value={data.password}
-                                    onChange={(e) => {
-                                        const val = e.target.value;
-                                        setData((prev) => ({
-                                            ...prev,
-                                            password: val,
-                                            password_confirmation: val,
-                                        }));
-                                    }}
+                                    onChange={(e) =>
+                                        setData('password', e.target.value)
+                                    }
                                     required
                                     className="box-border w-full rounded-lg border border-transparent bg-secondary-100 py-3.5 pr-12 pl-4 font-brand text-base font-normal placeholder-gray-400 transition-all duration-200 focus:border-primary-500 focus:bg-white focus:outline-none"
                                 />
@@ -120,6 +116,50 @@ export default function Register() {
                             {errors.password && (
                                 <div className="mt-1.5 text-micro text-red-500">
                                     {errors.password}
+                                </div>
+                            )}
+                        </div>
+
+                        <div>
+                            <div className="relative w-full">
+                                <input
+                                    id="password_confirmation"
+                                    type={
+                                        showConfirmPassword
+                                            ? 'text'
+                                            : 'password'
+                                    }
+                                    name="password_confirmation"
+                                    placeholder="Konfirmasi Kata Sandi"
+                                    value={data.password_confirmation}
+                                    onChange={(e) =>
+                                        setData(
+                                            'password_confirmation',
+                                            e.target.value,
+                                        )
+                                    }
+                                    required
+                                    className="box-border w-full rounded-lg border border-transparent bg-secondary-100 py-3.5 pr-12 pl-4 font-brand text-base font-normal placeholder-gray-400 transition-all duration-200 focus:border-primary-500 focus:bg-white focus:outline-none"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setShowConfirmPassword(
+                                            !showConfirmPassword,
+                                        )
+                                    }
+                                    className="absolute top-1/2 right-4 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-gray-600 focus:outline-none"
+                                >
+                                    {showConfirmPassword ? (
+                                        <EyeOff size={18} />
+                                    ) : (
+                                        <Eye size={18} />
+                                    )}
+                                </button>
+                            </div>
+                            {errors.password_confirmation && (
+                                <div className="mt-1.5 text-micro text-red-500">
+                                    {errors.password_confirmation}
                                 </div>
                             )}
                         </div>

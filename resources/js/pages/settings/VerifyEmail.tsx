@@ -5,13 +5,15 @@ import Footer from '@/layouts/Footer';
 import NavBar from '@/layouts/NavBar';
 
 interface PageProps {
-    auth: {
-        user: {
+    auth?: {
+        user?: {
             id: number;
             name: string;
             email: string;
         };
     };
+    email?: string;
+    isReset?: boolean;
     flash?: {
         success?: string;
         warning?: string;
@@ -21,8 +23,9 @@ interface PageProps {
 
 export default function VerifyEmail() {
     const page = usePage();
-    const { auth, flash } = page.props as any as PageProps;
+    const { auth, flash, email, isReset } = page.props as any as PageProps;
     const user = auth?.user;
+    const displayEmail = email || user?.email;
 
     const { data, setData, post, processing, errors } = useForm({
         otp: '',
@@ -34,8 +37,8 @@ export default function VerifyEmail() {
         const char = value.slice(-1);
 
         if (char && !/^\d$/.test(char)) {
-return;
-}
+            return;
+        }
 
         const otpArray = Array.from(
             { length: 6 },
@@ -92,19 +95,23 @@ return;
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post('/settings/verify-otp');
+        post(isReset ? '/forgot-password/otp' : '/settings/verify-otp');
     };
 
     const handleResend = (e: React.MouseEvent) => {
         e.preventDefault();
-        router.post('/settings/send-otp');
+        if (isReset) {
+            router.post('/forgot-password', { email: displayEmail });
+        } else {
+            router.post('/settings/send-otp');
+        }
     };
 
     return (
         <div className="flex min-h-screen flex-col justify-between bg-neutral-50/50">
             <div className="flex-grow">
                 <NavBar />
-                <Head title="Verifikasi Email - Lokacara" />
+                <Head title={isReset ? 'Verifikasi OTP - Lokacara' : 'Verifikasi Email - Lokacara'} />
 
                 <div className="mx-auto max-w-md px-2 pt-32 pb-16">
                     <div className="animate-in fade-in zoom-in-95 flex flex-col gap-6 rounded-3xl border border-neutral-200 bg-white p-4 shadow-md duration-200 sm:p-6 md:p-8">
@@ -113,13 +120,13 @@ return;
                                 <KeyRound size={28} />
                             </div>
                             <h3 className="mt-2 font-brand text-xl font-black text-neutral-900">
-                                Verifikasi Email Anda
+                                {isReset ? 'Verifikasi OTP Anda' : 'Verifikasi Email Anda'}
                             </h3>
                             <p className="max-w-xs text-small leading-relaxed font-medium text-gray-400">
                                 Kami telah mengirimkan kode OTP 6-digit ke
                                 alamat email:
                                 <span className="mt-0.5 block font-bold text-neutral-800">
-                                    {user?.email}
+                                    {displayEmail}
                                 </span>
                             </p>
                         </div>
