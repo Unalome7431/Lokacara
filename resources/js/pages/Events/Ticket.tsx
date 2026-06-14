@@ -1,8 +1,7 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import {
     Calendar,
     MapPin,
-    ChevronLeft,
     CheckCircle2,
     Clock,
     AlertCircle,
@@ -62,7 +61,7 @@ export default function Ticket({ event, registration }: TicketProps) {
     };
 
     // Generate QR Code URL using api.qrserver.com
-    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(registration.qr_token)}`;
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(registration.qr_token)}`;
 
     return (
         <div className="flex min-h-screen flex-col justify-between bg-neutral-50/50">
@@ -71,16 +70,7 @@ export default function Ticket({ event, registration }: TicketProps) {
                 <Head title={`Tiket Event - ${event.title}`} />
 
                 <div className="mx-auto max-w-3xl px-4 pt-28 pb-16 md:px-8">
-                    {/* Back Link */}
-                    <div className="mb-6">
-                        <Link
-                            href={`/events/${event.id}`}
-                            className="inline-flex items-center gap-1.5 text-small font-bold text-gray-500 transition-colors duration-150 hover:text-primary-500"
-                        >
-                            <ChevronLeft size={16} />
-                            <span>Kembali ke Detail Event</span>
-                        </Link>
-                    </div>
+
 
                     {/* Ticket Container */}
                     <div className="flex flex-col overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-lg md:flex-row">
@@ -196,13 +186,13 @@ export default function Ticket({ event, registration }: TicketProps) {
                         </div>
 
                         {/* Right / Bottom Section: QR Code Code (Ticket Stub) */}
-                        <div className="flex w-full shrink-0 flex-col items-center justify-center gap-4 border-t border-neutral-200 bg-neutral-50/40 p-6 text-center md:w-64 md:border-t-0 md:border-l md:p-8">
+                        <div className="flex w-full shrink-0 flex-col items-center justify-center gap-4 border-t border-neutral-200 bg-neutral-50/40 p-6 text-center md:w-80 md:border-t-0 md:border-l md:p-8">
                             <span className="text-micro font-bold tracking-wider text-neutral-500 uppercase">
                                 Pindai QR Code
                             </span>
 
                             {/* QR Image Wrapper */}
-                            <div className="flex h-44 w-44 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-neutral-200 bg-white p-3 shadow-sm">
+                            <div className="flex h-64 w-64 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-neutral-200 bg-white p-3 shadow-sm">
                                 <img
                                     src={qrCodeUrl}
                                     alt="QR Code Ticket"

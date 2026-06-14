@@ -1,4 +1,4 @@
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import {
     Calendar,
     MapPin,
@@ -61,9 +61,6 @@ export default function Show({
     total_attendees,
     checked_in_attendees,
 }: ShowProps) {
-    const page = usePage();
-    const flash = (page.props as any).flash || {};
-
     const [isScanModalOpen, setIsScanModalOpen] = useState(false);
     const [scannerRunning, setScannerRunning] = useState(false);
     const [isVerifying, setIsVerifying] = useState(false);

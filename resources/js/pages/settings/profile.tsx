@@ -15,14 +15,18 @@ interface UserData {
 }
 
 interface PageProps {
-    auth: {
-        user: UserData;
+    auth?: {
+        user?: UserData;
+    };
+    flash?: {
+        success?: string;
+        error?: string;
     };
 }
 
 export default function Profile() {
-    const page = usePage();
-    const { auth, flash } = page.props as any;
+    const page = usePage<PageProps>();
+    const { auth, flash } = page.props;
     const user = auth?.user;
 
     const [activeTab, setActiveTab] = useState<'Akun' | 'Tentang'>('Akun');
