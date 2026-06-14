@@ -596,6 +596,7 @@ export default function Home({
         const yyyy = today.getFullYear();
         const mm = String(today.getMonth() + 1).padStart(2, '0');
         const dd = String(today.getDate()).padStart(2, '0');
+
         return `${yyyy}-${mm}-${dd}`;
     }, []);
 
@@ -609,6 +610,7 @@ export default function Home({
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
+
         return () =>
             document.removeEventListener('mousedown', handleClickOutside);
     }, []);
@@ -619,6 +621,7 @@ export default function Home({
         } else {
             document.body.style.overflow = '';
         }
+
         return () => {
             document.body.style.overflow = '';
         };
@@ -669,13 +672,16 @@ export default function Home({
             if (appliedStartDate !== null && appliedStartDate !== '') {
                 const startDate = new Date(appliedStartDate);
                 startDate.setHours(0, 0, 0, 0);
+
                 if (eventTime < startDate.getTime()) {
                     matchesDate = false;
                 }
             }
+
             if (appliedEndDate !== null && appliedEndDate !== '') {
                 const endDate = new Date(appliedEndDate);
                 endDate.setHours(23, 59, 59, 999);
+
                 if (eventTime > endDate.getTime()) {
                     matchesDate = false;
                 }
@@ -694,6 +700,7 @@ export default function Home({
             result.sort((a, b) => {
                 const ratioA = (a.view_count || 0) / (a.capacity || 1);
                 const ratioB = (b.view_count || 0) / (b.capacity || 1);
+
                 return ratioB - ratioA;
             });
         } else if (sortBy === 'nearest') {
@@ -722,6 +729,7 @@ export default function Home({
                               Number(b.longitude),
                           )
                         : Infinity;
+
                 return distA - distB;
             });
         } else if (sortBy === 'date_asc') {
@@ -984,7 +992,7 @@ export default function Home({
                                                             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                                                         />
                                                     </div>
-                                                    <div className="flex h-[170px] md:h-[180px] lg:h-[190px] shrink-0 flex-col justify-between p-4">
+                                                    <div className="flex h-[170px] shrink-0 flex-col justify-between p-4 md:h-[180px] lg:h-[190px]">
                                                         <div className="flex flex-col gap-1.5">
                                                             <h4 className="line-clamp-2 h-[34px] overflow-hidden text-xs leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 md:h-[40px] md:text-sm lg:h-[48px] lg:text-base">
                                                                 {event.title}
@@ -1121,7 +1129,7 @@ export default function Home({
                                                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                                                     />
                                                 </div>
-                                                <div className="flex h-[170px] md:h-[180px] lg:h-[190px] shrink-0 flex-col justify-between p-4">
+                                                <div className="flex h-[170px] shrink-0 flex-col justify-between p-4 md:h-[180px] lg:h-[190px]">
                                                     <div className="flex flex-col gap-1.5">
                                                         <h4 className="line-clamp-2 h-[34px] overflow-hidden text-xs leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 md:h-[40px] md:text-sm lg:h-[48px] lg:text-base">
                                                             {event.title}
@@ -1851,7 +1859,7 @@ export default function Home({
                                         paginatedCatalogEvents.map((event) => (
                                             <div
                                                 key={event.id}
-                                                className="border-neutral-150 group relative flex h-[160px] w-full flex-row justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:h-[190px] lg:h-[400px] lg:max-w-[300px] lg:w-full lg:mx-auto lg:flex-col"
+                                                className="border-neutral-150 group relative flex h-[160px] w-full flex-row justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:h-[190px] lg:mx-auto lg:h-[400px] lg:w-full lg:max-w-[300px] lg:flex-col"
                                             >
                                                 <div className="absolute top-3 left-3 z-10 rounded-md bg-secondary-400 px-3 py-1 text-[0.6275rem] font-extrabold text-secondary-900 shadow-sm sm:top-4 lg:top-4">
                                                     {event.price === 0
@@ -1871,7 +1879,7 @@ export default function Home({
                                                     />
                                                 </div>
 
-                                                <div className="flex flex-grow lg:flex-none lg:h-[190px] lg:shrink-0 flex-col justify-between gap-1 overflow-hidden p-3 sm:gap-2 sm:p-4 lg:p-4">
+                                                <div className="flex flex-grow flex-col justify-between gap-1 overflow-hidden p-3 sm:gap-2 sm:p-4 lg:h-[190px] lg:flex-none lg:shrink-0 lg:p-4">
                                                     <div className="flex flex-col gap-1 sm:gap-1.5">
                                                         <h4 className="line-clamp-2 h-[36px] overflow-hidden text-xs leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[40px] sm:text-sm lg:h-[48px] lg:text-base">
                                                             {event.title}

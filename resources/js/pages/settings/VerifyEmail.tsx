@@ -32,7 +32,10 @@ export default function VerifyEmail() {
 
     const handleInputChange = (value: string, index: number) => {
         const char = value.slice(-1);
-        if (char && !/^\d$/.test(char)) return;
+
+        if (char && !/^\d$/.test(char)) {
+return;
+}
 
         const otpArray = Array.from(
             { length: 6 },
@@ -66,6 +69,7 @@ export default function VerifyEmail() {
                 otpArray[index] = '';
                 setData('otp', otpArray.join(''));
             }
+
             e.preventDefault();
         } else if (e.key === 'ArrowLeft' && index > 0) {
             inputRefs.current[index - 1]?.focus();
@@ -79,6 +83,7 @@ export default function VerifyEmail() {
     const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
         e.preventDefault();
         const pasteData = e.clipboardData.getData('text').trim();
+
         if (/^\d{6}$/.test(pasteData)) {
             setData('otp', pasteData);
             inputRefs.current[5]?.focus();
