@@ -5,12 +5,17 @@ import {
     User as UserIcon,
     Settings,
     LogOut,
+    LogIn,
 } from 'lucide-react';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import defaultAvatar from '@/../../public/avatars/default.png';
 import faviconUrl from '@/../../public/favicon.svg';
 import Button from '@/components/ui/Button';
-import { fetchCitySuggestions, INDONESIAN_CITIES, reverseGeocode } from '@/lib/geocoding';
+import {
+    fetchCitySuggestions,
+    INDONESIAN_CITIES,
+    reverseGeocode,
+} from '@/lib/geocoding';
 
 interface NavBarProps {
     locationValue?: string;
@@ -30,7 +35,9 @@ export default function NavBar({
 
     // Page context detection
     const isHomePage = page.component === 'Home';
-    const isEventDetailsPage = page.component === 'Events/Show' || page.component === 'Dashboard/Events/Show';
+    const isEventDetailsPage =
+        page.component === 'Events/Show' ||
+        page.component === 'Dashboard/Events/Show';
     const showLocationBar = isHomePage || isEventDetailsPage;
 
     // Get event details if on details page
@@ -40,8 +47,11 @@ export default function NavBar({
 
     useEffect(() => {
         if (!event || event.type !== 'offline') {
-            setEventCity('');
-            setIsFetchingEventCity(false);
+            queueMicrotask(() => {
+                setEventCity('');
+                setIsFetchingEventCity(false);
+            });
+
             return;
         }
 
@@ -49,7 +59,7 @@ export default function NavBar({
         const lng = parseFloat(event.longitude);
 
         if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
-            setIsFetchingEventCity(true);
+            queueMicrotask(() => setIsFetchingEventCity(true));
             reverseGeocode(lat, lng)
                 .then((city) => {
                     setEventCity(city);
@@ -62,19 +72,26 @@ export default function NavBar({
                     setIsFetchingEventCity(false);
                 });
         } else {
-            setEventCity(event.location_name || 'Tidak Ditentukan');
-            setIsFetchingEventCity(false);
+            queueMicrotask(() => {
+                setEventCity(event.location_name || 'Tidak Ditentukan');
+                setIsFetchingEventCity(false);
+            });
         }
     }, [event]);
 
     const eventLocation = useMemo(() => {
-        if (!event) return '';
+        if (!event) {
+            return '';
+        }
+
         if (event.type === 'online') {
             return event.platform_name || 'Online';
         }
+
         if (isFetchingEventCity) {
             return 'Loading...';
         }
+
         return eventCity || event.location_name || 'Tidak Ditentukan';
     }, [event, eventCity, isFetchingEventCity]);
 
@@ -88,9 +105,9 @@ export default function NavBar({
     // Sync input depending on page
     useEffect(() => {
         if (isEventDetailsPage) {
-            setLocationInput(eventLocation);
+            queueMicrotask(() => setLocationInput(eventLocation));
         } else if (isHomePage) {
-            setLocationInput(locationValue || '');
+            queueMicrotask(() => setLocationInput(locationValue || ''));
         }
     }, [isHomePage, isEventDetailsPage, locationValue, eventLocation]);
 
@@ -113,7 +130,13 @@ export default function NavBar({
                 !locationContainerRef.current.contains(e.target as Node)
             ) {
                 setShowDropdown(false);
-                setLocationInput(isHomePage ? (locationValue || '') : (isEventDetailsPage ? eventLocation : ''));
+                setLocationInput(
+                    isHomePage
+                        ? locationValue || ''
+                        : isEventDetailsPage
+                          ? eventLocation
+                          : '',
+                );
             }
         }
         document.addEventListener('mousedown', handleClickOutside);
@@ -237,7 +260,9 @@ export default function NavBar({
                                     autoComplete="off"
                                     disabled={!isHomePage}
                                     className={`w-full border-0 bg-transparent font-brand text-base font-normal text-gray-700 placeholder-gray-400 outline-none focus:ring-0 focus:outline-none ${
-                                        !isHomePage ? 'cursor-default text-gray-500' : ''
+                                        !isHomePage
+                                            ? 'cursor-default text-gray-500'
+                                            : ''
                                     }`}
                                 />
 
@@ -261,7 +286,9 @@ export default function NavBar({
                                                         size={16}
                                                         className="animate-bounce text-primary-500"
                                                     />
-                                                    <span>Gunakan lokasi saat ini</span>
+                                                    <span>
+                                                        Gunakan lokasi saat ini
+                                                    </span>
                                                 </button>
                                             )}
 
@@ -271,9 +298,15 @@ export default function NavBar({
                                                       key={city}
                                                       type="button"
                                                       onClick={() => {
-                                                          setLocationInput(city);
-                                                          onLocationSubmit?.(city);
-                                                          setShowDropdown(false);
+                                                          setLocationInput(
+                                                              city,
+                                                          );
+                                                          onLocationSubmit?.(
+                                                              city,
+                                                          );
+                                                          setShowDropdown(
+                                                              false,
+                                                          );
                                                       }}
                                                       className="w-full cursor-pointer px-4 py-2 text-left text-base font-semibold text-neutral-700 transition-colors hover:bg-neutral-50"
                                                   >
@@ -328,7 +361,7 @@ export default function NavBar({
 
                             {/* Profile Dropdown Menu */}
                             {isDropdownOpen && (
-                                <div className="border-neutral-150 animate-in fade-in slide-in-from-top-3 absolute right-0 z-50 mt-2 w-48 rounded-2xl border bg-white py-1.5 shadow-lg duration-200">
+                                <div className="border-neutral-150 animate-in fade-in slide-in-from-top-3 absolute right-0 z-50 mt-2 w-48 overflow-hidden rounded-2xl border bg-white py-1.5 shadow-lg duration-200">
                                     <Link
                                         href="/dashboard"
                                         onClick={() => setIsDropdownOpen(false)}
@@ -372,12 +405,41 @@ export default function NavBar({
                             )}
                         </div>
                     ) : (
-                        <a
-                            href="/login"
-                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-gray-100 bg-gray-50 p-1 text-gray-400 transition-colors duration-200 hover:text-primary-500"
-                        >
-                            <UserIcon size={18} />
-                        </a>
+                        <div className="relative">
+                            <button
+                                onClick={() =>
+                                    setIsDropdownOpen(!isDropdownOpen)
+                                }
+                                className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-gray-100 bg-gray-50 p-1 text-gray-400 transition-colors duration-200 hover:text-primary-500"
+                            >
+                                <UserIcon size={18} />
+                            </button>
+
+                            {/* Backdrop for click away */}
+                            {isDropdownOpen && (
+                                <div
+                                    className="fixed inset-0 z-40 bg-transparent"
+                                    onClick={() => setIsDropdownOpen(false)}
+                                />
+                            )}
+
+                            {/* Guest Dropdown Menu */}
+                            {isDropdownOpen && (
+                                <div className="border-neutral-150 animate-in fade-in slide-in-from-top-3 absolute right-0 z-50 mt-2 w-48 overflow-hidden rounded-2xl border bg-white py-1.5 shadow-lg duration-200">
+                                    <Link
+                                        href="/login"
+                                        onClick={() => setIsDropdownOpen(false)}
+                                        className="flex w-full cursor-pointer items-center gap-2.5 border-0 bg-transparent px-4 py-2.5 text-left text-small font-bold text-neutral-800 transition-colors duration-150 hover:bg-gray-50 focus:outline-none"
+                                    >
+                                        <LogIn
+                                            size={16}
+                                            className="shrink-0 text-neutral-500"
+                                        />
+                                        <span>Masuk</span>
+                                    </Link>
+                                </div>
+                            )}
+                        </div>
                     )}
                 </div>
             </nav>

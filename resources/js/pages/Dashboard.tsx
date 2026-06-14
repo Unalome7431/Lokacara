@@ -11,6 +11,8 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import defaultAvatar from '@/../../public/avatars/default.png';
+import DefaultCover from '@/../../public/covers/default_cover.jpg';
+import Button from '@/components/ui/Button';
 import Footer from '@/layouts/Footer';
 import NavBar from '@/layouts/NavBar';
 
@@ -28,6 +30,7 @@ interface Event {
     platform_name?: string;
     start_datetime: string;
     category?: Category;
+    price?: number;
 }
 
 interface EventRegistration {
@@ -138,7 +141,15 @@ export default function Dashboard({
                     {/* Dashboard Navigation & Search */}
                     <div className="mb-8 flex flex-col justify-between gap-6 border-b border-neutral-200 pb-4 md:flex-row md:items-center">
                         {/* Tab Toggles */}
-                        <div className="flex shrink-0 gap-2 self-start overflow-x-auto rounded-2xl bg-neutral-100 p-1">
+                        <div className="relative flex w-full shrink-0 gap-0 overflow-hidden rounded-2xl bg-neutral-100 p-1 sm:w-[500px] md:w-[540px]">
+                            {/* Moving highlight pill */}
+                            <div
+                                className="absolute top-1 bottom-1 rounded-xl bg-white shadow-sm transition-all duration-300 ease-in-out"
+                                style={{
+                                    left: `calc(${['Event Terbuat', 'Event Tersimpan', 'Sertifikat'].indexOf(activeTab)} * (100% / 3) + 4px)`,
+                                    width: `calc(100% / 3 - 8px)`,
+                                }}
+                            />
                             {(
                                 [
                                     'Event Terbuat',
@@ -164,15 +175,15 @@ export default function Dashboard({
                                             setActiveTab(tab);
                                             setSearchQuery('');
                                         }}
-                                        className={`flex cursor-pointer items-center gap-2 rounded-xl border-0 px-5 py-2.5 text-small font-bold whitespace-nowrap transition-all duration-150 ${
+                                        className={`relative z-10 flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border-0 px-2 py-2.5 text-xs font-bold whitespace-nowrap transition-colors duration-300 sm:gap-2 sm:px-4 sm:text-small ${
                                             isActive
-                                                ? 'bg-white text-primary-500 shadow-sm'
-                                                : 'bg-transparent text-gray-500 hover:text-neutral-900'
+                                                ? 'text-primary-500'
+                                                : 'text-gray-500 hover:text-neutral-900'
                                         }`}
                                     >
                                         <span>{tab}</span>
                                         <span
-                                            className={`rounded-full px-2 py-0.5 text-micro font-extrabold ${
+                                            className={`rounded-full px-1.5 py-0.5 text-[9px] font-extrabold transition-colors duration-300 sm:text-micro ${
                                                 isActive
                                                     ? 'bg-primary-50 text-primary-600'
                                                     : 'bg-neutral-200 text-gray-600'
@@ -209,7 +220,7 @@ export default function Dashboard({
                     <div className="min-h-[300px]">
                         {/* Event Terbuat Tab */}
                         {activeTab === 'Event Terbuat' &&
-                            (filteredHostedEvents.length === 0 ? (
+                            (hosted_events.length === 0 ? (
                                 <div className="animate-in fade-in flex flex-col items-center justify-center gap-4 rounded-3xl border border-neutral-200 bg-white px-4 py-20 text-center shadow-sm duration-200">
                                     <div className="bg-primary-50 flex h-16 w-16 items-center justify-center rounded-full text-primary-500">
                                         <Calendar size={28} />
@@ -231,78 +242,82 @@ export default function Dashboard({
                                         <span>Buat Event Baru</span>
                                     </Link>
                                 </div>
+                            ) : filteredHostedEvents.length === 0 ? (
+                                <div className="animate-in fade-in flex h-[325px] w-full flex-col items-center justify-center gap-4 rounded-3xl border border-neutral-200 bg-white px-4 text-center shadow-sm duration-200 sm:h-[370px] lg:h-[400px]">
+                                    <Search
+                                        size={28}
+                                        className="animate-pulse text-gray-400"
+                                    />
+                                    <div className="flex flex-col gap-1">
+                                        <h4 className="text-base font-bold text-neutral-800">
+                                            Event Tidak Ditemukan
+                                        </h4>
+                                        <p className="max-w-[280px] text-small text-gray-400">
+                                            Tidak ada event yang cocok dengan
+                                            kata kunci pencarian Anda.
+                                        </p>
+                                    </div>
+                                </div>
                             ) : (
-                                <div className="animate-in fade-in grid grid-cols-1 gap-6 duration-200 md:grid-cols-2 lg:grid-cols-3">
+                                <div className="animate-in fade-in grid grid-cols-1 gap-6 duration-200 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                                     {filteredHostedEvents.map((event) => (
                                         <div
                                             key={event.id}
-                                            className="flex flex-col overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-sm transition-all duration-200 hover:border-primary-200"
+                                            className="border-neutral-150 group relative flex h-[325px] w-full flex-col justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:h-[370px] lg:h-[400px]"
                                         >
-                                            <div className="relative aspect-video w-full border-b border-neutral-100 bg-neutral-100">
+                                            {/* "FREE" or price Badge on Top-Left of image */}
+                                            <div className="absolute top-4 left-4 z-10 rounded-md bg-secondary-400 px-3 py-1 text-[0.6275rem] font-extrabold text-secondary-900 shadow-sm">
+                                                {event.price === 0
+                                                    ? 'FREE'
+                                                    : `Rp ${Number(event.price).toLocaleString('id-ID')}`}
+                                            </div>
+
+                                            <div className="relative h-[140px] w-full shrink-0 overflow-hidden border-b border-gray-100 bg-gray-50 sm:h-[170px] lg:aspect-3/2 lg:h-auto">
                                                 <img
                                                     src={
                                                         event.poster_url ||
-                                                        '/covers/default_cover.jpg'
+                                                        DefaultCover
                                                     }
                                                     alt={event.title}
-                                                    className="h-full w-full object-cover"
+                                                    draggable="false"
+                                                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                                                 />
-                                                <div
-                                                    className={`absolute top-3 left-3 z-10 rounded-md px-2.5 py-0.5 text-[0.6rem] font-extrabold tracking-wide uppercase shadow-xs ${
-                                                        event.type === 'online'
-                                                            ? 'bg-blue-100 text-blue-800'
-                                                            : 'bg-green-100 text-green-800'
-                                                    }`}
-                                                >
-                                                    {event.type}
-                                                </div>
                                             </div>
-
-                                            <div className="flex flex-grow flex-col gap-3 p-6">
-                                                <div>
-                                                    {event.category && (
-                                                        <span className="text-micro font-extrabold tracking-wide text-secondary-600 uppercase">
-                                                            {
-                                                                event.category
-                                                                    .name
-                                                            }
-                                                        </span>
-                                                    )}
-                                                    <h4 className="mt-0.5 line-clamp-1 text-base leading-snug font-extrabold text-neutral-900">
+                                            <div className="flex flex-grow flex-col justify-between gap-2 p-4">
+                                                <div className="flex flex-col gap-1.5">
+                                                    <h4 className="line-clamp-2 h-[34px] overflow-hidden text-xs leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[40px] sm:text-sm lg:line-clamp-3 lg:h-[66px] lg:text-base">
                                                         {event.title}
                                                     </h4>
-                                                </div>
-
-                                                <div className="flex flex-col gap-1 text-small font-semibold text-gray-500">
-                                                    <span className="flex items-center gap-1.5 truncate">
-                                                        <MapPin
-                                                            size={12}
-                                                            className="shrink-0 text-gray-400"
-                                                        />
-                                                        <span>
+                                                    <div className="flex flex-col gap-1 border-t border-gray-100/50 pt-1.5 text-[10px] font-semibold text-gray-400 sm:text-micro">
+                                                        <span className="flex items-center gap-1.5">
+                                                            <Calendar
+                                                                size={12}
+                                                                className="shrink-0 text-gray-400"
+                                                            />
+                                                            {formatShortDate(
+                                                                event.start_datetime,
+                                                            )}
+                                                        </span>
+                                                        <span className="flex items-center gap-1.5">
+                                                            <MapPin
+                                                                size={12}
+                                                                className="shrink-0 text-gray-400"
+                                                            />
                                                             {event.type ===
                                                             'online'
                                                                 ? 'Online'
                                                                 : event.location_name ||
-                                                                  'Offline'}
+                                                                  'Lokasi Offline'}
                                                         </span>
-                                                    </span>
-                                                    <span className="text-micro font-medium text-gray-400">
-                                                        {formatShortDate(
-                                                            event.start_datetime,
-                                                        )}
-                                                    </span>
+                                                    </div>
                                                 </div>
-
-                                                <div className="mt-auto flex gap-2 border-t border-gray-100 pt-4">
-                                                    <Link
+                                                <div className="pt-1">
+                                                    <Button
                                                         href={`/dashboard/events/${event.id}`}
-                                                        className="flex w-full items-center justify-center gap-1.5 rounded-full bg-primary-500 px-4 py-2 text-micro font-bold text-white transition-colors hover:bg-primary-600"
+                                                        className="w-full py-1.5 text-[10px] sm:py-2 sm:text-small"
                                                     >
-                                                        <span>
-                                                            Detail Event
-                                                        </span>
-                                                    </Link>
+                                                        Detail Event
+                                                    </Button>
                                                 </div>
                                             </div>
                                         </div>
@@ -312,7 +327,7 @@ export default function Dashboard({
 
                         {/* Event Tersimpan Tab */}
                         {activeTab === 'Event Tersimpan' &&
-                            (filteredJoinedEvents.length === 0 ? (
+                            (joined_events.length === 0 ? (
                                 <div className="animate-in fade-in flex flex-col items-center justify-center gap-4 rounded-3xl border border-neutral-200 bg-white px-4 py-20 text-center shadow-sm duration-200">
                                     <div className="bg-primary-50 flex h-16 w-16 items-center justify-center rounded-full text-primary-500">
                                         <Bookmark size={28} />
@@ -333,8 +348,24 @@ export default function Dashboard({
                                         Cari Event Menarik
                                     </Link>
                                 </div>
+                            ) : filteredJoinedEvents.length === 0 ? (
+                                <div className="animate-in fade-in flex h-[325px] w-full flex-col items-center justify-center gap-4 rounded-3xl border border-neutral-200 bg-white px-4 text-center shadow-sm duration-200 sm:h-[370px] lg:h-[400px]">
+                                    <Search
+                                        size={28}
+                                        className="animate-pulse text-gray-400"
+                                    />
+                                    <div className="flex flex-col gap-1">
+                                        <h4 className="text-base font-bold text-neutral-800">
+                                            Event Tidak Ditemukan
+                                        </h4>
+                                        <p className="max-w-[280px] text-small text-gray-400">
+                                            Tidak ada event yang cocok dengan
+                                            kata kunci pencarian Anda.
+                                        </p>
+                                    </div>
+                                </div>
                             ) : (
-                                <div className="animate-in fade-in grid grid-cols-1 gap-6 duration-200 md:grid-cols-2 lg:grid-cols-3">
+                                <div className="animate-in fade-in grid grid-cols-1 gap-6 duration-200 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                                     {filteredJoinedEvents.map((reg) => {
                                         const event = reg.event;
 
@@ -345,79 +376,64 @@ export default function Dashboard({
                                         return (
                                             <div
                                                 key={reg.id}
-                                                className="flex flex-col overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-sm transition-all duration-200 hover:border-primary-200"
+                                                className="border-neutral-150 group relative flex h-[325px] w-full flex-col justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:h-[370px] lg:h-[400px]"
                                             >
-                                                <div className="relative aspect-video w-full border-b border-neutral-100 bg-neutral-100">
+                                                {/* "FREE" or price Badge on Top-Left of image */}
+                                                <div className="absolute top-4 left-4 z-10 rounded-md bg-secondary-400 px-3 py-1 text-[0.6275rem] font-extrabold text-secondary-900 shadow-sm">
+                                                    {event.price === 0
+                                                        ? 'FREE'
+                                                        : `Rp ${Number(event.price).toLocaleString('id-ID')}`}
+                                                </div>
+
+                                                <div className="relative h-[140px] w-full shrink-0 overflow-hidden border-b border-gray-100 bg-gray-50 sm:h-[170px] lg:aspect-3/2 lg:h-auto">
                                                     <img
                                                         src={
                                                             event.poster_url ||
-                                                            '/covers/default_cover.jpg'
+                                                            DefaultCover
                                                         }
                                                         alt={event.title}
-                                                        className="h-full w-full object-cover"
+                                                        draggable="false"
+                                                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                                                     />
-                                                    <div
-                                                        className={`absolute top-3 left-3 z-10 rounded-md px-2.5 py-0.5 text-[0.6rem] font-extrabold tracking-wide uppercase shadow-xs ${
-                                                            event.type ===
-                                                            'online'
-                                                                ? 'bg-blue-100 text-blue-800'
-                                                                : 'bg-green-100 text-green-800'
-                                                        }`}
-                                                    >
-                                                        {event.type}
-                                                    </div>
                                                 </div>
-
-                                                <div className="flex flex-grow flex-col gap-3 p-6">
-                                                    <div>
-                                                        {event.category && (
-                                                            <span className="text-micro font-extrabold tracking-wide text-secondary-600 uppercase">
-                                                                {
-                                                                    event
-                                                                        .category
-                                                                        .name
-                                                                }
-                                                            </span>
-                                                        )}
-                                                        <h4 className="mt-0.5 line-clamp-1 text-base leading-snug font-extrabold text-neutral-900">
+                                                <div className="flex flex-grow flex-col justify-between gap-2 p-4">
+                                                    <div className="flex flex-col gap-1.5">
+                                                        <h4 className="line-clamp-2 h-[34px] overflow-hidden text-xs leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[40px] sm:text-sm lg:line-clamp-3 lg:h-[66px] lg:text-base">
                                                             {event.title}
                                                         </h4>
-                                                    </div>
-
-                                                    <div className="flex flex-col gap-1 text-small font-semibold text-gray-500">
-                                                        <span className="flex items-center gap-1.5 truncate">
-                                                            <MapPin
-                                                                size={12}
-                                                                className="shrink-0 text-gray-400"
-                                                            />
-                                                            <span>
+                                                        <div className="flex flex-col gap-1 border-t border-gray-100/50 pt-1.5 text-[10px] font-semibold text-gray-400 sm:text-micro">
+                                                            <span className="flex items-center gap-1.5">
+                                                                <Calendar
+                                                                    size={12}
+                                                                    className="shrink-0 text-gray-400"
+                                                                />
+                                                                {formatShortDate(
+                                                                    event.start_datetime,
+                                                                )}
+                                                            </span>
+                                                            <span className="flex items-center gap-1.5">
+                                                                <MapPin
+                                                                    size={12}
+                                                                    className="shrink-0 text-gray-400"
+                                                                />
                                                                 {event.type ===
                                                                 'online'
                                                                     ? 'Online'
                                                                     : event.location_name ||
-                                                                      'Offline'}
+                                                                      'Lokasi Offline'}
                                                             </span>
-                                                        </span>
-                                                        <span className="text-micro font-medium text-gray-400">
-                                                            {formatShortDate(
-                                                                event.start_datetime,
-                                                            )}
-                                                        </span>
+                                                        </div>
                                                     </div>
-
-                                                    <div className="mt-auto flex gap-2 border-t border-gray-100 pt-4">
+                                                    <div className="flex gap-2 pt-1">
                                                         <Link
                                                             href={`/events/${event.id}`}
-                                                            className="flex flex-grow items-center justify-center gap-1 rounded-full bg-primary-500 px-4 py-2 text-micro font-bold text-white transition-colors hover:bg-primary-600"
+                                                            className="flex flex-grow items-center justify-center rounded-full bg-primary-500 py-1.5 text-center text-[10px] font-bold text-white transition-colors hover:bg-primary-600 sm:py-2 sm:text-small"
                                                         >
-                                                            <span>
-                                                                Lihat Detail
-                                                                Event
-                                                            </span>
+                                                            Detail Event
                                                         </Link>
                                                         <Link
                                                             href={`/events/${event.id}/ticket`}
-                                                            className="flex items-center justify-center rounded-full bg-neutral-100 p-2 text-neutral-800 transition-colors hover:bg-neutral-200"
+                                                            className="flex items-center justify-center rounded-full bg-neutral-100 px-3 text-neutral-800 transition-colors hover:bg-neutral-200"
                                                             title="Lihat Tiket QR"
                                                         >
                                                             <FileText

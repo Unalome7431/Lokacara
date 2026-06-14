@@ -7,6 +7,9 @@ import {
     Calendar,
     MapPin,
     Loader2,
+    ChevronDown,
+    Filter,
+    X,
 } from 'lucide-react';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import DefaultCover from '@/../../public/covers/default_cover.jpg';
@@ -34,6 +37,9 @@ interface Event {
         id: number;
         name: string;
     };
+    price: number;
+    view_count?: number;
+    capacity?: number;
 }
 
 interface Category {
@@ -553,6 +559,69 @@ export default function Home({
         'all',
     );
 
+    // Custom sort dropdown
+    const sortOptions = [
+        { value: 'popular', label: 'Terpopuler' },
+        { value: 'nearest', label: 'Lokasi Terdekat' },
+        { value: 'date_asc', label: 'Tanggal Terdekat' },
+        { value: 'date_desc', label: 'Tanggal Terjauh' },
+        { value: 'price_asc', label: 'Harga Termurah' },
+        { value: 'price_desc', label: 'Harga Termahal' },
+    ] as const;
+
+    type SortValue = (typeof sortOptions)[number]['value'];
+    const [sortBy, setSortBy] = useState<SortValue>('popular');
+    const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
+    const sortDropdownRef = useRef<HTMLDivElement>(null);
+    const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+
+    // Price range filters
+    const [tempMinPrice, setTempMinPrice] = useState('');
+    const [tempMaxPrice, setTempMaxPrice] = useState('');
+    const [appliedMinPrice, setAppliedMinPrice] = useState<number | null>(null);
+    const [appliedMaxPrice, setAppliedMaxPrice] = useState<number | null>(null);
+
+    // Date range filters
+    const [tempStartDate, setTempStartDate] = useState('');
+    const [tempEndDate, setTempEndDate] = useState('');
+    const [appliedStartDate, setAppliedStartDate] = useState<string | null>(
+        null,
+    );
+    const [appliedEndDate, setAppliedEndDate] = useState<string | null>(null);
+
+    const todayString = useMemo(() => {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+    }, []);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                sortDropdownRef.current &&
+                !sortDropdownRef.current.contains(event.target as Node)
+            ) {
+                setIsSortDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () =>
+            document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    useEffect(() => {
+        if (isMobileFilterOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, [isMobileFilterOpen]);
+
     useEffect(() => {
         const updateUnderline = () => {
             let activeTab: HTMLButtonElement | null = null;
@@ -579,13 +648,110 @@ export default function Home({
         return () => window.removeEventListener('resize', updateUnderline);
     }, [activeType]);
 
-    const filteredCatalogEvents = events.filter((e) => {
-        const matchesCategory =
-            activeCategory === null || e.category?.id === activeCategory;
-        const matchesType = activeType === 'all' || e.type === activeType;
+    const filteredCatalogEvents = useMemo(() => {
+        const result = events.filter((e) => {
+            const matchesCategory =
+                activeCategory === null || e.category?.id === activeCategory;
+            const matchesType = activeType === 'all' || e.type === activeType;
 
-        return matchesCategory && matchesType;
-    });
+            // Price range filter
+            const matchesMinPrice =
+                appliedMinPrice === null || e.price >= appliedMinPrice;
+            const matchesMaxPrice =
+                appliedMaxPrice === null || e.price <= appliedMaxPrice;
+
+            // Date range filter
+            let matchesDate = true;
+            const eventTime = new Date(e.start_datetime).getTime();
+
+            if (appliedStartDate !== null && appliedStartDate !== '') {
+                const startDate = new Date(appliedStartDate);
+                startDate.setHours(0, 0, 0, 0);
+                if (eventTime < startDate.getTime()) {
+                    matchesDate = false;
+                }
+            }
+            if (appliedEndDate !== null && appliedEndDate !== '') {
+                const endDate = new Date(appliedEndDate);
+                endDate.setHours(23, 59, 59, 999);
+                if (eventTime > endDate.getTime()) {
+                    matchesDate = false;
+                }
+            }
+
+            return (
+                matchesCategory &&
+                matchesType &&
+                matchesMinPrice &&
+                matchesMaxPrice &&
+                matchesDate
+            );
+        });
+
+        if (sortBy === 'popular') {
+            result.sort((a, b) => {
+                const ratioA = (a.view_count || 0) / (a.capacity || 1);
+                const ratioB = (b.view_count || 0) / (b.capacity || 1);
+                return ratioB - ratioA;
+            });
+        } else if (sortBy === 'nearest') {
+            result.sort((a, b) => {
+                const distA =
+                    a.type === 'offline' &&
+                    a.latitude !== null &&
+                    a.longitude !== null &&
+                    userCoords
+                        ? calculateDistance(
+                              userCoords.lat,
+                              userCoords.lng,
+                              Number(a.latitude),
+                              Number(a.longitude),
+                          )
+                        : Infinity;
+                const distB =
+                    b.type === 'offline' &&
+                    b.latitude !== null &&
+                    b.longitude !== null &&
+                    userCoords
+                        ? calculateDistance(
+                              userCoords.lat,
+                              userCoords.lng,
+                              Number(b.latitude),
+                              Number(b.longitude),
+                          )
+                        : Infinity;
+                return distA - distB;
+            });
+        } else if (sortBy === 'date_asc') {
+            result.sort(
+                (a, b) =>
+                    new Date(a.start_datetime).getTime() -
+                    new Date(b.start_datetime).getTime(),
+            );
+        } else if (sortBy === 'date_desc') {
+            result.sort(
+                (a, b) =>
+                    new Date(b.start_datetime).getTime() -
+                    new Date(a.start_datetime).getTime(),
+            );
+        } else if (sortBy === 'price_asc') {
+            result.sort((a, b) => a.price - b.price);
+        } else if (sortBy === 'price_desc') {
+            result.sort((a, b) => b.price - a.price);
+        }
+
+        return result;
+    }, [
+        events,
+        activeCategory,
+        activeType,
+        sortBy,
+        userCoords,
+        appliedMinPrice,
+        appliedMaxPrice,
+        appliedStartDate,
+        appliedEndDate,
+    ]);
 
     // 4. Pagination State & Logic for Catalogue
     const [currentPage, setCurrentPage] = useState(1);
@@ -799,9 +965,10 @@ export default function Home({
                                                     key={`${event.id}-clone-${idx}`}
                                                     className="border-neutral-150 group relative flex h-[325px] w-[calc((100%-24px)/2)] shrink-0 flex-col justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:h-[370px] lg:h-[400px] lg:w-[calc((100%-72px)/4)]"
                                                 >
-                                                    {/* "FREE" Badge on Top-Left of image */}
                                                     <div className="absolute top-4 left-4 z-10 rounded-md bg-secondary-400 px-3 py-1 text-[0.6275rem] font-extrabold text-secondary-900 shadow-sm">
-                                                        FREE
+                                                        {event.price === 0
+                                                            ? 'GRATIS'
+                                                            : `Rp ${Number(event.price).toLocaleString('id-ID')}`}
                                                     </div>
 
                                                     <div className="relative h-[140px] w-full shrink-0 overflow-hidden border-b border-gray-100 bg-gray-50 sm:h-[170px] lg:aspect-3/2 lg:h-auto">
@@ -933,9 +1100,10 @@ export default function Home({
                                                 key={`${event.id}-clone-${idx}`}
                                                 className="border-neutral-150 group relative flex h-[325px] w-[calc((100%-24px)/2)] shrink-0 flex-col justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:h-[370px] lg:h-[400px] lg:w-[calc((100%-72px)/4)]"
                                             >
-                                                {/* "FREE" Badge on Top-Left of image */}
                                                 <div className="absolute top-4 left-4 z-10 rounded-md bg-secondary-400 px-3 py-1 text-[0.6275rem] font-extrabold text-secondary-900 shadow-sm">
-                                                    FREE
+                                                    {event.price === 0
+                                                        ? 'GRATIS'
+                                                        : `Rp ${Number(event.price).toLocaleString('id-ID')}`}
                                                 </div>
 
                                                 <div className="relative h-[140px] w-full shrink-0 overflow-hidden border-b border-gray-100 bg-gray-50 sm:h-[170px] lg:aspect-3/2 lg:h-auto">
@@ -1014,228 +1182,808 @@ export default function Home({
                     </div>
 
                     {/* 4. MAIN CATALOGUE & FILTER SECTION */}
+                    {/* 4. MAIN CATALOGUE & FILTER SECTION */}
                     <div
                         id="catalog"
-                        className="mt-6 flex scroll-mt-24 flex-col gap-10 lg:flex-row"
+                        className="mt-12 flex scroll-mt-24 flex-col gap-6"
                     >
-                        {/* Left Column: Sidebar Category Filter */}
-                        <div className="lg:border-neutral-150 border-neutral-150 flex w-full shrink-0 flex-col gap-6 border-b pb-8 lg:w-1/4 lg:border-r lg:border-b-0 lg:pr-10 lg:pb-0">
-                            <h4 className="font-brand text-xl font-black text-primary-500">
-                                Kategori
-                            </h4>
-                            <div className="flex flex-row flex-wrap items-start gap-x-4 gap-y-3.5 lg:flex-col">
-                                {categories.map((cat) => {
-                                    const isActive = activeCategory === cat.id;
+                        <h3 className="font-brand text-2xl font-black text-neutral-900 md:text-3xl">
+                            Jelajah Event
+                        </h3>
+                        <div className="flex flex-col gap-10 lg:flex-row">
+                            {/* Left Column: Sidebar Category Filter */}
+                            <div className="lg:border-neutral-150 border-neutral-150 hidden flex-col gap-6 border-b pb-8 lg:flex lg:w-1/4 lg:border-r lg:border-b-0 lg:pr-10 lg:pb-0">
+                                <h4 className="font-brand text-xl font-black text-primary-500">
+                                    Preferensi
+                                </h4>
 
-                                    return (
-                                        <button
-                                            key={cat.id}
-                                            onClick={() => {
-                                                setActiveCategory(
-                                                    isActive ? null : cat.id,
-                                                );
-                                                setCurrentPage(1);
-                                            }}
-                                            className="group flex cursor-pointer items-center gap-3 text-base font-semibold text-neutral-600 transition-colors hover:text-primary-500"
-                                        >
-                                            {/* Square bullet style */}
-                                            <div
-                                                className={`h-4 w-4 rounded-sm border-2 transition-all duration-200 ${isActive ? 'border-secondary-500 bg-secondary-500' : 'border-secondary-400 bg-white group-hover:border-secondary-500'}`}
-                                            ></div>
-                                            <span>{cat.name}</span>
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
+                                {/* Kategori Section */}
+                                <div className="flex flex-col gap-3">
+                                    <h5 className="text-xs font-extrabold tracking-wider text-neutral-400 uppercase">
+                                        Kategori
+                                    </h5>
+                                    <div className="flex flex-row flex-wrap items-start gap-x-4 gap-y-3.5 lg:flex-col lg:gap-3">
+                                        {categories.map((cat) => {
+                                            const isActive =
+                                                activeCategory === cat.id;
 
-                        {/* Right Column: Events Catalogue Listing */}
-                        <div className="flex flex-grow flex-col gap-8">
-                            {/* Tab Filter Type */}
-                            <div className="border-gray-150 relative flex items-center gap-8 border-b pb-1">
-                                {/* Sliding underline */}
-                                <div
-                                    className="absolute bottom-0 h-0.75 rounded-full bg-primary-500 transition-all duration-300 ease-out"
-                                    style={{
-                                        left: `${underlineStyle.left}px`,
-                                        width: `${underlineStyle.width}px`,
-                                    }}
-                                />
-
-                                <button
-                                    ref={tabAllRef}
-                                    onClick={() => {
-                                        setActiveType('all');
-                                        setCurrentPage(1);
-                                    }}
-                                    className={`cursor-pointer pb-3 text-base font-bold transition-colors duration-300 ${activeType === 'all' ? 'text-primary-500' : 'text-neutral-400 hover:text-neutral-600'}`}
-                                >
-                                    Semua
-                                </button>
-                                <button
-                                    ref={tabOnlineRef}
-                                    onClick={() => {
-                                        setActiveType('online');
-                                        setCurrentPage(1);
-                                    }}
-                                    className={`cursor-pointer pb-3 text-base font-bold transition-colors duration-300 ${activeType === 'online' ? 'text-primary-500' : 'text-neutral-400 hover:text-neutral-600'}`}
-                                >
-                                    Online
-                                </button>
-                                <button
-                                    ref={tabOfflineRef}
-                                    onClick={() => {
-                                        setActiveType('offline');
-                                        setCurrentPage(1);
-                                    }}
-                                    className={`cursor-pointer pb-3 text-base font-bold transition-colors duration-300 ${activeType === 'offline' ? 'text-primary-500' : 'text-neutral-400 hover:text-neutral-600'}`}
-                                >
-                                    Offline
-                                </button>
-                            </div>
-
-                            {/* Catalogue Grid */}
-                            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                                {paginatedCatalogEvents.length === 0 ? (
-                                    <div className="col-span-full py-20 text-center font-semibold text-gray-400">
-                                        Tidak ada event yang ditemukan untuk
-                                        filter ini.
+                                            return (
+                                                <button
+                                                    key={cat.id}
+                                                    onClick={() => {
+                                                        setActiveCategory(
+                                                            isActive
+                                                                ? null
+                                                                : cat.id,
+                                                        );
+                                                        setCurrentPage(1);
+                                                    }}
+                                                    className="group flex cursor-pointer items-center gap-3 text-sm font-semibold text-neutral-600 transition-colors hover:text-primary-500"
+                                                >
+                                                    {/* Square bullet style */}
+                                                    <div
+                                                        className={`h-3.5 w-3.5 rounded-sm border-2 transition-all duration-200 ${isActive ? 'border-secondary-500 bg-secondary-500' : 'border-secondary-400 bg-white group-hover:border-secondary-500'}`}
+                                                    ></div>
+                                                    <span>{cat.name}</span>
+                                                </button>
+                                            );
+                                        })}
                                     </div>
-                                ) : (
-                                    paginatedCatalogEvents.map((event) => (
-                                        <div
-                                            key={event.id}
-                                            className="border-neutral-150 group relative flex h-[140px] w-full flex-row justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:h-[170px] lg:h-[400px] lg:flex-col"
-                                        >
-                                            {/* "FREE" Badge on Top-Left of image */}
-                                            <div className="absolute top-3 left-3 z-10 rounded-md bg-secondary-400 px-3 py-1 text-[0.6275rem] font-extrabold text-secondary-900 shadow-sm sm:top-4 lg:top-4">
-                                                FREE
-                                            </div>
+                                </div>
 
-                                            <div className="lg:aspect-none relative aspect-square h-full w-[140px] shrink-0 overflow-hidden border-r border-gray-100 bg-gray-50 sm:w-[170px] lg:h-[180px] lg:w-full lg:border-r-0 lg:border-b">
-                                                <img
-                                                    src={
-                                                        event.poster_url ||
-                                                        DefaultCover
+                                {/* Harga Section */}
+                                <div className="flex flex-col gap-3 border-t border-neutral-100 pt-5">
+                                    <h5 className="text-xs font-extrabold tracking-wider text-neutral-400 uppercase">
+                                        Harga
+                                    </h5>
+                                    <div className="flex flex-col gap-3">
+                                        <div className="flex flex-col gap-1.5">
+                                            <span className="text-xs font-bold text-neutral-500">
+                                                Harga Minimum
+                                            </span>
+                                            <div className="flex items-center gap-2 rounded-xl border border-neutral-300 bg-white px-3 py-2 transition-colors duration-150 focus-within:border-primary-500">
+                                                <span className="text-sm font-bold text-neutral-400">
+                                                    Rp
+                                                </span>
+                                                <input
+                                                    type="number"
+                                                    placeholder="0"
+                                                    value={tempMinPrice}
+                                                    onChange={(e) =>
+                                                        setTempMinPrice(
+                                                            e.target.value,
+                                                        )
                                                     }
-                                                    alt={event.title}
-                                                    draggable="false"
-                                                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                    className="w-full text-sm font-semibold text-neutral-800 outline-none"
                                                 />
                                             </div>
+                                        </div>
+                                        <div className="flex flex-col gap-1.5">
+                                            <span className="text-xs font-bold text-neutral-500">
+                                                Harga Maksimum
+                                            </span>
+                                            <div className="flex items-center gap-2 rounded-xl border border-neutral-300 bg-white px-3 py-2 transition-colors duration-150 focus-within:border-primary-500">
+                                                <span className="text-sm font-bold text-neutral-400">
+                                                    Rp
+                                                </span>
+                                                <input
+                                                    type="number"
+                                                    placeholder="Maks"
+                                                    value={tempMaxPrice}
+                                                    onChange={(e) =>
+                                                        setTempMaxPrice(
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    className="w-full text-sm font-semibold text-neutral-800 outline-none"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => {
+                                                    const minVal =
+                                                        tempMinPrice === ''
+                                                            ? null
+                                                            : Number(
+                                                                  tempMinPrice,
+                                                              );
+                                                    const maxVal =
+                                                        tempMaxPrice === ''
+                                                            ? null
+                                                            : Number(
+                                                                  tempMaxPrice,
+                                                              );
+                                                    setAppliedMinPrice(minVal);
+                                                    setAppliedMaxPrice(maxVal);
+                                                    setCurrentPage(1);
+                                                }}
+                                                className="w-full cursor-pointer rounded-xl bg-primary-500 py-2 text-center text-xs font-bold text-white shadow-xs transition-colors duration-150 hover:bg-primary-600"
+                                            >
+                                                Terapkan Harga
+                                            </button>
+                                            {(appliedMinPrice !== null ||
+                                                appliedMaxPrice !== null) && (
+                                                <button
+                                                    onClick={() => {
+                                                        setTempMinPrice('');
+                                                        setTempMaxPrice('');
+                                                        setAppliedMinPrice(
+                                                            null,
+                                                        );
+                                                        setAppliedMaxPrice(
+                                                            null,
+                                                        );
+                                                        setCurrentPage(1);
+                                                    }}
+                                                    className="cursor-pointer rounded-xl border border-neutral-300 px-3 py-2 text-center text-xs font-bold text-neutral-600 transition-colors duration-150 hover:bg-neutral-50"
+                                                >
+                                                    Reset
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
 
-                                            <div className="flex flex-grow flex-col justify-between gap-1 overflow-hidden p-3 sm:gap-2 sm:p-4 lg:gap-2 lg:p-4">
-                                                <div className="flex flex-col gap-1 sm:gap-1.5">
-                                                    <h4 className="line-clamp-2 h-[36px] overflow-hidden text-xs leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[40px] sm:text-sm lg:line-clamp-3 lg:h-[66px] lg:text-base">
-                                                        {event.title}
-                                                    </h4>
+                                {/* Tanggal Section */}
+                                <div className="flex flex-col gap-3 border-t border-neutral-100 pt-5">
+                                    <h5 className="text-xs font-extrabold tracking-wider text-neutral-400 uppercase">
+                                        Tanggal
+                                    </h5>
+                                    <div className="flex flex-col gap-3">
+                                        <div className="flex flex-col gap-1.5">
+                                            <span className="text-xs font-bold text-neutral-500">
+                                                Dari
+                                            </span>
+                                            <input
+                                                type="date"
+                                                min={todayString}
+                                                value={tempStartDate}
+                                                onChange={(e) =>
+                                                    setTempStartDate(
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="w-full cursor-pointer rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm font-semibold text-neutral-800 transition-colors duration-150 outline-none focus:border-primary-500"
+                                            />
+                                        </div>
+                                        <div className="flex flex-col gap-1.5">
+                                            <span className="text-xs font-bold text-neutral-500">
+                                                Sampai
+                                            </span>
+                                            <input
+                                                type="date"
+                                                min={
+                                                    tempStartDate || todayString
+                                                }
+                                                value={tempEndDate}
+                                                onChange={(e) =>
+                                                    setTempEndDate(
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="w-full cursor-pointer rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm font-semibold text-neutral-800 transition-colors duration-150 outline-none focus:border-primary-500"
+                                            />
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => {
+                                                    setAppliedStartDate(
+                                                        tempStartDate || null,
+                                                    );
+                                                    setAppliedEndDate(
+                                                        tempEndDate || null,
+                                                    );
+                                                    setCurrentPage(1);
+                                                }}
+                                                className="w-full cursor-pointer rounded-xl bg-primary-500 py-2 text-center text-xs font-bold text-white shadow-xs transition-colors duration-150 hover:bg-primary-600"
+                                            >
+                                                Terapkan Tanggal
+                                            </button>
+                                            {(appliedStartDate ||
+                                                appliedEndDate) && (
+                                                <button
+                                                    onClick={() => {
+                                                        setTempStartDate('');
+                                                        setTempEndDate('');
+                                                        setAppliedStartDate(
+                                                            null,
+                                                        );
+                                                        setAppliedEndDate(null);
+                                                        setCurrentPage(1);
+                                                    }}
+                                                    className="cursor-pointer rounded-xl border border-neutral-300 px-3 py-2 text-center text-xs font-bold text-neutral-600 transition-colors duration-150 hover:bg-neutral-50"
+                                                >
+                                                    Reset
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-                                                    <div className="flex flex-col gap-0.5 border-t border-gray-100/50 pt-1 text-[10px] font-semibold text-gray-400 sm:gap-1 sm:pt-1.5 sm:text-micro">
-                                                        <span className="flex items-center gap-1.5">
-                                                            <Calendar
-                                                                size={12}
-                                                                className="shrink-0 text-gray-400"
-                                                            />
-                                                            {formatShortDate(
-                                                                event.start_datetime,
-                                                            )}
-                                                        </span>
-                                                        <span className="flex items-center gap-1.5">
-                                                            <MapPin
-                                                                size={12}
-                                                                className="shrink-0 text-gray-400"
-                                                            />
-                                                            {event.type ===
-                                                            'online'
-                                                                ? 'Online'
-                                                                : event.location_name ||
-                                                                  'Lokasi Offline'}
-                                                        </span>
+                            {/* Right Column: Events Catalogue Listing */}
+                            <div className="flex flex-grow flex-col gap-8">
+                                {/* Tab Filter Type */}
+                                <div className="border-gray-150 relative flex items-center justify-between border-b pb-1">
+                                    <div className="relative flex items-center gap-8">
+                                        {/* Sliding underline */}
+                                        <div
+                                            className="absolute bottom-0 h-0.75 rounded-full bg-primary-500 transition-all duration-300 ease-out"
+                                            style={{
+                                                left: `${underlineStyle.left}px`,
+                                                width: `${underlineStyle.width}px`,
+                                            }}
+                                        />
+
+                                        <button
+                                            ref={tabAllRef}
+                                            onClick={() => {
+                                                setActiveType('all');
+                                                setCurrentPage(1);
+                                            }}
+                                            className={`cursor-pointer pb-3 text-base font-bold transition-colors duration-300 ${activeType === 'all' ? 'text-primary-500' : 'text-neutral-400 hover:text-neutral-600'}`}
+                                        >
+                                            Semua
+                                        </button>
+                                        <button
+                                            ref={tabOnlineRef}
+                                            onClick={() => {
+                                                setActiveType('online');
+                                                setCurrentPage(1);
+                                            }}
+                                            className={`cursor-pointer pb-3 text-base font-bold transition-colors duration-300 ${activeType === 'online' ? 'text-primary-500' : 'text-neutral-400 hover:text-neutral-600'}`}
+                                        >
+                                            Online
+                                        </button>
+                                        <button
+                                            ref={tabOfflineRef}
+                                            onClick={() => {
+                                                setActiveType('offline');
+                                                setCurrentPage(1);
+                                            }}
+                                            className={`cursor-pointer pb-3 text-base font-bold transition-colors duration-300 ${activeType === 'offline' ? 'text-primary-500' : 'text-neutral-400 hover:text-neutral-600'}`}
+                                        >
+                                            Offline
+                                        </button>
+                                    </div>
+
+                                    <div className="flex items-center gap-2 pb-2">
+                                        {/* Mobile Filter Trigger Button */}
+                                        <button
+                                            onClick={() =>
+                                                setIsMobileFilterOpen(true)
+                                            }
+                                            className="border-neutral-350 flex cursor-pointer items-center gap-2 rounded-full border bg-white px-4 py-1.5 text-xs font-bold text-neutral-600 shadow-xs transition-all duration-200 outline-none hover:border-primary-500 hover:text-primary-500 lg:hidden"
+                                        >
+                                            <Filter
+                                                size={14}
+                                                className="text-neutral-400"
+                                            />
+                                            <span>Filter</span>
+                                        </button>
+
+                                        {/* Custom Dropdown Sort Filter */}
+                                        <div
+                                            className="relative"
+                                            ref={sortDropdownRef}
+                                        >
+                                            <button
+                                                onClick={() =>
+                                                    setIsSortDropdownOpen(
+                                                        !isSortDropdownOpen,
+                                                    )
+                                                }
+                                                className="border-neutral-350 flex cursor-pointer items-center gap-2 rounded-full border bg-white px-4 py-1.5 text-xs font-bold text-neutral-600 shadow-xs transition-all duration-200 outline-none hover:border-primary-500 hover:text-primary-500"
+                                            >
+                                                <span>
+                                                    {
+                                                        sortOptions.find(
+                                                            (opt) =>
+                                                                opt.value ===
+                                                                sortBy,
+                                                        )?.label
+                                                    }
+                                                </span>
+                                                <ChevronDown
+                                                    size={14}
+                                                    className={`text-neutral-400 transition-transform duration-250 group-hover:text-primary-500 ${isSortDropdownOpen ? 'rotate-180' : ''}`}
+                                                />
+                                            </button>
+
+                                            {isSortDropdownOpen && (
+                                                <div className="animate-in fade-in slide-in-from-top-2 absolute top-full right-0 z-50 mt-1 w-48 rounded-2xl border border-neutral-200 bg-white p-2 shadow-lg duration-150">
+                                                    {sortOptions.map((opt) => (
+                                                        <button
+                                                            key={opt.value}
+                                                            onClick={() => {
+                                                                setSortBy(
+                                                                    opt.value,
+                                                                );
+                                                                setIsSortDropdownOpen(
+                                                                    false,
+                                                                );
+                                                                setCurrentPage(
+                                                                    1,
+                                                                );
+                                                            }}
+                                                            className={`w-full cursor-pointer rounded-xl px-3.5 py-2 text-left text-xs font-semibold transition-colors duration-150 ${
+                                                                sortBy ===
+                                                                opt.value
+                                                                    ? 'bg-primary-50 font-bold text-primary-500'
+                                                                    : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900'
+                                                            }`}
+                                                        >
+                                                            {opt.label}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Mobile Filter Drawer Overlay */}
+                                {isMobileFilterOpen && (
+                                    <div className="fixed inset-0 z-50 flex justify-end">
+                                        {/* Backdrop */}
+                                        <div
+                                            className="animate-in fade-in fixed inset-0 bg-neutral-900/60 backdrop-blur-xs duration-200"
+                                            onClick={() =>
+                                                setIsMobileFilterOpen(false)
+                                            }
+                                        />
+
+                                        {/* Drawer Panel */}
+                                        <div className="animate-in slide-in-from-right relative z-50 flex h-full w-full max-w-xs flex-col gap-6 overflow-y-auto bg-white p-6 shadow-2xl duration-200">
+                                            {/* Drawer Header */}
+                                            <div className="flex items-center justify-between border-b border-neutral-100 pb-4">
+                                                <h4 className="font-brand text-lg font-black text-primary-500">
+                                                    Preferensi
+                                                </h4>
+                                                <button
+                                                    onClick={() =>
+                                                        setIsMobileFilterOpen(
+                                                            false,
+                                                        )
+                                                    }
+                                                    className="cursor-pointer rounded-full p-1 text-neutral-400 transition-colors duration-150 hover:bg-neutral-100 hover:text-neutral-600"
+                                                >
+                                                    <X size={18} />
+                                                </button>
+                                            </div>
+
+                                            {/* Drawer Filters */}
+                                            <div className="flex flex-col gap-6">
+                                                {/* Kategori Section */}
+                                                <div className="flex flex-col gap-3">
+                                                    <h5 className="text-xs font-extrabold tracking-wider text-neutral-400 uppercase">
+                                                        Kategori
+                                                    </h5>
+                                                    <div className="flex flex-col gap-3">
+                                                        {categories.map(
+                                                            (cat) => {
+                                                                const isActive =
+                                                                    activeCategory ===
+                                                                    cat.id;
+
+                                                                return (
+                                                                    <button
+                                                                        key={
+                                                                            cat.id
+                                                                        }
+                                                                        onClick={() => {
+                                                                            setActiveCategory(
+                                                                                isActive
+                                                                                    ? null
+                                                                                    : cat.id,
+                                                                            );
+                                                                            setCurrentPage(
+                                                                                1,
+                                                                            );
+                                                                        }}
+                                                                        className="group flex cursor-pointer items-center gap-3 text-sm font-semibold text-neutral-600 transition-colors hover:text-primary-500"
+                                                                    >
+                                                                        <div
+                                                                            className={`h-3.5 w-3.5 rounded-sm border-2 transition-all duration-200 ${isActive ? 'border-secondary-500 bg-secondary-500' : 'border-secondary-400 bg-white group-hover:border-secondary-500'}`}
+                                                                        ></div>
+                                                                        <span>
+                                                                            {
+                                                                                cat.name
+                                                                            }
+                                                                        </span>
+                                                                    </button>
+                                                                );
+                                                            },
+                                                        )}
                                                     </div>
                                                 </div>
 
-                                                <div className="pt-1">
-                                                    <Button
-                                                        href={`/events/${event.id}`}
-                                                        className="w-full py-1 text-[10px] sm:py-2 sm:text-small"
-                                                    >
-                                                        Detail Event
-                                                    </Button>
+                                                {/* Harga Section */}
+                                                <div className="flex flex-col gap-3 border-t border-neutral-100 pt-5">
+                                                    <h5 className="text-xs font-extrabold tracking-wider text-neutral-400 uppercase">
+                                                        Harga
+                                                    </h5>
+                                                    <div className="flex flex-col gap-3">
+                                                        <div className="flex flex-col gap-1.5">
+                                                            <span className="text-xs font-bold text-neutral-500">
+                                                                Harga Minimum
+                                                            </span>
+                                                            <div className="flex items-center gap-2 rounded-xl border border-neutral-300 bg-white px-3 py-2 transition-colors duration-150 focus-within:border-primary-500">
+                                                                <span className="text-sm font-bold text-neutral-400">
+                                                                    Rp
+                                                                </span>
+                                                                <input
+                                                                    type="number"
+                                                                    placeholder="0"
+                                                                    value={
+                                                                        tempMinPrice
+                                                                    }
+                                                                    onChange={(
+                                                                        e,
+                                                                    ) =>
+                                                                        setTempMinPrice(
+                                                                            e
+                                                                                .target
+                                                                                .value,
+                                                                        )
+                                                                    }
+                                                                    className="w-full text-sm font-semibold text-neutral-800 outline-none"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex flex-col gap-1.5">
+                                                            <span className="text-xs font-bold text-neutral-500">
+                                                                Harga Maksimum
+                                                            </span>
+                                                            <div className="flex items-center gap-2 rounded-xl border border-neutral-300 bg-white px-3 py-2 transition-colors duration-150 focus-within:border-primary-500">
+                                                                <span className="text-sm font-bold text-neutral-400">
+                                                                    Rp
+                                                                </span>
+                                                                <input
+                                                                    type="number"
+                                                                    placeholder="Maks"
+                                                                    value={
+                                                                        tempMaxPrice
+                                                                    }
+                                                                    onChange={(
+                                                                        e,
+                                                                    ) =>
+                                                                        setTempMaxPrice(
+                                                                            e
+                                                                                .target
+                                                                                .value,
+                                                                        )
+                                                                    }
+                                                                    className="w-full text-sm font-semibold text-neutral-800 outline-none"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex gap-2">
+                                                            <button
+                                                                onClick={() => {
+                                                                    const minVal =
+                                                                        tempMinPrice ===
+                                                                        ''
+                                                                            ? null
+                                                                            : Number(
+                                                                                  tempMinPrice,
+                                                                              );
+                                                                    const maxVal =
+                                                                        tempMaxPrice ===
+                                                                        ''
+                                                                            ? null
+                                                                            : Number(
+                                                                                  tempMaxPrice,
+                                                                              );
+                                                                    setAppliedMinPrice(
+                                                                        minVal,
+                                                                    );
+                                                                    setAppliedMaxPrice(
+                                                                        maxVal,
+                                                                    );
+                                                                    setCurrentPage(
+                                                                        1,
+                                                                    );
+                                                                    setIsMobileFilterOpen(
+                                                                        false,
+                                                                    );
+                                                                }}
+                                                                className="w-full cursor-pointer rounded-xl bg-primary-500 py-2 text-center text-xs font-bold text-white shadow-xs transition-colors duration-150 hover:bg-primary-600"
+                                                            >
+                                                                Terapkan
+                                                            </button>
+                                                            {(appliedMinPrice !==
+                                                                null ||
+                                                                appliedMaxPrice !==
+                                                                    null) && (
+                                                                <button
+                                                                    onClick={() => {
+                                                                        setTempMinPrice(
+                                                                            '',
+                                                                        );
+                                                                        setTempMaxPrice(
+                                                                            '',
+                                                                        );
+                                                                        setAppliedMinPrice(
+                                                                            null,
+                                                                        );
+                                                                        setAppliedMaxPrice(
+                                                                            null,
+                                                                        );
+                                                                        setCurrentPage(
+                                                                            1,
+                                                                        );
+                                                                        setIsMobileFilterOpen(
+                                                                            false,
+                                                                        );
+                                                                    }}
+                                                                    className="cursor-pointer rounded-xl border border-neutral-300 px-3 py-2 text-center text-xs font-bold text-neutral-600 transition-colors duration-150 hover:bg-neutral-50"
+                                                                >
+                                                                    Reset
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Tanggal Section */}
+                                                <div className="flex flex-col gap-3 border-t border-neutral-100 pt-5">
+                                                    <h5 className="text-xs font-extrabold tracking-wider text-neutral-400 uppercase">
+                                                        Tanggal
+                                                    </h5>
+                                                    <div className="flex flex-col gap-3">
+                                                        <div className="flex flex-col gap-1.5">
+                                                            <span className="text-xs font-bold text-neutral-500">
+                                                                Dari
+                                                            </span>
+                                                            <input
+                                                                type="date"
+                                                                min={
+                                                                    todayString
+                                                                }
+                                                                value={
+                                                                    tempStartDate
+                                                                }
+                                                                onChange={(e) =>
+                                                                    setTempStartDate(
+                                                                        e.target
+                                                                            .value,
+                                                                    )
+                                                                }
+                                                                className="w-full cursor-pointer rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm font-semibold text-neutral-800 transition-colors duration-150 outline-none focus:border-primary-500"
+                                                            />
+                                                        </div>
+                                                        <div className="flex flex-col gap-1.5">
+                                                            <span className="text-xs font-bold text-neutral-500">
+                                                                Sampai
+                                                            </span>
+                                                            <input
+                                                                type="date"
+                                                                min={
+                                                                    tempStartDate ||
+                                                                    todayString
+                                                                }
+                                                                value={
+                                                                    tempEndDate
+                                                                }
+                                                                onChange={(e) =>
+                                                                    setTempEndDate(
+                                                                        e.target
+                                                                            .value,
+                                                                    )
+                                                                }
+                                                                className="w-full cursor-pointer rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm font-semibold text-neutral-800 transition-colors duration-150 outline-none focus:border-primary-500"
+                                                            />
+                                                        </div>
+                                                        <div className="flex gap-2">
+                                                            <button
+                                                                onClick={() => {
+                                                                    setAppliedStartDate(
+                                                                        tempStartDate ||
+                                                                            null,
+                                                                    );
+                                                                    setAppliedEndDate(
+                                                                        tempEndDate ||
+                                                                            null,
+                                                                    );
+                                                                    setCurrentPage(
+                                                                        1,
+                                                                    );
+                                                                    setIsMobileFilterOpen(
+                                                                        false,
+                                                                    );
+                                                                }}
+                                                                className="w-full cursor-pointer rounded-xl bg-primary-500 py-2 text-center text-xs font-bold text-white shadow-xs transition-colors duration-150 hover:bg-primary-600"
+                                                            >
+                                                                Terapkan
+                                                            </button>
+                                                            {(appliedStartDate ||
+                                                                appliedEndDate) && (
+                                                                <button
+                                                                    onClick={() => {
+                                                                        setTempStartDate(
+                                                                            '',
+                                                                        );
+                                                                        setTempEndDate(
+                                                                            '',
+                                                                        );
+                                                                        setAppliedStartDate(
+                                                                            null,
+                                                                        );
+                                                                        setAppliedEndDate(
+                                                                            null,
+                                                                        );
+                                                                        setCurrentPage(
+                                                                            1,
+                                                                        );
+                                                                        setIsMobileFilterOpen(
+                                                                            false,
+                                                                        );
+                                                                    }}
+                                                                    className="cursor-pointer rounded-xl border border-neutral-300 px-3 py-2 text-center text-xs font-bold text-neutral-600 transition-colors duration-150 hover:bg-neutral-50"
+                                                                >
+                                                                    Reset
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    ))
+                                    </div>
                                 )}
-                            </div>
 
-                            {/* Pagination Controls */}
-                            {totalPages > 1 && (
-                                <div className="mt-4 flex items-center justify-between border-t border-neutral-100 pt-6">
-                                    <span className="text-micro font-semibold text-gray-400">
-                                        Halaman {currentPage} dari {totalPages}
-                                    </span>
+                                {/* Catalogue Grid */}
+                                <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                                    {paginatedCatalogEvents.length === 0 ? (
+                                        <div className="col-span-full py-20 text-center font-semibold text-gray-400">
+                                            Tidak ada event yang ditemukan untuk
+                                            filter ini.
+                                        </div>
+                                    ) : (
+                                        paginatedCatalogEvents.map((event) => (
+                                            <div
+                                                key={event.id}
+                                                className="border-neutral-150 group relative flex h-[140px] w-full flex-row justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:h-[170px] lg:h-[400px] lg:flex-col"
+                                            >
+                                                <div className="absolute top-3 left-3 z-10 rounded-md bg-secondary-400 px-3 py-1 text-[0.6275rem] font-extrabold text-secondary-900 shadow-sm sm:top-4 lg:top-4">
+                                                    {event.price === 0
+                                                        ? 'GRATIS'
+                                                        : `Rp ${Number(event.price).toLocaleString('id-ID')}`}
+                                                </div>
 
-                                    <div className="flex gap-2">
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                setCurrentPage((prev) =>
-                                                    Math.max(1, prev - 1),
-                                                )
-                                            }
-                                            disabled={currentPage === 1}
-                                            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border text-micro font-bold ${
-                                                currentPage === 1
-                                                    ? 'border-neutral-150 cursor-not-allowed bg-neutral-50 text-gray-300'
-                                                    : 'cursor-pointer border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50'
-                                            }`}
-                                            title="Sebelumnya"
-                                        >
-                                            <ChevronLeft size={16} />
-                                        </button>
+                                                <div className="lg:aspect-none relative aspect-square h-full w-[140px] shrink-0 overflow-hidden border-r border-gray-100 bg-gray-50 sm:w-[170px] lg:h-[180px] lg:w-full lg:border-r-0 lg:border-b">
+                                                    <img
+                                                        src={
+                                                            event.poster_url ||
+                                                            DefaultCover
+                                                        }
+                                                        alt={event.title}
+                                                        draggable="false"
+                                                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                    />
+                                                </div>
 
-                                        {getPageNumbers().map((pageNumber) => (
+                                                <div className="flex flex-grow flex-col justify-between gap-1 overflow-hidden p-3 sm:gap-2 sm:p-4 lg:gap-2 lg:p-4">
+                                                    <div className="flex flex-col gap-1 sm:gap-1.5">
+                                                        <h4 className="line-clamp-2 h-[36px] overflow-hidden text-xs leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[40px] sm:text-sm lg:line-clamp-3 lg:h-[66px] lg:text-base">
+                                                            {event.title}
+                                                        </h4>
+
+                                                        <div className="flex flex-col gap-0.5 border-t border-gray-100/50 pt-1 text-[10px] font-semibold text-gray-400 sm:gap-1 sm:pt-1.5 sm:text-micro">
+                                                            <span className="flex items-center gap-1.5">
+                                                                <Calendar
+                                                                    size={12}
+                                                                    className="shrink-0 text-gray-400"
+                                                                />
+                                                                {formatShortDate(
+                                                                    event.start_datetime,
+                                                                )}
+                                                            </span>
+                                                            <span className="flex items-center gap-1.5">
+                                                                <MapPin
+                                                                    size={12}
+                                                                    className="shrink-0 text-gray-400"
+                                                                />
+                                                                {event.type ===
+                                                                'online'
+                                                                    ? 'Online'
+                                                                    : event.location_name ||
+                                                                      'Lokasi Offline'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="pt-1">
+                                                        <Button
+                                                            href={`/events/${event.id}`}
+                                                            className="w-full py-1 text-[10px] sm:py-2 sm:text-small"
+                                                        >
+                                                            Detail Event
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+
+                                {/* Pagination Controls */}
+                                {totalPages > 1 && (
+                                    <div className="mt-4 flex items-center justify-between border-t border-neutral-100 pt-6">
+                                        <span className="text-micro font-semibold text-gray-400">
+                                            Halaman {currentPage} dari{' '}
+                                            {totalPages}
+                                        </span>
+
+                                        <div className="flex gap-2">
                                             <button
-                                                key={pageNumber}
                                                 type="button"
                                                 onClick={() =>
-                                                    setCurrentPage(pageNumber)
+                                                    setCurrentPage((prev) =>
+                                                        Math.max(1, prev - 1),
+                                                    )
                                                 }
-                                                className={`flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg border text-micro font-bold ${
-                                                    currentPage === pageNumber
-                                                        ? 'border-primary-500 bg-primary-500 text-white shadow-sm'
-                                                        : 'border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50'
+                                                disabled={currentPage === 1}
+                                                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border text-micro font-bold ${
+                                                    currentPage === 1
+                                                        ? 'border-neutral-150 cursor-not-allowed bg-neutral-50 text-gray-300'
+                                                        : 'cursor-pointer border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50'
                                                 }`}
+                                                title="Sebelumnya"
                                             >
-                                                {pageNumber}
+                                                <ChevronLeft size={16} />
                                             </button>
-                                        ))}
 
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                setCurrentPage((prev) =>
-                                                    Math.min(
-                                                        totalPages,
-                                                        prev + 1,
-                                                    ),
-                                                )
-                                            }
-                                            disabled={
-                                                currentPage === totalPages
-                                            }
-                                            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border text-micro font-bold ${
-                                                currentPage === totalPages
-                                                    ? 'border-neutral-150 cursor-not-allowed bg-neutral-50 text-gray-300'
-                                                    : 'cursor-pointer border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50'
-                                            }`}
-                                            title="Selanjutnya"
-                                        >
-                                            <ChevronRight size={16} />
-                                        </button>
+                                            {getPageNumbers().map(
+                                                (pageNumber) => (
+                                                    <button
+                                                        key={pageNumber}
+                                                        type="button"
+                                                        onClick={() =>
+                                                            setCurrentPage(
+                                                                pageNumber,
+                                                            )
+                                                        }
+                                                        className={`flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg border text-micro font-bold ${
+                                                            currentPage ===
+                                                            pageNumber
+                                                                ? 'border-primary-500 bg-primary-500 text-white shadow-sm'
+                                                                : 'border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50'
+                                                        }`}
+                                                    >
+                                                        {pageNumber}
+                                                    </button>
+                                                ),
+                                            )}
+
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    setCurrentPage((prev) =>
+                                                        Math.min(
+                                                            totalPages,
+                                                            prev + 1,
+                                                        ),
+                                                    )
+                                                }
+                                                disabled={
+                                                    currentPage === totalPages
+                                                }
+                                                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border text-micro font-bold ${
+                                                    currentPage === totalPages
+                                                        ? 'border-neutral-150 cursor-not-allowed bg-neutral-50 text-gray-300'
+                                                        : 'cursor-pointer border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50'
+                                                }`}
+                                                title="Selanjutnya"
+                                            >
+                                                <ChevronRight size={16} />
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
-                            )}
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
