@@ -17,8 +17,8 @@
 
 The platform utilizes a **Modern Minimalist** design language. The interface minimizes cognitive load and guides the user's attention seamlessly toward key actions using generous whitespace, soft geometric boundaries, and high-contrast elements.
 
-You will be provided with:
-*   Design mockups (e.g., Figma exports).
+Sometimes you will be provided with:
+*   Design mockups (e.g., Figma exports) to follow.
 
 Your responsibilities:
 *   Strictly adhere to the color palettes, typography, and geometry defined in this document. 
