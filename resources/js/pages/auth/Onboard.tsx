@@ -68,7 +68,7 @@ export default function Onboard() {
                             alt="Lokacara Logo"
                             className="h-12 w-10 animate-logo-wave"
                         />
-                        <h2 className="mt-4 text-center font-brand text-2xl font-black text-neutral-900">
+                        <h2 className="mt-4 text-center font-brand text-h2-mobile font-black text-neutral-900 lg:text-h2-web">
                             Lengkapi Profil Anda
                         </h2>
                         <p className="mt-2 text-center font-brand text-small leading-relaxed text-gray-500">
@@ -95,7 +95,10 @@ export default function Onboard() {
                                         className="h-full w-full object-cover transition-all duration-300 group-hover:brightness-50"
                                     />
                                     <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/45 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                                        <Camera className="text-white" size={22} />
+                                        <Camera
+                                            className="text-white"
+                                            size={22}
+                                        />
                                         <span className="mt-1 text-[9px] font-bold tracking-wider text-white uppercase">
                                             Unggah
                                         </span>

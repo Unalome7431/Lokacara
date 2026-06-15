@@ -42,31 +42,31 @@
     --color-gray-900: #1a1a1a;
 
     /* Web Headings Typography */
-    --text-h1-web: 4rem;
+    --text-h1-web: 3rem;
     --text-h1-web--font-weight: 800;
-    --text-h2-web: 3.5rem;
+    --text-h2-web: 2.5rem;
     --text-h2-web--font-weight: 700;
-    --text-h3-web: 3rem;
+    --text-h3-web: 2rem;
     --text-h3-web--font-weight: 700;
-    --text-h4-web: 2.5rem;
+    --text-h4-web: 1.5rem;
     --text-h4-web--font-weight: 600;
-    --text-h5-web: 2rem;
+    --text-h5-web: 1.25rem;
     --text-h5-web--font-weight: 600;
-    --text-h6-web: 1.5rem;
+    --text-h6-web: 1.1rem;
     --text-h6-web--font-weight: 600;
 
     /* Mobile Headings Typography */
-    --text-h1-mobile: 3rem;
+    --text-h1-mobile: 2rem;
     --text-h1-mobile--font-weight: 800;
-    --text-h2-mobile: 2.5rem;
+    --text-h2-mobile: 1.5rem;
     --text-h2-mobile--font-weight: 700;
-    --text-h3-mobile: 2.25rem;
+    --text-h3-mobile: 1.25rem;
     --text-h3-mobile--font-weight: 700;
-    --text-h4-mobile: 2rem;
+    --text-h4-mobile: 1.1rem;
     --text-h4-mobile--font-weight: 600;
-    --text-h5-mobile: 1.5rem;
+    --text-h5-mobile: 1rem;
     --text-h5-mobile--font-weight: 600;
-    --text-h6-mobile: 1.25rem;
+    --text-h6-mobile: 0.875rem;
     --text-h6-mobile--font-weight: 600;
 
     /* Base Text Typography */
@@ -103,7 +103,7 @@
 
     html,
     body {
-        @apply overflow-x-hidden w-full max-w-full;
+        @apply w-full max-w-full overflow-x-hidden;
     }
 
     body {
@@ -172,4 +172,3 @@ input::-ms-clear {
     transform: scaleX(-1) !important;
     -webkit-transform: scaleX(-1) !important;
 }
-

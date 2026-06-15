@@ -426,7 +426,7 @@ export default function Edit({ event, categories }: EditProps) {
                         <div className="flex w-full flex-col gap-6 lg:col-span-5">
                             {/* Poster Event */}
                             <div className="flex flex-col gap-3">
-                                <h3 className="font-brand text-2xl font-black text-neutral-900">
+                                <h3 className="font-brand text-h5-mobile font-black text-neutral-900 lg:text-h5-web">
                                     Poster Event
                                 </h3>
 
@@ -742,7 +742,7 @@ export default function Edit({ event, categories }: EditProps) {
                         <div className="flex w-full flex-col gap-6 lg:col-span-7">
                             {/* Nama Event */}
                             <div className="flex flex-col gap-2">
-                                <h3 className="font-brand text-2xl font-black text-neutral-900">
+                                <h3 className="font-brand text-h5-mobile font-black text-neutral-900 lg:text-h5-web">
                                     Nama Event
                                 </h3>
                                 <input
@@ -764,7 +764,7 @@ export default function Edit({ event, categories }: EditProps) {
 
                             {/* Kategori */}
                             <div className="flex flex-col gap-2">
-                                <h3 className="font-brand text-2xl font-black text-neutral-900">
+                                <h3 className="font-brand text-h5-mobile font-black text-neutral-900 lg:text-h5-web">
                                     Kategori
                                 </h3>
                                 <div
@@ -847,7 +847,7 @@ export default function Edit({ event, categories }: EditProps) {
 
                             {/* Penyelenggara */}
                             <div className="flex flex-col gap-2">
-                                <h3 className="font-brand text-2xl font-black text-neutral-900">
+                                <h3 className="font-brand text-h5-mobile font-black text-neutral-900 lg:text-h5-web">
                                     Penyelenggara
                                 </h3>
                                 <input
@@ -866,7 +866,7 @@ export default function Edit({ event, categories }: EditProps) {
 
                             {/* Kontak */}
                             <div className="flex flex-col gap-3">
-                                <h3 className="font-brand text-2xl font-black text-neutral-900">
+                                <h3 className="font-brand text-h5-mobile font-black text-neutral-900 lg:text-h5-web">
                                     Kontak
                                 </h3>
                                 <div className="flex flex-col gap-4 rounded-3xl bg-primary-100/30 p-6">
@@ -935,7 +935,7 @@ export default function Edit({ event, categories }: EditProps) {
 
                             {/* Detail Event */}
                             <div className="flex flex-col gap-3">
-                                <h3 className="font-brand text-2xl font-black text-neutral-900">
+                                <h3 className="font-brand text-h5-mobile font-black text-neutral-900 lg:text-h5-web">
                                     Detail Event
                                 </h3>
 

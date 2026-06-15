@@ -459,7 +459,7 @@ export default function Profile() {
                                             className="h-12 w-10 shrink-0"
                                         />
                                         <div>
-                                            <h3 className="mb-1 font-brand text-2xl leading-none font-black tracking-tight text-primary-500">
+                                            <h3 className="mb-1 font-brand text-h3-mobile leading-none font-black tracking-tight text-primary-500 lg:text-h3-web">
                                                 lokacara
                                             </h3>
                                             <span className="rounded-md bg-neutral-100 px-2 py-0.5 text-[0.6rem] font-bold tracking-wider text-gray-500">

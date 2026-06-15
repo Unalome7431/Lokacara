@@ -45,7 +45,7 @@ export default function Certificates() {
 
     return (
         <div className="mx-auto max-w-4xl p-10">
-            <h1 className="mb-2 text-2xl font-bold text-primary-500">
+            <h1 className="mb-2 text-h2-mobile font-bold text-primary-500 lg:text-h2-web">
                 Distribute Certificates for {event.title}
             </h1>
             <p className="mb-8 text-gray-600">

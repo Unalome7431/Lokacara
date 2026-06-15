@@ -100,6 +100,7 @@ export default function VerifyEmail() {
 
     const handleResend = (e: React.MouseEvent) => {
         e.preventDefault();
+
         if (isReset) {
             router.post('/forgot-password', { email: displayEmail });
         } else {
@@ -111,7 +112,13 @@ export default function VerifyEmail() {
         <div className="flex min-h-screen flex-col justify-between bg-neutral-50/50">
             <div className="flex-grow">
                 <NavBar />
-                <Head title={isReset ? 'Verifikasi OTP - Lokacara' : 'Verifikasi Email - Lokacara'} />
+                <Head
+                    title={
+                        isReset
+                            ? 'Verifikasi OTP - Lokacara'
+                            : 'Verifikasi Email - Lokacara'
+                    }
+                />
 
                 <div className="mx-auto max-w-md px-2 pt-32 pb-16">
                     <div className="animate-in fade-in zoom-in-95 flex flex-col gap-6 rounded-3xl border border-neutral-200 bg-white p-4 shadow-md duration-200 sm:p-6 md:p-8">
@@ -119,8 +126,10 @@ export default function VerifyEmail() {
                             <div className="bg-primary-50 flex h-14 w-14 items-center justify-center rounded-2xl text-primary-500">
                                 <KeyRound size={28} />
                             </div>
-                            <h3 className="mt-2 font-brand text-xl font-black text-neutral-900">
-                                {isReset ? 'Verifikasi OTP Anda' : 'Verifikasi Email Anda'}
+                            <h3 className="mt-2 font-brand text-h3-mobile font-black text-neutral-900 lg:text-h3-web">
+                                {isReset
+                                    ? 'Verifikasi OTP Anda'
+                                    : 'Verifikasi Email Anda'}
                             </h3>
                             <p className="max-w-xs text-small leading-relaxed font-medium text-gray-400">
                                 Kami telah mengirimkan kode OTP 6-digit ke
