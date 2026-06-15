@@ -11,7 +11,7 @@ import {
     ChevronLeft,
     ChevronRight,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import defaultAvatar from '@/../../public/avatars/default.png';
 import DefaultCover from '@/../../public/covers/default_cover.jpg';
 import Button from '@/components/ui/Button';
@@ -89,11 +89,6 @@ export default function Dashboard({
         );
     };
 
-    const [currentPage, setCurrentPage] = useState(1);
-
-    // Items per page based on active tab
-    const itemsPerPage = activeTab === 'Sertifikat' ? 9 : 12;
-
     // Client-side searches
     const filteredHostedEvents = hosted_events.filter((event) =>
         event.title?.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -102,6 +97,54 @@ export default function Dashboard({
     const filteredJoinedEvents = joined_events.filter((reg) =>
         reg.event?.title?.toLowerCase().includes(searchQuery.toLowerCase()),
     );
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(12);
+
+    useEffect(() => {
+        const handleResize = () => {
+            let size = 12;
+
+            if (activeTab === 'Sertifikat') {
+                size = 9;
+            } else {
+                const width = window.innerWidth;
+
+                if (width >= 1024) {
+                    size = 12; // 4 card per row viewport = 3x4 per page
+                } else if (width >= 768) {
+                    size = 9;  // 3 card per row viewport = 3x3 per page
+                } else if (width >= 640) {
+                    size = 8;  // 2 card per row viewport = 2x4 per page
+                } else {
+                    size = 9;  // horizontal card viewport = 9 card per page
+                }
+            }
+
+            setItemsPerPage(size);
+
+            let listLength = 0;
+
+            if (activeTab === 'Event Terbuat') {
+                listLength = filteredHostedEvents.length;
+            } else if (activeTab === 'Event Tersimpan') {
+                listLength = filteredJoinedEvents.length;
+            } else {
+                listLength = certificates.length;
+            }
+
+            const total = Math.ceil(listLength / size);
+
+            if (total > 0) {
+                setCurrentPage((prev) => (prev > total ? total : prev));
+            }
+        };
+
+        handleResize();
+        window.addEventListener('resize', handleResize);
+
+        return () => window.removeEventListener('resize', handleResize);
+    }, [activeTab, filteredHostedEvents.length, filteredJoinedEvents.length, certificates.length]);
 
     // Total pages calculation
     const getActiveTabTotalPages = () => {
@@ -257,7 +300,7 @@ export default function Dashboard({
                         </div>
                         <div className="flex-grow text-center md:text-left">
                             <div className="mb-1.5 flex flex-col justify-center gap-2 md:flex-row md:items-center md:justify-start">
-                                <h2 className="font-brand text-h2-mobile leading-none font-black tracking-tight text-neutral-900 lg:text-h2-web">
+                                <h2 className="font-brand text-h2-mobile leading-none font-black tracking-tight text-neutral-900 lg:text-h3-web">
                                     {user?.name || 'Pengguna Lokacara'}
                                 </h2>
                                 {user?.role === 'admin' && (
@@ -404,20 +447,20 @@ export default function Dashboard({
                                 </div>
                             ) : (
                                 <div className="flex flex-col gap-6">
-                                    <div className="animate-in fade-in grid grid-cols-1 gap-6 duration-200 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                                    <div className="animate-in fade-in grid grid-cols-1 gap-4 duration-200 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                                         {paginatedHostedEvents.map((event) => (
                                             <div
                                                 key={event.id}
-                                                className="border-neutral-150 group relative mx-auto flex h-[340px] w-full max-w-[300px] flex-col justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:h-[370px] lg:h-[400px]"
+                                                className="border-neutral-150 group relative flex h-[160px] w-full flex-row justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:flex-col sm:h-[370px] lg:mx-auto lg:h-[400px] lg:w-full lg:max-w-[300px]"
                                             >
                                                 {/* "FREE" or price Badge on Top-Left of image */}
-                                                <div className="absolute top-4 left-4 z-10 rounded-md bg-secondary-400 px-3 py-1 text-[0.6275rem] font-extrabold text-secondary-900 shadow-sm">
+                                                <div className="absolute top-3 left-3 z-10 rounded-md bg-secondary-400 px-3 py-1 text-[0.6275rem] font-extrabold text-secondary-900 shadow-sm sm:top-4 sm:left-4">
                                                     {event.price === 0
                                                         ? 'FREE'
                                                         : `Rp ${Number(event.price).toLocaleString('id-ID')}`}
                                                 </div>
 
-                                                <div className="relative h-[170px] w-full shrink-0 overflow-hidden border-b border-gray-100 bg-gray-50 sm:h-[190px] lg:h-[210px]">
+                                                <div className="relative aspect-square h-full w-[160px] shrink-0 overflow-hidden border-r border-gray-100 bg-gray-50 sm:aspect-none sm:h-[190px] sm:w-full sm:border-r-0 sm:border-b lg:h-[210px]">
                                                     <img
                                                         src={
                                                             event.poster_url ||
@@ -428,12 +471,12 @@ export default function Dashboard({
                                                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                                                     />
                                                 </div>
-                                                <div className="flex h-[170px] shrink-0 flex-col justify-between p-4 sm:h-[180px] lg:h-[190px]">
-                                                    <div className="flex flex-col gap-1.5">
-                                                        <h4 className="line-clamp-2 h-[34px] overflow-hidden text-xs leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[40px] sm:text-sm lg:h-[48px] lg:text-base">
+                                                <div className="flex flex-grow flex-col justify-between gap-1 overflow-hidden p-3 sm:h-[180px] sm:flex-none sm:shrink-0 sm:p-4 lg:h-[190px]">
+                                                    <div className="flex flex-col gap-1 sm:gap-1.5">
+                                                        <h4 className="line-clamp-2 h-[36px] overflow-hidden text-xs leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[40px] sm:text-sm lg:h-[48px] lg:text-base">
                                                             {event.title}
                                                         </h4>
-                                                        <div className="flex flex-col gap-1 border-t border-gray-100/50 pt-1.5 text-[10px] font-semibold text-gray-400 sm:text-micro">
+                                                        <div className="flex flex-col gap-0.5 border-t border-gray-100/50 pt-1 text-[10px] font-semibold text-gray-400 sm:gap-1 sm:pt-1.5 sm:text-micro">
                                                             <span className="flex items-center gap-1.5">
                                                                 <Calendar
                                                                     size={12}
@@ -461,7 +504,7 @@ export default function Dashboard({
                                                     <div className="pt-1">
                                                         <Button
                                                             href={`/dashboard/events/${event.id}`}
-                                                            className="w-full py-1.5 text-[10px] sm:py-2 sm:text-small"
+                                                            className="w-full py-1 text-[10px] sm:py-2 sm:text-small"
                                                         >
                                                             Detail Event
                                                         </Button>
@@ -515,7 +558,7 @@ export default function Dashboard({
                                 </div>
                             ) : (
                                 <div className="flex flex-col gap-6">
-                                    <div className="animate-in fade-in grid grid-cols-1 gap-6 duration-200 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                                    <div className="animate-in fade-in grid grid-cols-1 gap-4 duration-200 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                                         {paginatedJoinedEvents.map((reg) => {
                                             const event = reg.event;
 
@@ -526,16 +569,16 @@ export default function Dashboard({
                                             return (
                                                 <div
                                                     key={reg.id}
-                                                    className="border-neutral-150 group relative mx-auto flex h-[340px] w-full max-w-[300px] flex-col justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:h-[370px] lg:h-[400px]"
+                                                    className="border-neutral-150 group relative flex h-[160px] w-full flex-row justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:flex-col sm:h-[370px] lg:mx-auto lg:h-[400px] lg:w-full lg:max-w-[300px]"
                                                 >
                                                     {/* "FREE" or price Badge on Top-Left of image */}
-                                                    <div className="absolute top-4 left-4 z-10 rounded-md bg-secondary-400 px-3 py-1 text-[0.6275rem] font-extrabold text-secondary-900 shadow-sm">
+                                                    <div className="absolute top-3 left-3 z-10 rounded-md bg-secondary-400 px-3 py-1 text-[0.6275rem] font-extrabold text-secondary-900 shadow-sm sm:top-4 sm:left-4">
                                                         {event.price === 0
                                                             ? 'FREE'
                                                             : `Rp ${Number(event.price).toLocaleString('id-ID')}`}
                                                     </div>
 
-                                                    <div className="relative h-[170px] w-full shrink-0 overflow-hidden border-b border-gray-100 bg-gray-50 sm:h-[190px] lg:h-[210px]">
+                                                    <div className="relative aspect-square h-full w-[160px] shrink-0 overflow-hidden border-r border-gray-100 bg-gray-50 sm:aspect-none sm:h-[190px] sm:w-full sm:border-r-0 sm:border-b lg:h-[210px]">
                                                         <img
                                                             src={
                                                                 event.poster_url ||
@@ -546,12 +589,12 @@ export default function Dashboard({
                                                             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                                                         />
                                                     </div>
-                                                    <div className="flex h-[170px] shrink-0 flex-col justify-between p-4 sm:h-[180px] lg:h-[190px]">
-                                                        <div className="flex flex-col gap-1.5">
-                                                            <h4 className="line-clamp-2 h-[34px] overflow-hidden text-small leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[40px] lg:h-[48px] lg:text-base">
+                                                    <div className="flex flex-grow flex-col justify-between gap-1 overflow-hidden p-3 sm:h-[180px] sm:flex-none sm:shrink-0 sm:p-4 lg:h-[190px]">
+                                                        <div className="flex flex-col gap-1 sm:gap-1.5">
+                                                            <h4 className="line-clamp-2 h-[36px] overflow-hidden text-xs leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[40px] sm:text-sm lg:h-[48px] lg:text-base">
                                                                 {event.title}
                                                             </h4>
-                                                            <div className="flex flex-col gap-1 border-t border-gray-100/50 pt-1.5 text-[10px] font-semibold text-gray-400 sm:text-micro">
+                                                            <div className="flex flex-col gap-0.5 border-t border-gray-100/50 pt-1 text-[10px] font-semibold text-gray-400 sm:gap-1 sm:pt-1.5 sm:text-micro">
                                                                 <span className="flex items-center gap-1.5">
                                                                     <Calendar
                                                                         size={
@@ -583,7 +626,7 @@ export default function Dashboard({
                                                         <div className="flex gap-2 pt-1">
                                                             <Link
                                                                 href={`/events/${event.id}`}
-                                                                className="flex flex-grow items-center justify-center rounded-full bg-primary-500 py-1.5 text-center text-[10px] font-bold text-white transition-colors hover:bg-primary-600 sm:py-2 sm:text-small"
+                                                                className="flex flex-grow items-center justify-center rounded-full bg-primary-500 py-1 text-center text-[10px] font-bold text-white transition-colors hover:bg-primary-600 sm:py-2 sm:text-small"
                                                             >
                                                                 Detail Event
                                                             </Link>
@@ -626,7 +669,7 @@ export default function Dashboard({
                                 </div>
                             ) : (
                                 <div className="flex flex-col gap-6">
-                                    <div className="animate-in fade-in grid grid-cols-1 gap-6 duration-200 md:grid-cols-2 lg:grid-cols-3">
+                                    <div className="animate-in fade-in grid grid-cols-1 gap-4 duration-200 md:grid-cols-2 lg:grid-cols-3">
                                         {paginatedCertificates.map((cert) => (
                                             <div
                                                 key={cert.id}
