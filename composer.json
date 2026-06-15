@@ -14,6 +14,7 @@
         "fakerphp/faker": "^1.24",
         "inertiajs/inertia-laravel": "^3.0",
         "intervention/image": "^4.1",
+        "kreait/laravel-firebase": "*",
         "laravel/fortify": "^1.34",
         "laravel/framework": "^13.0",
         "laravel/sanctum": "^4.0",

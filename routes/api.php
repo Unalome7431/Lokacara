@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\ModerationApiController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\PushTokenController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\AvatarController;
 use App\Http\Controllers\PosterController;
@@ -92,6 +93,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/bookmarks', [BookmarkController::class, 'index']);
     Route::post('/bookmarks/{event}', [BookmarkController::class, 'store']);
     Route::delete('/bookmarks/{event}', [BookmarkController::class, 'destroy']);
+
+    // Push Tokens
+    Route::post('/user/push-tokens', [PushTokenController::class, 'store']);
+    Route::delete('/user/push-tokens', [PushTokenController::class, 'destroy']);
 
     // User Settings
     Route::patch('/user/settings', [UserController::class, 'updateSettings']);

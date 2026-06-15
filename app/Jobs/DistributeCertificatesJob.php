@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Event;
 use App\Models\Certificate;
+use App\Services\NotificationDispatchService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Storage;
@@ -124,5 +125,19 @@ class DistributeCertificatesJob implements ShouldQueue
 
         // Cleanup temporary template file
         Storage::disk('local')->delete($this->templatePath);
+
+        $notifications = app(NotificationDispatchService::class);
+        foreach ($registrations as $registration) {
+            if ($registration->user) {
+                $notifications->dispatch(
+                    recipient: $registration->user,
+                    category: 'certificate_available',
+                    title: 'Sertifikat tersedia',
+                    body: "Sertifikat untuk event {$this->event->title} sudah tersedia.",
+                    target: 'certificates',
+                    event: $this->event,
+                );
+            }
+        }
     }
 }

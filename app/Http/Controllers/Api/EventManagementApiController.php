@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Event;
+use App\Services\NotificationDispatchService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use OpenApi\Attributes as OA;
@@ -201,6 +202,27 @@ class EventManagementApiController extends Controller
         }
 
         $event->save();
+
+        $importantFields = ['start_datetime', 'end_datetime', 'location_name', 'address', 'latitude', 'longitude', 'platform_name', 'link'];
+        $hasImportantChanges = collect($importantFields)->contains(fn ($f) => $event->wasChanged($f));
+
+        if ($hasImportantChanges) {
+            $event->eventRegistrations()->with('user')->chunk(100, function ($registrations) use ($event) {
+                $notifications = app(NotificationDispatchService::class);
+                foreach ($registrations as $registration) {
+                    if ($registration->user) {
+                        $notifications->dispatch(
+                            recipient: $registration->user,
+                            category: 'event_updated',
+                            title: 'Event diupdate',
+                            body: "Event {$event->title} telah mengalami perubahan.",
+                            target: 'event_detail',
+                            event: $event,
+                        );
+                    }
+                }
+            });
+        }
 
         return response()->json([
             'message' => 'Event updated successfully',
