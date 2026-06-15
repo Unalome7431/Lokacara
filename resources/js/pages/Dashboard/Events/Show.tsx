@@ -14,6 +14,7 @@ import {
     Eye,
     XCircle,
     RefreshCw,
+    Award,
 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import DefaultCover from '@/../../public/covers/default_cover.jpg';
@@ -645,7 +646,7 @@ export default function Show({
                             </div>
 
                             {/* Standalone Action Buttons Sticky Bottom on Mobile/Tablet */}
-                            <div className="fixed right-0 bottom-0 left-0 z-40 flex flex-row items-center gap-3 border-t border-neutral-200 bg-white p-4 shadow-[0_-8px_20px_rgba(0,0,0,0.06)] lg:relative lg:right-auto lg:bottom-auto lg:left-auto lg:z-auto lg:w-full lg:flex-col lg:gap-4 lg:border-t-0 lg:bg-transparent lg:p-0 lg:shadow-none">
+                            <div className="fixed bottom-0 left-0 right-0 z-40 flex flex-row items-center gap-3 border-t border-neutral-200 bg-white p-4 shadow-[0_-8px_20px_rgba(0,0,0,0.06)] lg:relative lg:bottom-auto lg:left-auto lg:right-auto lg:z-auto lg:w-full lg:flex-col lg:gap-4 lg:border-t-0 lg:bg-transparent lg:p-0 lg:shadow-none">
                                 <button
                                     type="button"
                                     onClick={() => {
@@ -660,7 +661,7 @@ export default function Show({
 
                                 <Link
                                     href={`/dashboard/events/${event.id}/edit`}
-                                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-secondary-500 text-neutral-900 shadow-md transition-all duration-200 hover:bg-secondary-600 active:scale-[0.99] lg:h-auto lg:w-full lg:flex-row lg:gap-2 lg:py-4"
+                                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-secondary-500 text-base font-bold text-neutral-900 shadow-md transition-all duration-200 hover:bg-secondary-600 active:scale-[0.99] lg:h-auto lg:w-full lg:flex-row lg:gap-2 lg:py-4"
                                     title="Edit Detail Acara"
                                 >
                                     <Edit size={16} />
@@ -671,12 +672,23 @@ export default function Show({
 
                                 <Link
                                     href={`/dashboard/events/${event.id}/attendees`}
-                                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-neutral-300 bg-white text-neutral-800 shadow-xs transition-all duration-200 hover:bg-neutral-50 active:scale-[0.99] lg:h-auto lg:w-full lg:flex-row lg:gap-2 lg:py-4"
+                                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-neutral-300 bg-white text-base font-bold text-neutral-800 shadow-xs transition-all duration-200 hover:bg-neutral-50 active:scale-[0.99] lg:h-auto lg:w-full lg:flex-row lg:gap-2 lg:py-4"
                                     title="Pendaftar"
                                 >
                                     <Users size={16} />
                                     <span className="hidden lg:inline">
                                         Pendaftar
+                                    </span>
+                                </Link>
+
+                                <Link
+                                    href={`/dashboard/events/${event.id}/certificates`}
+                                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-neutral-300 bg-white text-base font-bold text-neutral-800 shadow-xs transition-all duration-200 hover:bg-neutral-50 active:scale-[0.99] lg:h-auto lg:w-full lg:flex-row lg:gap-2 lg:py-4"
+                                    title="Kelola E-Sertifikat"
+                                >
+                                    <Award size={16} />
+                                    <span className="hidden lg:inline">
+                                        E-Sertifikat
                                     </span>
                                 </Link>
                             </div>

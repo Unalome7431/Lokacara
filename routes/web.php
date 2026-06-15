@@ -91,7 +91,9 @@ Route::middleware(['auth'])->group(function () {
     
     // Module 5: Fulfillment (E-Certificates) - Organizer Side
     Route::get('/dashboard/events/{event}/certificates', [CertificateManagementController::class, 'index'])->name('dashboard.events.certificates.index');
+    Route::post('/dashboard/events/{event}/certificates/save', [CertificateManagementController::class, 'saveTemplate'])->name('dashboard.events.certificates.save');
     Route::post('/dashboard/events/{event}/certificates/distribute', [CertificateManagementController::class, 'distribute'])->name('dashboard.events.certificates.distribute');
+    Route::get('/dashboard/events/{event}/certificates/template', [CertificateManagementController::class, 'showTemplate'])->name('dashboard.events.certificates.template');
 
     // Module 5: Fulfillment (E-Certificates) - Attendee Side
     Route::get('/dashboard/certificates', [CertificateController::class, 'index'])->name('dashboard.certificates.index');
