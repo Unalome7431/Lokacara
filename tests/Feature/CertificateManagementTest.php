@@ -56,6 +56,8 @@ test('owner can save certificate layout configuration without template file', fu
         'is_x_center' => false,
         'y_pos' => 60.0,
         'is_y_center' => false,
+        'max_width' => 80.0,
+        'max_height' => 20.0,
     ]);
 
     $response->assertRedirect();
@@ -68,7 +70,32 @@ test('owner can save certificate layout configuration without template file', fu
         ->and($this->event->certificate_x_pos)->toBe(45.5)
         ->and($this->event->certificate_is_x_center)->toBeFalse()
         ->and($this->event->certificate_y_pos)->toBe(60.0)
-        ->and($this->event->certificate_is_y_center)->toBeFalse();
+        ->and($this->event->certificate_is_y_center)->toBeFalse()
+        ->and($this->event->certificate_max_width)->toBe(80.0)
+        ->and($this->event->certificate_max_height)->toBe(20.0);
+});
+
+test('owner can save certificate layout configuration with template set to null string', function () {
+    $this->actingAs($this->user);
+
+    $response = $this->post(route('dashboard.events.certificates.save', $this->event), [
+        'template' => 'null', // string "null" from JS FormData
+        'font_family' => 'Playfair',
+        'font_color' => '#FF0000',
+        'font_size' => 'Large',
+        'x_pos' => 45.5,
+        'is_x_center' => false,
+        'y_pos' => 60.0,
+        'is_y_center' => false,
+        'max_width' => 80.0,
+        'max_height' => 20.0,
+    ]);
+
+    $response->assertRedirect();
+    $response->assertSessionHas('success');
+
+    $this->event->refresh();
+    expect($this->event->certificate_font_family)->toBe('Playfair');
 });
 
 test('owner can upload certificate template file and it is saved', function () {
@@ -85,6 +112,8 @@ test('owner can upload certificate template file and it is saved', function () {
         'is_x_center' => true,
         'y_pos' => 50,
         'is_y_center' => true,
+        'max_width' => 80.0,
+        'max_height' => 20.0,
     ]);
 
     $response->assertRedirect();
@@ -110,6 +139,8 @@ test('owner cannot distribute certificates if event is not finished yet', functi
         'is_x_center' => true,
         'y_pos' => 50,
         'is_y_center' => true,
+        'max_width' => 80.0,
+        'max_height' => 20.0,
     ]);
 
     $response->assertRedirect();
@@ -128,6 +159,8 @@ test('owner cannot distribute certificates if no template is uploaded', function
         'is_x_center' => true,
         'y_pos' => 50,
         'is_y_center' => true,
+        'max_width' => 80.0,
+        'max_height' => 20.0,
     ]);
 
     $response->assertRedirect();
@@ -159,6 +192,8 @@ test('owner cannot distribute certificates if no attendees checked in', function
         'is_x_center' => true,
         'y_pos' => 50,
         'is_y_center' => true,
+        'max_width' => 80.0,
+        'max_height' => 20.0,
     ]);
 
     $response->assertRedirect();
@@ -191,10 +226,12 @@ test('owner can distribute certificates when event is done and attendees checked
         'is_x_center' => true,
         'y_pos' => 50,
         'is_y_center' => true,
+        'max_width' => 80.0,
+        'max_height' => 20.0,
     ]);
 
     $response->assertRedirect();
-    $response->assertSessionHas('success', 'E-Sertifikat sedang diproses dan didistribusikan ke peserta yang hadir.');
+    $response->assertSessionHas('success', 'E-Sertifikat berhasil dibuat dan didistribusikan ke peserta yang hadir.');
 
     Queue::assertPushed(DistributeCertificatesJob::class, function ($job) {
         return $job->event->id === $this->event->id &&
@@ -218,4 +255,76 @@ test('owner can download certificate template if exists', function () {
     $this->actingAs($otherUser);
     $response = $this->get(route('dashboard.events.certificates.template', $this->event));
     $response->assertStatus(403);
+});
+
+test('attendee event detail page displays certificate download link if certificate distributed', function () {
+    $attendee = User::factory()->create();
+    $this->actingAs($attendee);
+
+    // Register attendee and check-in
+    $registration = EventRegistration::create([
+        'event_id' => $this->event->id,
+        'user_id' => $attendee->id,
+        'status' => 'present',
+        'qr_token' => 'dummy',
+    ]);
+
+    // View detail page before certificate is issued
+    $response = $this->get(route('events.show', $this->event));
+    $response->assertOk();
+    $response->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page
+        ->component('Events/Show')
+        ->where('isRegistered', true)
+        ->where('certificateUrl', null)
+    );
+
+    // Create certificate
+    $certificate = \App\Models\Certificate::create([
+        'registration_id' => $registration->id,
+        'file_url' => 'certificates/dummy.jpg',
+        'issued_at' => now(),
+    ]);
+
+    // View detail page after certificate is issued
+    $response = $this->get(route('events.show', $this->event));
+    $response->assertOk();
+    $response->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page
+        ->component('Events/Show')
+        ->where('isRegistered', true)
+        ->where('certificateUrl', route('certificates.download', ['certificate' => $certificate->id]))
+    );
+});
+
+test('owner cannot save certificate layout with invalid max_width or max_height bounds', function () {
+    $this->actingAs($this->user);
+
+    // Test width too small
+    $response = $this->post(route('dashboard.events.certificates.save', $this->event), [
+        'font_family' => 'Roboto',
+        'font_color' => '#000000',
+        'font_size' => 'Medium',
+        'x_pos' => 50,
+        'is_x_center' => true,
+        'y_pos' => 50,
+        'is_y_center' => true,
+        'max_width' => 5, // invalid (min: 10)
+        'max_height' => 20,
+    ]);
+    $response->assertRedirect();
+    $response->assertSessionHasErrors(['max_width']);
+
+    // Test height too large
+    $response = $this->post(route('dashboard.events.certificates.save', $this->event), [
+        'font_family' => 'Roboto',
+        'font_color' => '#000500',
+        'font_size' => 'Medium',
+        'x_pos' => 50,
+        'is_x_center' => true,
+        'y_pos' => 50,
+        'is_y_center' => true,
+        'max_width' => 80,
+        'max_height' => 120, // invalid (max: 100)
+    ]);
+    $response->assertRedirect();
+    $response->assertSessionHasErrors(['max_height']);
 });

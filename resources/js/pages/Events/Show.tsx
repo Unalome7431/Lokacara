@@ -7,6 +7,7 @@ import {
     Users,
     Eye,
     AlertTriangle,
+    Award,
 } from 'lucide-react';
 import React, { useState } from 'react';
 import DefaultCover from '@/../../public/covers/default_cover.jpg';
@@ -47,9 +48,10 @@ interface Event {
 interface ShowProps {
     event: Event;
     isRegistered: boolean;
+    certificateUrl?: string | null;
 }
 
-export default function Show({ event, isRegistered }: ShowProps) {
+export default function Show({ event, isRegistered, certificateUrl }: ShowProps) {
     const page = usePage();
     const { auth } = page.props as any;
     const user = auth?.user;
@@ -585,6 +587,18 @@ export default function Show({ event, isRegistered }: ShowProps) {
                                             <span>Lihat Tiket QR Anda</span>
                                             <ArrowUpRight size={16} />
                                         </Link>
+
+                                        {certificateUrl && (
+                                            <a
+                                                href={certificateUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex flex-1 items-center justify-center gap-2 rounded-full bg-secondary-500 py-3 text-center text-base font-bold text-white shadow-md transition-all duration-200 hover:bg-secondary-600 active:scale-[0.99] lg:py-4"
+                                            >
+                                                <span>Unduh E-Sertifikat</span>
+                                                <Award size={16} />
+                                            </a>
+                                        )}
                                     </div>
                                 ) : (
                                     <div className="w-full">

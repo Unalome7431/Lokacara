@@ -86,13 +86,24 @@ class DiscoveryController extends Controller
         $event->load(['category', 'user'])->loadCount('eventRegistrations');
 
         $isRegistered = false;
+        $certificateUrl = null;
+
         if (Auth::check()) {
-            $isRegistered = $event->eventRegistrations()->where('user_id', Auth::id())->exists();
+            $registration = $event->eventRegistrations()->where('user_id', Auth::id())->first();
+            $isRegistered = (bool) $registration;
+            
+            if ($registration) {
+                $certificate = \App\Models\Certificate::where('registration_id', $registration->id)->first();
+                if ($certificate) {
+                    $certificateUrl = route('certificates.download', ['certificate' => $certificate->id]);
+                }
+            }
         }
 
         return Inertia::render('Events/Show', [
             'event' => $event,
-            'isRegistered' => $isRegistered
+            'isRegistered' => $isRegistered,
+            'certificateUrl' => $certificateUrl,
         ]);
     }
 }

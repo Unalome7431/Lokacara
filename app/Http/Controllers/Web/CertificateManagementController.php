@@ -32,6 +32,11 @@ class CertificateManagementController extends Controller
             abort(403);
         }
 
+        if ($request->input('template') === 'null' || $request->input('template') === 'undefined' || !$request->hasFile('template')) {
+            $request->request->remove('template');
+            $request->files->remove('template');
+        }
+
         $validated = $request->validate([
             'template' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
             'font_family' => 'required|string',
@@ -41,6 +46,8 @@ class CertificateManagementController extends Controller
             'is_x_center' => 'required|boolean',
             'y_pos' => 'required|numeric|min:0|max:100',
             'is_y_center' => 'required|boolean',
+            'max_width' => 'required|numeric|min:10|max:100',
+            'max_height' => 'required|numeric|min:5|max:100',
         ]);
 
         if ($request->hasFile('template')) {
@@ -58,6 +65,8 @@ class CertificateManagementController extends Controller
         $event->certificate_is_x_center = filter_var($validated['is_x_center'], FILTER_VALIDATE_BOOLEAN);
         $event->certificate_y_pos = $validated['y_pos'];
         $event->certificate_is_y_center = filter_var($validated['is_y_center'], FILTER_VALIDATE_BOOLEAN);
+        $event->certificate_max_width = $validated['max_width'];
+        $event->certificate_max_height = $validated['max_height'];
         $event->save();
 
         return redirect()->back()->with('success', 'Konfigurasi sertifikat berhasil disimpan.');
@@ -73,6 +82,11 @@ class CertificateManagementController extends Controller
             return redirect()->back()->with('error', 'Sertifikat tidak dapat didistribusikan sebelum event selesai.');
         }
 
+        if ($request->input('template') === 'null' || $request->input('template') === 'undefined' || !$request->hasFile('template')) {
+            $request->request->remove('template');
+            $request->files->remove('template');
+        }
+
         $validated = $request->validate([
             'template' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
             'font_family' => 'required|string',
@@ -82,6 +96,8 @@ class CertificateManagementController extends Controller
             'is_x_center' => 'required|boolean',
             'y_pos' => 'required|numeric|min:0|max:100',
             'is_y_center' => 'required|boolean',
+            'max_width' => 'required|numeric|min:10|max:100',
+            'max_height' => 'required|numeric|min:5|max:100',
         ]);
 
         if ($request->hasFile('template')) {
@@ -103,6 +119,8 @@ class CertificateManagementController extends Controller
         $event->certificate_is_x_center = filter_var($validated['is_x_center'], FILTER_VALIDATE_BOOLEAN);
         $event->certificate_y_pos = $validated['y_pos'];
         $event->certificate_is_y_center = filter_var($validated['is_y_center'], FILTER_VALIDATE_BOOLEAN);
+        $event->certificate_max_width = $validated['max_width'];
+        $event->certificate_max_height = $validated['max_height'];
         $event->save();
 
         $presentCount = $event->eventRegistrations()->where('status', 'present')->count();
@@ -121,11 +139,13 @@ class CertificateManagementController extends Controller
             'is_x_center' => $event->certificate_is_x_center,
             'y_pos' => $event->certificate_y_pos,
             'is_y_center' => $event->certificate_is_y_center,
+            'max_width' => $event->certificate_max_width,
+            'max_height' => $event->certificate_max_height,
         ];
 
-        DistributeCertificatesJob::dispatch($event, $config, $tempPath);
+        DistributeCertificatesJob::dispatchSync($event, $config, $tempPath);
 
-        return redirect()->back()->with('success', 'E-Sertifikat sedang diproses dan didistribusikan ke peserta yang hadir.');
+        return redirect()->back()->with('success', 'E-Sertifikat berhasil dibuat dan didistribusikan ke peserta yang hadir.');
     }
 
     public function showTemplate(Request $request, Event $event)
