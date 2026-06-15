@@ -58,15 +58,24 @@ class DistributeCertificatesJob implements ShouldQueue
             };
             
             $finalFontSize = $maxFontSize;
-            $maxBoxWidth = $image->width() * 0.8; // Max width is 80% of image
+            
+            $maxWidthPercent = $this->config['max_width'] ?? 80.0;
+            $maxHeightPercent = $this->config['max_height'] ?? 20.0;
+            $maxWidthBound = $image->width() * ($maxWidthPercent / 100);
+            $maxHeightBound = $image->height() * ($maxHeightPercent / 100);
 
             if ($fontFile && function_exists('imagettfbbox')) {
                 $box = imagettfbbox($maxFontSize, 0, $fontFile, $attendeeName);
                 if ($box) {
                     $textWidth = abs($box[4] - $box[0]);
-                    if ($textWidth > $maxBoxWidth) {
-                        $ratio = $maxBoxWidth / $textWidth;
-                        $finalFontSize = (int) floor($maxFontSize * $ratio);
+                    $textHeight = abs($box[5] - $box[1]);
+                    
+                    $widthRatio = $textWidth > 0 ? ($maxWidthBound / $textWidth) : 1.0;
+                    $heightRatio = $textHeight > 0 ? ($maxHeightBound / $textHeight) : 1.0;
+                    
+                    $ratio = min($widthRatio, $heightRatio);
+                    if ($ratio < 1.0) {
+                        $finalFontSize = max(8, (int) floor($maxFontSize * $ratio));
                     }
                 }
             }
@@ -86,7 +95,10 @@ class DistributeCertificatesJob implements ShouldQueue
                 $font->color($fontColor);
                 
                 // Alignment
-                $font->align($this->config['is_x_center'] ? 'center' : 'left');
+                $font->align(
+                    $this->config['is_x_center'] ? 'center' : 'left',
+                    $this->config['is_y_center'] ? 'center' : 'top'
+                );
             });
 
             // 4. Save individual certificate

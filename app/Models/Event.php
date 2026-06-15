@@ -17,7 +17,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'start_datetime', 'end_datetime', 'capacity', 'view_count',
     'certificate_template', 'certificate_font_family', 'certificate_font_size',
     'certificate_font_color', 'certificate_x_pos', 'certificate_is_x_center',
-    'certificate_y_pos', 'certificate_is_y_center'
+    'certificate_y_pos', 'certificate_is_y_center',
+    'certificate_max_width', 'certificate_max_height'
 ])]
 class Event extends Model
 {
@@ -39,6 +40,8 @@ class Event extends Model
             'certificate_is_y_center' => 'boolean',
             'certificate_x_pos' => 'double',
             'certificate_y_pos' => 'double',
+            'certificate_max_width' => 'double',
+            'certificate_max_height' => 'double',
         ];
     }
 

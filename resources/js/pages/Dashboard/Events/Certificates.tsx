@@ -25,6 +25,8 @@ interface Event {
     certificate_is_x_center?: boolean;
     certificate_y_pos?: number;
     certificate_is_y_center?: boolean;
+    certificate_max_width?: number;
+    certificate_max_height?: number;
 }
 
 interface PageProps {
@@ -50,6 +52,8 @@ export default function Certificates() {
         is_x_center: event.certificate_is_x_center !== undefined ? event.certificate_is_x_center : true,
         y_pos: event.certificate_y_pos !== undefined ? event.certificate_y_pos : 50,
         is_y_center: event.certificate_is_y_center !== undefined ? event.certificate_is_y_center : true,
+        max_width: event.certificate_max_width !== undefined && event.certificate_max_width !== null ? event.certificate_max_width : 80,
+        max_height: event.certificate_max_height !== undefined && event.certificate_max_height !== null ? event.certificate_max_height : 20,
     });
 
     const [previewUrl, setPreviewUrl] = useState<string | null>(
@@ -217,10 +221,12 @@ export default function Certificates() {
                                                 draggable="false"
                                             />
 
-                                            {/* Dynamic Name Overlay */}
+                                            {/* Bounding Box Container */}
                                             <div
-                                                className="absolute font-extrabold drop-shadow-md select-none transition-all duration-150"
+                                                className="absolute border-2 border-dashed border-primary-500/60 pointer-events-none flex"
                                                 style={{
+                                                    width: `${data.max_width}%`,
+                                                    height: `${data.max_height}%`,
                                                     left: data.is_x_center
                                                         ? '50%'
                                                         : `${data.x_pos}%`,
@@ -228,32 +234,41 @@ export default function Certificates() {
                                                         ? '50%'
                                                         : `${data.y_pos}%`,
                                                     transform: `translate(${data.is_x_center ? '-50%' : '0px'}, ${data.is_y_center ? '-50%' : '0px'})`,
-                                                    color: data.font_color,
-                                                    fontSize:
-                                                        data.font_size ===
-                                                        'Small'
-                                                            ? '1.25rem'
-                                                            : data.font_size ===
-                                                              'Large'
-                                                              ? '3rem'
-                                                              : '2rem',
-                                                    fontFamily:
-                                                        data.font_family ===
-                                                        'Playfair'
-                                                            ? '"Playfair Display", serif'
-                                                            : data.font_family ===
-                                                              'GreatVibes'
-                                                              ? '"Great Vibes", cursive'
-                                                              : data.font_family ===
-                                                                'Montserrat'
-                                                                ? '"Montserrat", sans-serif'
-                                                                : data.font_family ===
-                                                                  'Oswald'
-                                                                  ? '"Oswald", sans-serif'
-                                                                  : '"Roboto", sans-serif',
+                                                    justifyContent: data.is_x_center ? 'center' : 'flex-start',
+                                                    alignItems: data.is_y_center ? 'center' : 'flex-start',
                                                 }}
                                             >
-                                                Nama Peserta
+                                                {/* Dynamic Name Overlay */}
+                                                <div
+                                                    className="font-extrabold drop-shadow-md select-none text-center whitespace-nowrap"
+                                                    style={{
+                                                        color: data.font_color,
+                                                        fontSize:
+                                                            data.font_size ===
+                                                            'Small'
+                                                                ? '1.25rem'
+                                                                : data.font_size ===
+                                                                  'Large'
+                                                                  ? '3rem'
+                                                                  : '2rem',
+                                                        fontFamily:
+                                                            data.font_family ===
+                                                            'Playfair'
+                                                                ? '"Playfair Display", serif'
+                                                                : data.font_family ===
+                                                                  'GreatVibes'
+                                                                  ? '"Great Vibes", cursive'
+                                                                  : data.font_family ===
+                                                                    'Montserrat'
+                                                                    ? '"Montserrat", sans-serif'
+                                                                    : data.font_family ===
+                                                                      'Oswald'
+                                                                      ? '"Oswald", sans-serif'
+                                                                      : '"Roboto", sans-serif',
+                                                    }}
+                                                >
+                                                    Nama Peserta
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -283,7 +298,6 @@ export default function Certificates() {
                                         Desain Template
                                     </label>
                                     <div
-                                        className="relative flex aspect-video w-full cursor-pointer flex-col items-center justify-center gap-3 overflow-hidden rounded-2xl border-2 border-dashed border-neutral-300 bg-neutral-50 p-6 text-center transition-colors hover:border-primary-400 hover:bg-neutral-100"
                                         onClick={() =>
                                             document
                                                 .getElementById(
@@ -291,23 +305,31 @@ export default function Certificates() {
                                                 )
                                                 ?.click()
                                         }
+                                        className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 transition-colors hover:bg-neutral-100"
                                     >
-                                        <FileImage
-                                            size={28}
-                                            className="text-gray-400"
-                                        />
-                                        <div className="flex flex-col">
-                                            <span className="text-xs font-bold text-neutral-850">
-                                                {data.template
-                                                    ? data.template.name
-                                                    : event.certificate_template
-                                                      ? 'Ganti Template Saat Ini'
-                                                      : 'Pilih File Template'}
-                                            </span>
-                                            <span className="mt-0.5 text-micro font-medium text-gray-400">
-                                                PNG atau JPG (Maks. 5MB)
-                                            </span>
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <FileImage
+                                                size={20}
+                                                className="text-gray-400 shrink-0"
+                                            />
+                                            <div className="flex flex-col min-w-0">
+                                                <span className="truncate text-xs font-bold text-neutral-850">
+                                                    {data.template
+                                                        ? data.template.name
+                                                        : event.certificate_template
+                                                          ? 'Template Terunggah'
+                                                          : 'Pilih File Template'}
+                                                </span>
+                                                <span className="text-[10px] font-semibold text-gray-400">
+                                                    PNG atau JPG (Maks. 5MB)
+                                                </span>
+                                            </div>
                                         </div>
+                                        {(event.certificate_template || data.template) && (
+                                            <span className="shrink-0 rounded-lg bg-neutral-200/60 px-2.5 py-1 text-[10px] font-extrabold text-neutral-750 hover:bg-neutral-250">
+                                                Ganti
+                                            </span>
+                                        )}
                                         <input
                                             id="template-file-input"
                                             type="file"
@@ -515,6 +537,91 @@ export default function Certificates() {
                                         </div>
                                     )}
                                 </div>
+                                
+                                {/* 5. Bounding Box Dimensions Settings */}
+                                <div className="rounded-2xl border border-neutral-150 bg-neutral-50/50 p-4">
+                                    <div className="flex items-center justify-between">
+                                        <label className="font-brand text-small font-extrabold text-neutral-700">
+                                            Lebar Bounding Box (%)
+                                        </label>
+                                        <span className="rounded-lg border border-neutral-200 bg-white px-2.5 py-1 font-mono text-xs font-bold text-neutral-800">
+                                            {data.max_width}%
+                                        </span>
+                                    </div>
+                                    <div className="mt-4 flex items-center gap-4">
+                                        <input
+                                            type="range"
+                                            min="10"
+                                            max="100"
+                                            step="1"
+                                            value={data.max_width}
+                                            onChange={(e) =>
+                                                setData(
+                                                    'max_width',
+                                                    parseInt(e.target.value),
+                                                )
+                                            }
+                                            className="w-full cursor-pointer accent-primary-500"
+                                        />
+                                    </div>
+                                    <p className="mt-1.5 text-[10px] font-semibold text-gray-400 leading-normal">
+                                        Batas lebar maksimal teks nama peserta (persentase dari lebar template).
+                                    </p>
+                                </div>
+
+                                <div className="rounded-2xl border border-neutral-150 bg-neutral-50/50 p-4">
+                                    <div className="flex items-center justify-between">
+                                        <label className="font-brand text-small font-extrabold text-neutral-700">
+                                            Tinggi Bounding Box (%)
+                                        </label>
+                                        <span className="rounded-lg border border-neutral-200 bg-white px-2.5 py-1 font-mono text-xs font-bold text-neutral-800">
+                                            {data.max_height}%
+                                        </span>
+                                    </div>
+                                    <div className="mt-4 flex items-center gap-4">
+                                        <input
+                                            type="range"
+                                            min="5"
+                                            max="100"
+                                            step="1"
+                                            value={data.max_height}
+                                            onChange={(e) =>
+                                                setData(
+                                                    'max_height',
+                                                    parseInt(e.target.value),
+                                                )
+                                            }
+                                            className="w-full cursor-pointer accent-primary-500"
+                                        />
+                                    </div>
+                                    <p className="mt-1.5 text-[10px] font-semibold text-gray-400 leading-normal">
+                                        Batas tinggi maksimal teks nama peserta (persentase dari tinggi template).
+                                    </p>
+                                </div>
+
+                                {/* Status Labels */}
+                                {flash?.success && (
+                                    <div className="flex items-center gap-2 rounded-xl bg-green-50 border border-green-200 p-3.5 text-xs font-bold text-green-700">
+                                        <Check size={16} className="shrink-0" />
+                                        <span>{flash.success}</span>
+                                    </div>
+                                )}
+
+                                {(flash?.error || Object.keys(errors).length > 0) && (
+                                    <div className="flex flex-col gap-1 rounded-xl bg-red-50 border border-red-200 p-3.5 text-xs font-bold text-red-700">
+                                        <div className="flex items-center gap-2">
+                                            <AlertCircle size={16} className="shrink-0" />
+                                            <span>{flash?.error || 'Gagal menyimpan konfigurasi. Periksa input.'}</span>
+                                        </div>
+                                        {Object.keys(errors).length > 0 && (
+                                            <ul className="mt-1 pl-5 list-disc text-[10px] font-semibold text-red-600">
+                                                {Object.entries(errors).map(([key, val]) => (
+                                                    <li key={key}>{val}</li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                    </div>
+                                )}
 
                                 {/* Form Buttons */}
                                 <div className="mt-2 flex flex-col gap-3">

@@ -42,6 +42,11 @@ interface EventRegistration {
 
 interface Certificate {
     id: number;
+    event_registration?: {
+        event?: {
+            title: string;
+        };
+    };
     eventRegistration?: {
         event?: {
             title: string;
@@ -131,11 +136,10 @@ return matchesSearch;
         return matchesSearch && matchesTime;
     });
 
-    const filteredCertificates = certificates.filter((cert) =>
-        cert.eventRegistration?.event?.title
-            ?.toLowerCase()
-            .includes(searchQuery.toLowerCase()),
-    );
+    const filteredCertificates = certificates.filter((cert) => {
+        const title = cert.event_registration?.event?.title || cert.eventRegistration?.event?.title;
+        return title?.toLowerCase().includes(searchQuery.toLowerCase());
+    });
 
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(12);
@@ -795,8 +799,8 @@ return matchesSearch;
                                                         E-SERTIFIKAT RESMI
                                                     </span>
                                                     <h4 className="text-h6-mobile leading-tight font-extrabold text-neutral-900 lg:text-h6-web">
-                                                        {cert.eventRegistration
-                                                            ?.event?.title ||
+                                                        {cert.event_registration?.event?.title ||
+                                                            cert.eventRegistration?.event?.title ||
                                                             'Event Lokacara'}
                                                     </h4>
                                                 </div>
