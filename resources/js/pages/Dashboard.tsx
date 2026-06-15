@@ -73,6 +73,9 @@ export default function Dashboard({
     const [activeTab, setActiveTab] = useState<
         'Event Terbuat' | 'Event Tersimpan' | 'Sertifikat'
     >('Event Terbuat');
+    const [timeFilter, setTimeFilter] = useState<'mendatang' | 'lalu'>(
+        'mendatang',
+    );
     const [searchQuery, setSearchQuery] = useState('');
 
     const formatShortDate = (dateString: string) => {
@@ -89,13 +92,49 @@ export default function Dashboard({
         );
     };
 
-    // Client-side searches
-    const filteredHostedEvents = hosted_events.filter((event) =>
-        event.title?.toLowerCase().includes(searchQuery.toLowerCase()),
-    );
+    // Client-side searches and time filtering
+    const now = new Date();
 
-    const filteredJoinedEvents = joined_events.filter((reg) =>
-        reg.event?.title?.toLowerCase().includes(searchQuery.toLowerCase()),
+    const filteredHostedEvents = hosted_events.filter((event) => {
+        const matchesSearch = event.title
+            ?.toLowerCase()
+            .includes(searchQuery.toLowerCase());
+
+        if (!event.start_datetime) {
+            return matchesSearch;
+        }
+
+        const eventDate = new Date(event.start_datetime);
+        const matchesTime =
+            timeFilter === 'mendatang' ? eventDate >= now : eventDate < now;
+
+        return matchesSearch && matchesTime;
+    });
+
+    const filteredJoinedEvents = joined_events.filter((reg) => {
+        if (!reg.event) {
+return false;
+}
+
+        const matchesSearch = reg.event.title
+            ?.toLowerCase()
+            .includes(searchQuery.toLowerCase());
+
+        if (!reg.event.start_datetime) {
+return matchesSearch;
+}
+
+        const eventDate = new Date(reg.event.start_datetime);
+        const matchesTime =
+            timeFilter === 'mendatang' ? eventDate >= now : eventDate < now;
+
+        return matchesSearch && matchesTime;
+    });
+
+    const filteredCertificates = certificates.filter((cert) =>
+        cert.eventRegistration?.event?.title
+            ?.toLowerCase()
+            .includes(searchQuery.toLowerCase()),
     );
 
     const [currentPage, setCurrentPage] = useState(1);
@@ -113,11 +152,11 @@ export default function Dashboard({
                 if (width >= 1024) {
                     size = 12; // 4 card per row viewport = 3x4 per page
                 } else if (width >= 768) {
-                    size = 9;  // 3 card per row viewport = 3x3 per page
+                    size = 9; // 3 card per row viewport = 3x3 per page
                 } else if (width >= 640) {
-                    size = 8;  // 2 card per row viewport = 2x4 per page
+                    size = 8; // 2 card per row viewport = 2x4 per page
                 } else {
-                    size = 9;  // horizontal card viewport = 9 card per page
+                    size = 9; // horizontal card viewport = 9 card per page
                 }
             }
 
@@ -130,7 +169,7 @@ export default function Dashboard({
             } else if (activeTab === 'Event Tersimpan') {
                 listLength = filteredJoinedEvents.length;
             } else {
-                listLength = certificates.length;
+                listLength = filteredCertificates.length;
             }
 
             const total = Math.ceil(listLength / size);
@@ -144,7 +183,12 @@ export default function Dashboard({
         window.addEventListener('resize', handleResize);
 
         return () => window.removeEventListener('resize', handleResize);
-    }, [activeTab, filteredHostedEvents.length, filteredJoinedEvents.length, certificates.length]);
+    }, [
+        activeTab,
+        filteredHostedEvents.length,
+        filteredJoinedEvents.length,
+        filteredCertificates.length,
+    ]);
 
     // Total pages calculation
     const getActiveTabTotalPages = () => {
@@ -153,7 +197,7 @@ export default function Dashboard({
         } else if (activeTab === 'Event Tersimpan') {
             return Math.ceil(filteredJoinedEvents.length / itemsPerPage);
         } else {
-            return Math.ceil(certificates.length / itemsPerPage);
+            return Math.ceil(filteredCertificates.length / itemsPerPage);
         }
     };
 
@@ -170,7 +214,7 @@ export default function Dashboard({
         currentPage * itemsPerPage,
     );
 
-    const paginatedCertificates = certificates.slice(
+    const paginatedCertificates = filteredCertificates.slice(
         (currentPage - 1) * itemsPerPage,
         currentPage * itemsPerPage,
     );
@@ -323,8 +367,8 @@ export default function Dashboard({
                         </div>
                     </div>
 
-                    {/* Dashboard Navigation & Search */}
-                    <div className="mb-8 flex flex-col justify-between gap-6 border-b border-neutral-200 pb-4 md:flex-row md:items-center">
+                    {/* Dashboard Navigation & Toggles */}
+                    <div className="mb-4 flex flex-col justify-between gap-4 md:flex-row md:items-center">
                         {/* Tab Toggles */}
                         <div className="relative flex w-full shrink-0 gap-0 overflow-hidden rounded-2xl bg-neutral-100 p-1 sm:w-[500px] md:w-[540px]">
                             {/* Moving highlight pill */}
@@ -382,25 +426,71 @@ export default function Dashboard({
                             })}
                         </div>
 
-                        {/* Search Box */}
+                        {/* Lalu / Mendatang Toggler */}
                         {activeTab !== 'Sertifikat' && (
-                            <div className="relative w-full md:max-w-xs">
-                                <input
-                                    type="text"
-                                    placeholder="Cari nama event..."
-                                    value={searchQuery}
-                                    onChange={(e) => {
-                                        setSearchQuery(e.target.value);
-                                        setCurrentPage(1);
+                            <div className="relative flex w-full shrink-0 gap-0 overflow-hidden rounded-2xl bg-neutral-100 p-1 sm:w-[240px]">
+                                {/* Moving highlight pill */}
+                                <div
+                                    className="absolute top-1 bottom-1 rounded-xl bg-white shadow-sm transition-all duration-300 ease-in-out"
+                                    style={{
+                                        left: `calc(${['mendatang', 'lalu'].indexOf(timeFilter)} * (100% / 2) + 4px)`,
+                                        width: `calc(100% / 2 - 8px)`,
                                     }}
-                                    className="w-full rounded-2xl border border-neutral-200 bg-white py-2.5 pr-10 pl-4 text-base font-medium text-gray-700 placeholder-gray-400 transition-colors focus:border-primary-500 focus:ring-0 focus:outline-none"
                                 />
-                                <Search
-                                    size={16}
-                                    className="absolute top-1/2 right-3.5 -translate-y-1/2 text-gray-400"
-                                />
+                                {(
+                                    [
+                                        {
+                                            key: 'mendatang',
+                                            label: 'Mendatang',
+                                        },
+                                        { key: 'lalu', label: 'Lalu' },
+                                    ] as const
+                                ).map((item) => {
+                                    const isActive = timeFilter === item.key;
+
+                                    return (
+                                        <button
+                                            key={item.key}
+                                            onClick={() => {
+                                                setTimeFilter(item.key);
+                                                setCurrentPage(1);
+                                            }}
+                                            className={`relative z-10 flex flex-1 cursor-pointer items-center justify-center py-2.5 text-xs font-bold transition-colors duration-300 sm:text-small ${
+                                                isActive
+                                                    ? 'text-primary-500'
+                                                    : 'text-gray-500 hover:text-neutral-900'
+                                            }`}
+                                        >
+                                            {item.label}
+                                        </button>
+                                    );
+                                })}
                             </div>
                         )}
+                    </div>
+
+                    {/* Search Box (Full Width) */}
+                    <div className="mb-8 w-full border-b border-neutral-200 pb-6">
+                        <div className="relative w-full">
+                            <input
+                                type="text"
+                                placeholder={
+                                    activeTab === 'Sertifikat'
+                                        ? 'Cari nama sertifikat...'
+                                        : 'Cari nama event...'
+                                }
+                                value={searchQuery}
+                                onChange={(e) => {
+                                    setSearchQuery(e.target.value);
+                                    setCurrentPage(1);
+                                }}
+                                className="w-full rounded-2xl border border-neutral-200 bg-white py-2.5 pr-10 pl-4 text-base font-medium text-gray-700 placeholder-gray-400 transition-colors focus:border-primary-500 focus:ring-0 focus:outline-none"
+                            />
+                            <Search
+                                size={16}
+                                className="absolute top-1/2 right-3.5 -translate-y-1/2 text-gray-400"
+                            />
+                        </div>
                     </div>
 
                     {/* Content Tab Bodies */}
@@ -437,11 +527,14 @@ export default function Dashboard({
                                     />
                                     <div className="flex flex-col gap-1">
                                         <h4 className="text-h6-mobile font-bold text-neutral-800 lg:text-h6-web">
-                                            Event Tidak Ditemukan
+                                            {searchQuery
+                                                ? 'Event Tidak Ditemukan'
+                                                : `Belum Ada Event ${timeFilter === 'mendatang' ? 'Mendatang' : 'Lalu'}`}
                                         </h4>
                                         <p className="max-w-[280px] text-small text-gray-400">
-                                            Tidak ada event yang cocok dengan
-                                            kata kunci pencarian Anda.
+                                            {searchQuery
+                                                ? 'Tidak ada event yang cocok dengan kata kunci pencarian Anda.'
+                                                : `Anda tidak memiliki event ${timeFilter === 'mendatang' ? 'mendatang' : 'lalu'} saat ini.`}
                                         </p>
                                     </div>
                                 </div>
@@ -451,7 +544,7 @@ export default function Dashboard({
                                         {paginatedHostedEvents.map((event) => (
                                             <div
                                                 key={event.id}
-                                                className="border-neutral-150 group relative flex h-[160px] w-full flex-row justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:flex-col sm:h-[370px] lg:mx-auto lg:h-[400px] lg:w-full lg:max-w-[300px]"
+                                                className="border-neutral-150 group relative flex h-[160px] w-full flex-row justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:h-[370px] sm:flex-col lg:mx-auto lg:h-[400px] lg:w-full lg:max-w-[300px]"
                                             >
                                                 {/* "FREE" or price Badge on Top-Left of image */}
                                                 <div className="absolute top-3 left-3 z-10 rounded-md bg-secondary-400 px-3 py-1 text-[0.6275rem] font-extrabold text-secondary-900 shadow-sm sm:top-4 sm:left-4">
@@ -460,7 +553,7 @@ export default function Dashboard({
                                                         : `Rp ${Number(event.price).toLocaleString('id-ID')}`}
                                                 </div>
 
-                                                <div className="relative aspect-square h-full w-[160px] shrink-0 overflow-hidden border-r border-gray-100 bg-gray-50 sm:aspect-none sm:h-[190px] sm:w-full sm:border-r-0 sm:border-b lg:h-[210px]">
+                                                <div className="sm:aspect-none relative aspect-square h-full w-[160px] shrink-0 overflow-hidden border-r border-gray-100 bg-gray-50 sm:h-[190px] sm:w-full sm:border-r-0 sm:border-b lg:h-[210px]">
                                                     <img
                                                         src={
                                                             event.poster_url ||
@@ -548,11 +641,14 @@ export default function Dashboard({
                                     />
                                     <div className="flex flex-col gap-1">
                                         <h4 className="text-h6-mobile font-bold text-neutral-800 lg:text-h6-web">
-                                            Event Tidak Ditemukan
+                                            {searchQuery
+                                                ? 'Event Tidak Ditemukan'
+                                                : `Belum Ada Event ${timeFilter === 'mendatang' ? 'Mendatang' : 'Lalu'}`}
                                         </h4>
                                         <p className="max-w-[280px] text-small text-gray-400">
-                                            Tidak ada event yang cocok dengan
-                                            kata kunci pencarian Anda.
+                                            {searchQuery
+                                                ? 'Tidak ada event yang cocok dengan kata kunci pencarian Anda.'
+                                                : `Anda tidak memiliki event ${timeFilter === 'mendatang' ? 'mendatang' : 'lalu'} yang terdaftar.`}
                                         </p>
                                     </div>
                                 </div>
@@ -569,7 +665,7 @@ export default function Dashboard({
                                             return (
                                                 <div
                                                     key={reg.id}
-                                                    className="border-neutral-150 group relative flex h-[160px] w-full flex-row justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:flex-col sm:h-[370px] lg:mx-auto lg:h-[400px] lg:w-full lg:max-w-[300px]"
+                                                    className="border-neutral-150 group relative flex h-[160px] w-full flex-row justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:h-[370px] sm:flex-col lg:mx-auto lg:h-[400px] lg:w-full lg:max-w-[300px]"
                                                 >
                                                     {/* "FREE" or price Badge on Top-Left of image */}
                                                     <div className="absolute top-3 left-3 z-10 rounded-md bg-secondary-400 px-3 py-1 text-[0.6275rem] font-extrabold text-secondary-900 shadow-sm sm:top-4 sm:left-4">
@@ -578,7 +674,7 @@ export default function Dashboard({
                                                             : `Rp ${Number(event.price).toLocaleString('id-ID')}`}
                                                     </div>
 
-                                                    <div className="relative aspect-square h-full w-[160px] shrink-0 overflow-hidden border-r border-gray-100 bg-gray-50 sm:aspect-none sm:h-[190px] sm:w-full sm:border-r-0 sm:border-b lg:h-[210px]">
+                                                    <div className="sm:aspect-none relative aspect-square h-full w-[160px] shrink-0 overflow-hidden border-r border-gray-100 bg-gray-50 sm:h-[190px] sm:w-full sm:border-r-0 sm:border-b lg:h-[210px]">
                                                         <img
                                                             src={
                                                                 event.poster_url ||
@@ -664,6 +760,22 @@ export default function Dashboard({
                                             Sertifikat event Anda akan muncul di
                                             sini setelah didistribusikan oleh
                                             penyelenggara.
+                                        </p>
+                                    </div>
+                                </div>
+                            ) : filteredCertificates.length === 0 ? (
+                                <div className="animate-in fade-in flex h-[325px] w-full flex-col items-center justify-center gap-4 rounded-3xl border border-neutral-200 bg-white px-4 text-center shadow-sm duration-200 sm:h-[370px] lg:h-[400px]">
+                                    <Search
+                                        size={28}
+                                        className="animate-pulse text-gray-400"
+                                    />
+                                    <div className="flex flex-col gap-1">
+                                        <h4 className="text-h6-mobile font-bold text-neutral-800 lg:text-h6-web">
+                                            Sertifikat Tidak Ditemukan
+                                        </h4>
+                                        <p className="max-w-[280px] text-small text-gray-400">
+                                            Tidak ada sertifikat yang cocok
+                                            dengan kata kunci pencarian Anda.
                                         </p>
                                     </div>
                                 </div>
