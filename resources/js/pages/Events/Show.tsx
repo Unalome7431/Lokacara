@@ -246,7 +246,7 @@ export default function Show({ event, isRegistered }: ShowProps) {
                 <NavBar />
                 <Head title={`${event.title} - Lokacara`} />
 
-                <div className="mx-auto max-w-7xl px-4 pt-28 pb-16 md:px-8">
+                <div className="mx-auto max-w-7xl px-4 pt-28 pb-28 md:px-8 lg:pb-16">
                     {/* Layout Grid */}
                     <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-3">
                         {/* Left Panel: Poster & Info Details */}
@@ -566,28 +566,28 @@ export default function Show({ event, isRegistered }: ShowProps) {
                                 </div>
                             </div>
 
-                            {/* Standalone Action Buttons Stacked Directly in Column */}
-                            <div className="flex flex-col gap-4">
+                            {/* Standalone Action Buttons Sticky Bottom on Mobile/Tablet */}
+                            <div className="fixed right-0 bottom-0 left-0 z-40 border-t border-neutral-200 bg-white p-4 shadow-[0_-8px_20px_rgba(0,0,0,0.06)] lg:relative lg:right-auto lg:bottom-auto lg:left-auto lg:z-auto lg:w-full lg:flex-col lg:gap-4 lg:border-t-0 lg:bg-transparent lg:p-0 lg:shadow-none">
                                 {isRegistered ? (
-                                    <div className="flex flex-col gap-4">
-                                        <div className="flex w-full items-center justify-center gap-2 rounded-full border border-green-200 bg-green-50 py-4 text-base font-bold text-green-700">
+                                    <div className="flex w-full flex-col gap-3 sm:flex-row lg:flex-col">
+                                        <div className="flex flex-1 items-center justify-center gap-2 rounded-full border border-green-200 bg-green-50 py-3 text-base font-bold text-green-700 lg:py-4">
                                             <CheckCircle2
                                                 size={18}
-                                                className="text-green-600"
+                                                className="animate-pulse text-green-600"
                                             />
                                             <span>Anda Sudah Terdaftar</span>
                                         </div>
 
                                         <Link
                                             href={`/events/${event.id}/ticket`}
-                                            className="flex w-full items-center justify-center gap-2 rounded-full bg-primary-500 py-4 text-center text-base font-bold text-white shadow-md transition-all duration-200 hover:bg-primary-600 active:scale-[0.99]"
+                                            className="flex flex-1 items-center justify-center gap-2 rounded-full bg-primary-500 py-3 text-center text-base font-bold text-white shadow-md transition-all duration-200 hover:bg-primary-600 active:scale-[0.99] lg:py-4"
                                         >
                                             <span>Lihat Tiket QR Anda</span>
                                             <ArrowUpRight size={16} />
                                         </Link>
                                     </div>
                                 ) : (
-                                    <>
+                                    <div className="w-full">
                                         {isAuthenticated ? (
                                             <div className="flex w-full flex-col">
                                                 <button
@@ -600,7 +600,7 @@ export default function Show({ event, isRegistered }: ShowProps) {
                                                             remainingCapacity <=
                                                                 0)
                                                     }
-                                                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border-0 bg-primary-500 py-4 text-base font-bold text-white shadow-md transition-all duration-200 hover:bg-primary-600 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-neutral-300"
+                                                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border-0 bg-primary-500 py-3 text-base font-bold text-white shadow-md transition-all duration-200 hover:bg-primary-600 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-neutral-300 lg:py-4"
                                                 >
                                                     <span>
                                                         {isJoining
@@ -651,12 +651,12 @@ export default function Show({ event, isRegistered }: ShowProps) {
                                         ) : (
                                             <Link
                                                 href="/login"
-                                                className="w-full rounded-full bg-primary-500 py-4 text-center text-base font-bold text-white shadow-md transition-all duration-200 hover:bg-primary-600 active:scale-[0.99]"
+                                                className="block w-full rounded-full bg-primary-500 py-3 text-center text-base font-bold text-white shadow-md transition-all duration-200 hover:bg-primary-600 active:scale-[0.99] lg:py-4"
                                             >
                                                 Masuk untuk Bergabung
                                             </Link>
                                         )}
-                                    </>
+                                    </div>
                                 )}
                             </div>
                         </div>

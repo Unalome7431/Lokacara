@@ -80,14 +80,14 @@ export default function Profile() {
                 <div className="mx-auto max-w-6xl px-4 pt-28 pb-16 md:px-8">
                     <div className="flex flex-col items-start gap-8 lg:flex-row">
                         {/* Settings Navigation Sidebar */}
-                        <div className="flex w-full shrink-0 flex-col gap-1.5 rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm lg:w-[280px]">
-                            <h3 className="mb-3 px-3 font-brand text-lg font-black tracking-tight text-neutral-800">
+                        <div className="sticky top-18 z-30 flex w-full shrink-0 flex-row gap-2 rounded-2xl border border-neutral-200 bg-white p-3 shadow-sm lg:top-28 lg:w-[280px] lg:flex-col lg:gap-1.5 lg:rounded-3xl lg:p-5">
+                            <h3 className="mb-3 hidden px-3 font-brand text-lg font-black tracking-tight text-neutral-800 lg:block">
                                 Pengaturan
                             </h3>
 
                             <button
                                 onClick={() => setActiveTab('Akun')}
-                                className={`flex w-full cursor-pointer items-center gap-3 rounded-xl border-0 px-4 py-3 text-left text-small font-bold transition-colors duration-150 ${
+                                className={`flex flex-1 cursor-pointer items-center justify-center gap-3 rounded-xl border-0 px-4 py-2.5 text-left text-small font-bold transition-colors duration-150 lg:flex-initial lg:justify-start lg:py-3 ${
                                     activeTab === 'Akun'
                                         ? 'bg-primary-500 text-white'
                                         : 'bg-transparent text-gray-500 hover:bg-neutral-50 hover:text-neutral-900'
@@ -99,7 +99,7 @@ export default function Profile() {
 
                             <button
                                 onClick={() => setActiveTab('Tentang')}
-                                className={`flex w-full cursor-pointer items-center gap-3 rounded-xl border-0 px-4 py-3 text-left text-small font-bold transition-colors duration-150 ${
+                                className={`flex flex-1 cursor-pointer items-center justify-center gap-3 rounded-xl border-0 px-4 py-2.5 text-left text-small font-bold transition-colors duration-150 lg:flex-initial lg:justify-start lg:py-3 ${
                                     activeTab === 'Tentang'
                                         ? 'bg-primary-500 text-white'
                                         : 'bg-transparent text-gray-500 hover:bg-neutral-50 hover:text-neutral-900'
