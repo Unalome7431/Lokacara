@@ -56,7 +56,8 @@ export default function Show({ event, isRegistered }: ShowProps) {
     const isAuthenticated = !!user;
 
     const [isJoining, setIsJoining] = useState(false);
-    const [showVerificationWarning, setShowVerificationWarning] = useState(false);
+    const [showVerificationWarning, setShowVerificationWarning] =
+        useState(false);
 
     // Helper to parse description metadata
     const parseDescription = (desc: string) => {
@@ -216,6 +217,7 @@ export default function Show({ event, isRegistered }: ShowProps) {
 
         if (event.price > 0 && !user?.email_verified_at) {
             setShowVerificationWarning(true);
+
             return;
         }
 
@@ -262,7 +264,7 @@ export default function Show({ event, isRegistered }: ShowProps) {
 
                                 {/* Title & Category Stacked */}
                                 <div className="flex flex-col gap-2">
-                                    <h1 className="font-brand text-2xl leading-tight font-black text-neutral-900 md:text-3xl">
+                                    <h1 className="font-brand text-h1-mobile leading-tight font-black text-neutral-900 lg:text-h1-web">
                                         {event.title}
                                     </h1>
                                     {event.category && (
@@ -297,7 +299,7 @@ export default function Show({ event, isRegistered }: ShowProps) {
 
                                 {/* Waktu & Lokasi */}
                                 <div className="flex flex-col gap-4">
-                                    <h4 className="font-brand text-lg font-black text-neutral-900">
+                                    <h4 className="font-brand text-h4-mobile font-black text-neutral-900 lg:text-h4-web">
                                         Waktu & Lokasi
                                     </h4>
 
@@ -423,7 +425,7 @@ export default function Show({ event, isRegistered }: ShowProps) {
 
                                 {/* Deskripsi */}
                                 <div className="border-t border-neutral-100 pt-6">
-                                    <h4 className="mb-3 font-brand text-lg font-black text-neutral-900">
+                                    <h4 className="mb-3 font-brand text-h4-mobile font-black text-neutral-900 lg:text-h4-web">
                                         Deskripsi
                                     </h4>
                                     <p className="text-base leading-relaxed font-medium whitespace-pre-wrap text-neutral-700">
@@ -451,7 +453,7 @@ export default function Show({ event, isRegistered }: ShowProps) {
                                 {/* Contacts Metadata if present */}
                                 {contacts && (
                                     <div className="border-t border-neutral-100 pt-6">
-                                        <h4 className="mb-4 font-brand text-lg font-black text-neutral-900">
+                                        <h4 className="mb-4 font-brand text-h4-mobile font-black text-neutral-900 lg:text-h4-web">
                                             Contact Person
                                         </h4>
                                         {parsedContacts.length > 0 ? (
@@ -515,7 +517,7 @@ export default function Show({ event, isRegistered }: ShowProps) {
                             {/* Stats Card */}
                             <div className="flex flex-col gap-4 rounded-3xl border border-neutral-300 bg-white p-6 shadow-sm">
                                 <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
-                                    <h4 className="font-brand text-base font-black text-neutral-900">
+                                    <h4 className="font-brand text-h6-mobile font-black text-neutral-900 lg:text-h6-web">
                                         Informasi Pendaftaran
                                     </h4>
                                     <div className="flex items-center gap-1.5 rounded-full border border-neutral-200/40 bg-neutral-50 px-2.5 py-1 text-xs font-bold text-neutral-500">
@@ -571,7 +573,7 @@ export default function Show({ event, isRegistered }: ShowProps) {
                                         <div className="flex w-full items-center justify-center gap-2 rounded-full border border-green-200 bg-green-50 py-4 text-base font-bold text-green-700">
                                             <CheckCircle2
                                                 size={18}
-                                                        className="text-green-600"
+                                                className="text-green-600"
                                             />
                                             <span>Anda Sudah Terdaftar</span>
                                         </div>
@@ -587,7 +589,7 @@ export default function Show({ event, isRegistered }: ShowProps) {
                                 ) : (
                                     <>
                                         {isAuthenticated ? (
-                                            <div className="flex flex-col w-full">
+                                            <div className="flex w-full flex-col">
                                                 <button
                                                     type="button"
                                                     onClick={handleJoinEvent}
@@ -595,7 +597,8 @@ export default function Show({ event, isRegistered }: ShowProps) {
                                                         isJoining ||
                                                         (remainingCapacity !==
                                                             null &&
-                                                            remainingCapacity <= 0)
+                                                            remainingCapacity <=
+                                                                0)
                                                     }
                                                     className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border-0 bg-primary-500 py-4 text-base font-bold text-white shadow-md transition-all duration-200 hover:bg-primary-600 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-neutral-300"
                                                 >
@@ -606,25 +609,41 @@ export default function Show({ event, isRegistered }: ShowProps) {
                                                                     null &&
                                                                 remainingCapacity <=
                                                                     0
-                                                               ? 'Kuota Penuh'
-                                                               : 'Ikuti Event Sekarang'}
+                                                              ? 'Kuota Penuh'
+                                                              : 'Ikuti Event Sekarang'}
                                                     </span>
                                                 </button>
                                                 {showVerificationWarning && (
-                                                    <div className="flex flex-col gap-3 rounded-2xl border border-secondary-200 bg-secondary-100/40 p-4 text-neutral-800 mt-3">
+                                                    <div className="mt-3 flex flex-col gap-3 rounded-2xl border border-secondary-200 bg-secondary-100/40 p-4 text-neutral-800">
                                                         <div className="flex gap-2 text-secondary-800">
-                                                            <AlertTriangle size={18} className="shrink-0 mt-0.5" />
-                                                            <span className="text-xs font-bold uppercase tracking-wider">Verifikasi Diperlukan</span>
+                                                            <AlertTriangle
+                                                                size={18}
+                                                                className="mt-0.5 shrink-0"
+                                                            />
+                                                            <span className="text-xs font-bold tracking-wider uppercase">
+                                                                Verifikasi
+                                                                Diperlukan
+                                                            </span>
                                                         </div>
-                                                        <p className="text-xs leading-relaxed text-neutral-700 font-medium">
-                                                            Anda harus memverifikasi email untuk bergabung dengan event berbayar demi keamanan transaksi.
+                                                        <p className="text-xs leading-relaxed font-medium text-neutral-700">
+                                                            Anda harus
+                                                            memverifikasi email
+                                                            untuk bergabung
+                                                            dengan event
+                                                            berbayar demi
+                                                            keamanan transaksi.
                                                         </p>
                                                         <Link
                                                             href="/settings/verify-email"
                                                             className="flex w-full items-center justify-center gap-1.5 rounded-full bg-secondary-500 py-2.5 text-center text-xs font-bold text-neutral-900 shadow-sm transition-all duration-200 hover:bg-secondary-600 active:scale-[0.98]"
                                                         >
-                                                            <span>Verifikasi Sekarang</span>
-                                                            <ArrowUpRight size={14} />
+                                                            <span>
+                                                                Verifikasi
+                                                                Sekarang
+                                                            </span>
+                                                            <ArrowUpRight
+                                                                size={14}
+                                                            />
                                                         </Link>
                                                     </div>
                                                 )}

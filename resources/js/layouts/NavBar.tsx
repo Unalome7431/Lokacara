@@ -212,10 +212,10 @@ export default function NavBar({
                             onLocationSubmit(locationInput);
                         }
                     }}
-                    className="flex max-w-[480px] flex-1 w-0 items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50/50 px-3 py-1.5 transition-all duration-200 focus-within:border-primary-500 focus-within:bg-white focus-within:shadow-sm hover:bg-white sm:gap-3 sm:px-5 sm:py-2"
+                    className="flex w-0 max-w-[480px] flex-1 items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50/50 px-3 py-1.5 transition-all duration-200 focus-within:border-primary-500 focus-within:bg-white focus-within:shadow-sm hover:bg-white sm:gap-3 sm:px-5 sm:py-2"
                 >
                     {/* Search Input */}
-                    <div className="flex flex-1 w-0 items-center gap-1.5 sm:gap-2">
+                    <div className="flex w-0 flex-1 items-center gap-1.5 sm:gap-2">
                         <Search className="h-3.5 w-3.5 shrink-0 text-gray-400 sm:h-4 sm:w-4" />
                         <input
                             type="text"
@@ -231,7 +231,7 @@ export default function NavBar({
 
                             {/* Location Input */}
                             <div
-                                className="relative flex flex-1 w-0 items-center gap-1.5 sm:gap-2"
+                                className="relative flex w-0 flex-1 items-center gap-1.5 sm:gap-2"
                                 ref={locationContainerRef}
                             >
                                 <MapPin className="h-3.5 w-3.5 shrink-0 text-gray-400 sm:h-4 sm:w-4" />

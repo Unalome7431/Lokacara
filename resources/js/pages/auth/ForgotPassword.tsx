@@ -31,28 +31,29 @@ export default function ForgotPassword({ flash }: PageProps) {
                     <Head title="Lupa Kata Sandi" />
 
                     {/* Logo and header text */}
-                    <div className="flex flex-col items-center mb-8">
+                    <div className="mb-8 flex flex-col items-center">
                         <img
                             src={faviconUrl}
                             alt="Lokacara"
                             className="h-12 w-10 animate-logo-wave"
                         />
-                        <h2 className="mt-4 text-center font-brand text-2xl font-black text-neutral-900">
+                        <h2 className="mt-4 text-center font-brand text-h2-mobile font-black text-neutral-900 lg:text-h2-web">
                             Lupa Kata Sandi
                         </h2>
                         <p className="mt-2 text-center font-brand text-small leading-relaxed text-gray-500">
-                            Masukkan email terdaftar Anda. Kami akan mengirimkan kode OTP untuk mengatur ulang kata sandi Anda.
+                            Masukkan email terdaftar Anda. Kami akan mengirimkan
+                            kode OTP untuk mengatur ulang kata sandi Anda.
                         </p>
                     </div>
 
                     {/* Flash messages */}
                     {flash?.success && (
-                        <div className="mb-6 animate-in fade-in rounded-2xl border border-green-200 bg-green-50 p-4 text-small font-bold text-green-700 duration-200">
+                        <div className="animate-in fade-in mb-6 rounded-2xl border border-green-200 bg-green-50 p-4 text-small font-bold text-green-700 duration-200">
                             {flash.success}
                         </div>
                     )}
                     {flash?.error && (
-                        <div className="mb-6 animate-in fade-in rounded-2xl border border-red-200 bg-red-50 p-4 text-small font-bold text-red-700 duration-200">
+                        <div className="animate-in fade-in mb-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-small font-bold text-red-700 duration-200">
                             {flash.error}
                         </div>
                     )}
@@ -78,7 +79,10 @@ export default function ForgotPassword({ flash }: PageProps) {
                             </div>
                             {errors.email && (
                                 <div className="mt-1.5 flex items-center gap-1.5 pl-1 text-micro font-semibold text-red-500">
-                                    <AlertCircle size={12} className="shrink-0" />
+                                    <AlertCircle
+                                        size={12}
+                                        className="shrink-0"
+                                    />
                                     <span>{errors.email}</span>
                                 </div>
                             )}
@@ -88,10 +92,14 @@ export default function ForgotPassword({ flash }: PageProps) {
                             type="submit"
                             disabled={processing}
                             className={`mt-4 w-full py-3.5 text-large font-bold ${
-                                processing ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'
+                                processing
+                                    ? 'cursor-not-allowed opacity-70'
+                                    : 'cursor-pointer'
                             }`}
                         >
-                            {processing ? 'Mengirim Kode...' : 'Kirim Kode Verifikasi'}
+                            {processing
+                                ? 'Mengirim Kode...'
+                                : 'Kirim Kode Verifikasi'}
                         </Button>
                     </form>
 

@@ -26,7 +26,7 @@ export default function Login() {
                 <div className="relative flex flex-col items-stretch rounded-3xl bg-white px-8 pt-16 pb-10">
                     <Head title="Masuk" />
 
-                    <h2 className="mb-6 text-center font-brand text-[2.5rem] leading-none font-extrabold text-primary-500">
+                    <h2 className="mb-6 text-center font-brand text-h2-mobile leading-none font-extrabold text-primary-500 lg:text-h2-web">
                         Masuk
                     </h2>
 

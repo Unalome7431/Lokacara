@@ -83,12 +83,10 @@ export default function Home({
     const heroTrackRef = useRef<HTMLDivElement>(null);
     const joinedTrackRef = useRef<HTMLDivElement>(null);
     const nearbyTrackRef = useRef<HTMLDivElement>(null);
-
     const tabAllRef = useRef<HTMLButtonElement>(null);
     const tabOnlineRef = useRef<HTMLButtonElement>(null);
     const tabOfflineRef = useRef<HTMLButtonElement>(null);
     const [underlineStyle, setUnderlineStyle] = useState({ left: 0, width: 0 });
-
     // 2. Location & Proximity State
     const [userCoords, setUserCoords] = useState<{
         lat: number;
@@ -626,7 +624,6 @@ export default function Home({
             document.body.style.overflow = '';
         };
     }, [isMobileFilterOpen]);
-
     useEffect(() => {
         const updateUnderline = () => {
             let activeTab: HTMLButtonElement | null = null;
@@ -652,7 +649,6 @@ export default function Home({
 
         return () => window.removeEventListener('resize', updateUnderline);
     }, [activeType]);
-
     const filteredCatalogEvents = useMemo(() => {
         const result = events.filter((e) => {
             const matchesCategory =
@@ -878,7 +874,6 @@ export default function Home({
                             </div>
                         )}
 
-
                         <div ref={heroTrackRef} className="flex h-full w-full">
                             {displayHeroEvents.map((event, idx) => (
                                 <Link
@@ -897,7 +892,7 @@ export default function Home({
 
                                     {/* Text overlay */}
                                     <div className="absolute right-0 bottom-0 left-0 ml-4 flex max-w-[800px] flex-col gap-2 pt-6 pr-8 pb-12 pl-8 md:pt-10 md:pr-16 md:pb-16 md:pl-16">
-                                        <h1 className="font-brand text-3xl leading-tight font-black text-white md:text-5xl">
+                                        <h1 className="line-clamp-2 font-brand text-h1-mobile leading-tight font-black text-white lg:text-h1-web">
                                             {event.title}
                                         </h1>
                                         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-small font-semibold text-neutral-300 md:text-base">
@@ -932,7 +927,7 @@ export default function Home({
                     {/* 2. EVENT MENDATANG SECTION (JOINED EVENTS) */}
                     {isAuthenticated && (
                         <div className="flex flex-col gap-5">
-                            <h3 className="font-brand text-2xl font-extrabold tracking-tight text-neutral-900 md:text-3xl">
+                            <h3 className="font-brand text-h3-mobile font-extrabold tracking-tight text-neutral-900 lg:text-h3-web">
                                 Event Mendatang
                             </h3>
 
@@ -947,7 +942,7 @@ export default function Home({
                                             <Plus size={28} />
                                         </a>
                                         <div className="flex flex-col gap-1">
-                                            <h4 className="font-brand text-base font-bold text-neutral-700">
+                                            <h4 className="font-brand text-h6-mobile font-bold text-neutral-700 lg:text-h6-web">
                                                 Belum Ikut Event Apapun
                                             </h4>
                                             <p className="max-w-[200px] text-small text-gray-400">
@@ -990,7 +985,7 @@ export default function Home({
                                                     </div>
                                                     <div className="flex h-[170px] shrink-0 flex-col justify-between p-4 md:h-[180px] lg:h-[190px]">
                                                         <div className="flex flex-col gap-1.5">
-                                                            <h4 className="line-clamp-2 h-[34px] overflow-hidden text-xs leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 md:h-[40px] md:text-sm lg:h-[48px] lg:text-base">
+                                                            <h4 className="line-clamp-2 h-[34px] overflow-hidden text-small leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 md:h-[40px] lg:h-[48px] lg:text-base">
                                                                 {event.title}
                                                             </h4>
                                                             <div className="flex flex-col gap-1 border-t border-gray-100/50 pt-1.5 text-[10px] font-semibold text-gray-400 md:text-micro">
@@ -1061,7 +1056,7 @@ export default function Home({
                     {/* 3. EVENT TERDEKAT SECTION */}
                     <div className="flex flex-col gap-5">
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-                            <h3 className="font-brand text-2xl font-extrabold tracking-tight text-neutral-900 md:text-3xl">
+                            <h3 className="font-brand text-h3-mobile font-extrabold tracking-tight text-neutral-900 lg:text-h3-web">
                                 Event Terdekat di Sekitarmu
                             </h3>
                             {isLoadingLocation && (
@@ -1127,7 +1122,7 @@ export default function Home({
                                                 </div>
                                                 <div className="flex h-[170px] shrink-0 flex-col justify-between p-4 md:h-[180px] lg:h-[190px]">
                                                     <div className="flex flex-col gap-1.5">
-                                                        <h4 className="line-clamp-2 h-[34px] overflow-hidden text-xs leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 md:h-[40px] md:text-sm lg:h-[48px] lg:text-base">
+                                                        <h4 className="line-clamp-2 h-[34px] overflow-hidden text-small leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 md:h-[40px] lg:h-[48px] lg:text-base">
                                                             {event.title}
                                                         </h4>
                                                         <div className="flex flex-col gap-1 border-t border-gray-100/50 pt-1.5 text-[10px] font-semibold text-gray-400 md:text-micro">
@@ -1197,19 +1192,19 @@ export default function Home({
                         id="catalog"
                         className="mt-12 flex scroll-mt-24 flex-col gap-6"
                     >
-                        <h3 className="font-brand text-2xl font-black text-neutral-900 md:text-3xl">
+                        <h3 className="font-brand text-h3-mobile font-black text-neutral-900 lg:text-h3-web">
                             Jelajah Event
                         </h3>
                         <div className="flex flex-col gap-10 lg:flex-row">
                             {/* Left Column: Sidebar Category Filter */}
                             <div className="lg:border-neutral-150 border-neutral-150 hidden flex-col gap-6 border-b pb-8 lg:flex lg:w-1/4 lg:border-r lg:border-b-0 lg:pr-10 lg:pb-0">
-                                <h4 className="font-brand text-xl font-black text-primary-500">
+                                <h4 className="font-brand text-h4-mobile font-black text-primary-500 lg:text-h4-web">
                                     Preferensi
                                 </h4>
 
                                 {/* Kategori Section */}
                                 <div className="flex flex-col gap-3">
-                                    <h5 className="text-xs font-extrabold tracking-wider text-neutral-400 uppercase">
+                                    <h5 className="text-small font-extrabold tracking-wider text-neutral-400 uppercase">
                                         Kategori
                                     </h5>
                                     <div className="flex flex-row flex-wrap items-start gap-x-4 gap-y-3.5 lg:flex-col lg:gap-3">
@@ -1243,7 +1238,7 @@ export default function Home({
 
                                 {/* Harga Section */}
                                 <div className="flex flex-col gap-3 border-t border-neutral-100 pt-5">
-                                    <h5 className="text-xs font-extrabold tracking-wider text-neutral-400 uppercase">
+                                    <h5 className="text-small font-extrabold tracking-wider text-neutral-400 uppercase">
                                         Harga
                                     </h5>
                                     <div className="flex flex-col gap-3">
@@ -1337,7 +1332,7 @@ export default function Home({
 
                                 {/* Tanggal Section */}
                                 <div className="flex flex-col gap-3 border-t border-neutral-100 pt-5">
-                                    <h5 className="text-xs font-extrabold tracking-wider text-neutral-400 uppercase">
+                                    <h5 className="text-small font-extrabold tracking-wider text-neutral-400 uppercase">
                                         Tanggal
                                     </h5>
                                     <div className="flex flex-col gap-3">
@@ -1415,8 +1410,8 @@ export default function Home({
                             {/* Right Column: Events Catalogue Listing */}
                             <div className="flex flex-grow flex-col gap-8">
                                 {/* Tab Filter Type */}
-                                <div className="border-gray-150 relative flex items-center justify-between border-b pb-1">
-                                    <div className="relative flex items-center gap-8">
+                                <div className="flex items-end justify-between border-b border-neutral-100">
+                                    <div className="scrollbar-none relative flex items-center gap-6 overflow-x-auto sm:gap-8">
                                         {/* Sliding underline */}
                                         <div
                                             className="absolute bottom-0 h-0.75 rounded-full bg-primary-500 transition-all duration-300 ease-out"
@@ -1432,7 +1427,7 @@ export default function Home({
                                                 setActiveType('all');
                                                 setCurrentPage(1);
                                             }}
-                                            className={`cursor-pointer pb-3 text-base font-bold transition-colors duration-300 ${activeType === 'all' ? 'text-primary-500' : 'text-neutral-400 hover:text-neutral-600'}`}
+                                            className={`cursor-pointer pb-3 text-sm font-bold transition-colors duration-300 sm:text-base ${activeType === 'all' ? 'text-primary-500' : 'text-neutral-400 hover:text-neutral-600'}`}
                                         >
                                             Semua
                                         </button>
@@ -1442,7 +1437,7 @@ export default function Home({
                                                 setActiveType('online');
                                                 setCurrentPage(1);
                                             }}
-                                            className={`cursor-pointer pb-3 text-base font-bold transition-colors duration-300 ${activeType === 'online' ? 'text-primary-500' : 'text-neutral-400 hover:text-neutral-600'}`}
+                                            className={`cursor-pointer pb-3 text-sm font-bold transition-colors duration-300 sm:text-base ${activeType === 'online' ? 'text-primary-500' : 'text-neutral-400 hover:text-neutral-600'}`}
                                         >
                                             Online
                                         </button>
@@ -1452,25 +1447,27 @@ export default function Home({
                                                 setActiveType('offline');
                                                 setCurrentPage(1);
                                             }}
-                                            className={`cursor-pointer pb-3 text-base font-bold transition-colors duration-300 ${activeType === 'offline' ? 'text-primary-500' : 'text-neutral-400 hover:text-neutral-600'}`}
+                                            className={`cursor-pointer pb-3 text-sm font-bold transition-colors duration-300 sm:text-base ${activeType === 'offline' ? 'text-primary-500' : 'text-neutral-400 hover:text-neutral-600'}`}
                                         >
                                             Offline
                                         </button>
                                     </div>
 
-                                    <div className="flex items-center gap-2 pb-2">
+                                    <div className="flex items-center gap-3 pb-1.5">
                                         {/* Mobile Filter Trigger Button */}
                                         <button
                                             onClick={() =>
                                                 setIsMobileFilterOpen(true)
                                             }
-                                            className="border-neutral-350 flex cursor-pointer items-center gap-2 rounded-full border bg-white px-4 py-1.5 text-xs font-bold text-neutral-600 shadow-xs transition-all duration-200 outline-none hover:border-primary-500 hover:text-primary-500 lg:hidden"
+                                            className="border-neutral-350 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border bg-white text-xs font-bold text-neutral-600 shadow-xs transition-all duration-200 outline-none hover:border-primary-500 hover:text-primary-500 sm:h-auto sm:w-auto sm:gap-2 sm:px-4 sm:py-1.5 lg:hidden"
                                         >
                                             <Filter
                                                 size={14}
                                                 className="text-neutral-400"
                                             />
-                                            <span>Filter</span>
+                                            <span className="hidden sm:inline">
+                                                Filter
+                                            </span>
                                         </button>
 
                                         {/* Custom Dropdown Sort Filter */}
@@ -1497,7 +1494,7 @@ export default function Home({
                                                 </span>
                                                 <ChevronDown
                                                     size={14}
-                                                    className={`text-neutral-400 transition-transform duration-250 group-hover:text-primary-500 ${isSortDropdownOpen ? 'rotate-180' : ''}`}
+                                                    className={`text-neutral-400 transition-transform duration-250 ${isSortDropdownOpen ? 'rotate-180' : ''}`}
                                                 />
                                             </button>
 
@@ -1548,7 +1545,7 @@ export default function Home({
                                         <div className="animate-in slide-in-from-right relative z-50 flex h-full w-full max-w-xs flex-col gap-6 overflow-y-auto bg-white p-6 shadow-2xl duration-200">
                                             {/* Drawer Header */}
                                             <div className="flex items-center justify-between border-b border-neutral-100 pb-4">
-                                                <h4 className="font-brand text-lg font-black text-primary-500">
+                                                <h4 className="font-brand text-h4-mobile font-black text-primary-500 lg:text-h4-web">
                                                     Preferensi
                                                 </h4>
                                                 <button
@@ -1567,7 +1564,7 @@ export default function Home({
                                             <div className="flex flex-col gap-6">
                                                 {/* Kategori Section */}
                                                 <div className="flex flex-col gap-3">
-                                                    <h5 className="text-xs font-extrabold tracking-wider text-neutral-400 uppercase">
+                                                    <h5 className="text-small font-extrabold tracking-wider text-neutral-400 uppercase">
                                                         Kategori
                                                     </h5>
                                                     <div className="flex flex-col gap-3">
@@ -1611,7 +1608,7 @@ export default function Home({
 
                                                 {/* Harga Section */}
                                                 <div className="flex flex-col gap-3 border-t border-neutral-100 pt-5">
-                                                    <h5 className="text-xs font-extrabold tracking-wider text-neutral-400 uppercase">
+                                                    <h5 className="text-small font-extrabold tracking-wider text-neutral-400 uppercase">
                                                         Harga
                                                     </h5>
                                                     <div className="flex flex-col gap-3">
@@ -1877,7 +1874,7 @@ export default function Home({
 
                                                 <div className="flex flex-grow flex-col justify-between gap-1 overflow-hidden p-3 sm:gap-2 sm:p-4 lg:h-[190px] lg:flex-none lg:shrink-0 lg:p-4">
                                                     <div className="flex flex-col gap-1 sm:gap-1.5">
-                                                        <h4 className="line-clamp-2 h-[36px] overflow-hidden text-xs leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[40px] sm:text-sm lg:h-[48px] lg:text-base">
+                                                        <h4 className="line-clamp-2 h-[36px] overflow-hidden text-small leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[40px] lg:h-[48px] lg:text-base">
                                                             {event.title}
                                                         </h4>
 
@@ -1938,36 +1935,82 @@ export default function Home({
                                                     )
                                                 }
                                                 disabled={currentPage === 1}
-                                                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border text-micro font-bold ${
+                                                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border text-[10px] font-bold sm:h-9 sm:w-9 sm:text-micro ${
                                                     currentPage === 1
                                                         ? 'border-neutral-150 cursor-not-allowed bg-neutral-50 text-gray-300'
                                                         : 'cursor-pointer border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50'
                                                 }`}
                                                 title="Sebelumnya"
                                             >
-                                                <ChevronLeft size={16} />
+                                                <ChevronLeft
+                                                    size={14}
+                                                    className="sm:h-4 sm:w-4"
+                                                />
                                             </button>
 
                                             {getPageNumbers().map(
-                                                (pageNumber) => (
-                                                    <button
-                                                        key={pageNumber}
-                                                        type="button"
-                                                        onClick={() =>
-                                                            setCurrentPage(
-                                                                pageNumber,
-                                                            )
-                                                        }
-                                                        className={`flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg border text-micro font-bold ${
-                                                            currentPage ===
-                                                            pageNumber
-                                                                ? 'border-primary-500 bg-primary-500 text-white shadow-sm'
-                                                                : 'border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50'
-                                                        }`}
-                                                    >
-                                                        {pageNumber}
-                                                    </button>
-                                                ),
+                                                (pageNumber) => {
+                                                    const isMobileHidden =
+                                                        (() => {
+                                                            if (
+                                                                totalPages <= 3
+                                                            ) {
+                                                                return false;
+                                                            }
+
+                                                            if (
+                                                                currentPage ===
+                                                                1
+                                                            ) {
+                                                                return (
+                                                                    pageNumber >
+                                                                    3
+                                                                );
+                                                            }
+
+                                                            if (
+                                                                currentPage ===
+                                                                totalPages
+                                                            ) {
+                                                                return (
+                                                                    pageNumber <
+                                                                    totalPages -
+                                                                        2
+                                                                );
+                                                            }
+
+                                                            return (
+                                                                Math.abs(
+                                                                    pageNumber -
+                                                                        currentPage,
+                                                                ) > 1
+                                                            );
+                                                        })();
+
+                                                    return (
+                                                        <button
+                                                            key={pageNumber}
+                                                            type="button"
+                                                            onClick={() =>
+                                                                setCurrentPage(
+                                                                    pageNumber,
+                                                                )
+                                                            }
+                                                            className={`h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg border text-[10px] font-bold sm:h-9 sm:w-9 sm:text-micro ${
+                                                                isMobileHidden
+                                                                    ? 'hidden sm:flex'
+                                                                    : 'flex'
+                                                            } ${
+                                                                currentPage ===
+                                                                pageNumber
+                                                                    ? 'border-primary-500 bg-primary-500 text-white shadow-sm'
+                                                                    : 'border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50'
+                                                            }`}
+                                                        >
+                                                            {pageNumber}
+                                                        </button>
+                                                    );
+                                                },
                                             )}
 
                                             <button
@@ -1983,14 +2026,17 @@ export default function Home({
                                                 disabled={
                                                     currentPage === totalPages
                                                 }
-                                                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border text-micro font-bold ${
+                                                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border text-[10px] font-bold sm:h-9 sm:w-9 sm:text-micro ${
                                                     currentPage === totalPages
                                                         ? 'border-neutral-150 cursor-not-allowed bg-neutral-50 text-gray-300'
                                                         : 'cursor-pointer border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50'
                                                 }`}
                                                 title="Selanjutnya"
                                             >
-                                                <ChevronRight size={16} />
+                                                <ChevronRight
+                                                    size={14}
+                                                    className="sm:h-4 sm:w-4"
+                                                />
                                             </button>
                                         </div>
                                     </div>

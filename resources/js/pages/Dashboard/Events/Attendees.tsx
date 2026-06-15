@@ -158,7 +158,7 @@ export default function Attendees({
                         {/* Header section */}
                         <div className="flex flex-col justify-between gap-4 border-b border-neutral-100 pb-4 md:flex-row md:items-center">
                             <div>
-                                <h2 className="flex items-center gap-2 font-brand text-xl font-black tracking-tight text-neutral-900 md:text-2xl">
+                                <h2 className="flex items-center gap-2 font-brand text-h3-mobile font-black tracking-tight text-neutral-900 lg:text-h3-web">
                                     <Users
                                         className="text-primary-500"
                                         size={24}
@@ -374,11 +374,48 @@ export default function Attendees({
 
                                 <div className="flex gap-1.5">
                                     {attendees.links.map((link, idx) => {
+                                        const isNumeric = !isNaN(
+                                            Number(link.label),
+                                        );
+                                        const isMobileHidden = (() => {
+                                            if (!isNumeric) {
+                                                return link.label === '...';
+                                            }
+
+                                            const pageNum = Number(link.label);
+                                            const totalPages =
+                                                attendees.last_page;
+                                            const currentPage =
+                                                attendees.current_page;
+
+                                            if (totalPages <= 3) {
+                                                return false;
+                                            }
+
+                                            if (currentPage === 1) {
+                                                return pageNum > 3;
+                                            }
+
+                                            if (currentPage === totalPages) {
+                                                return pageNum < totalPages - 2;
+                                            }
+
+                                            return (
+                                                Math.abs(
+                                                    pageNum - currentPage,
+                                                ) > 1
+                                            );
+                                        })();
+
                                         if (!link.url) {
                                             return (
                                                 <span
                                                     key={idx}
-                                                    className="border-neutral-150 cursor-not-allowed rounded-lg border bg-neutral-50 px-3 py-1.5 text-micro font-bold text-gray-300 select-none"
+                                                    className={`border-neutral-150 cursor-not-allowed rounded-lg border px-2 py-1 text-[10px] font-bold text-gray-300 select-none sm:px-3 sm:py-1.5 sm:text-micro ${
+                                                        isMobileHidden
+                                                            ? 'hidden sm:inline-block'
+                                                            : 'inline-block'
+                                                    }`}
                                                     dangerouslySetInnerHTML={{
                                                         __html: link.label,
                                                     }}
@@ -390,7 +427,11 @@ export default function Attendees({
                                             <Link
                                                 key={idx}
                                                 href={link.url}
-                                                className={`rounded-lg border px-3 py-1.5 text-micro font-bold transition-colors ${
+                                                className={`rounded-lg border px-2 py-1 text-[10px] font-bold transition-colors sm:px-3 sm:py-1.5 sm:text-micro ${
+                                                    isMobileHidden
+                                                        ? 'hidden sm:inline-block'
+                                                        : 'inline-block'
+                                                } ${
                                                     link.active
                                                         ? 'border-primary-500 bg-primary-500 text-white shadow-sm'
                                                         : 'border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50'

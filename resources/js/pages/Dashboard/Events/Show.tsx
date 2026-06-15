@@ -1,4 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
+import { Html5Qrcode } from 'html5-qrcode';
 import {
     Calendar,
     MapPin,
@@ -15,7 +16,6 @@ import {
     RefreshCw,
 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
-import { Html5Qrcode } from 'html5-qrcode';
 import DefaultCover from '@/../../public/covers/default_cover.jpg';
 import Footer from '@/layouts/Footer';
 import NavBar from '@/layouts/NavBar';
@@ -85,53 +85,84 @@ export default function Show({
     };
 
     useEffect(() => {
-        if (!isScanModalOpen || !scannerRunning) return;
+        if (!isScanModalOpen || !scannerRunning) {
+            return;
+        }
 
         const html5QrCode = new Html5Qrcode(qrCodeRegionId);
 
-        html5QrCode.start(
-            { facingMode: 'environment' },
-            { fps: 10, qrbox: { width: 250, height: 250 } },
-            (decodedText) => {
-                html5QrCode.stop().then(() => {
-                    setScannerRunning(false);
-                    setIsVerifying(true);
-                    
-                    router.post(`/dashboard/events/${event.id}/attendance/scan`, {
-                        qr_token: decodedText
-                    }, {
-                        preserveScroll: true,
-                        onSuccess: (page) => {
-                            setIsVerifying(false);
-                            const updatedFlash = (page.props as any).flash || {};
-                            if (updatedFlash.success) {
-                                setScanOutcome({ type: 'success', message: updatedFlash.success });
-                            } else if (updatedFlash.warning) {
-                                setScanOutcome({ type: 'warning', message: updatedFlash.warning });
-                            }
-                        },
-                        onError: (err) => {
-                            setIsVerifying(false);
-                            setScanOutcome({ type: 'error', message: err.qr_token || 'Gagal memverifikasi tiket.' });
-                        },
-                    });
-                }).catch((err) => console.error('Gagal menghentikan scanner: ', err));
-            },
-            () => {
-                // Keep scanning silently on scan error/no QR detected
-            }
-        ).catch((err) => {
-            console.error('Gagal memulai scanner: ', err);
-            setScannerRunning(false);
-            setScanOutcome({
-                type: 'error',
-                message: 'Gagal mengakses kamera. Pastikan izin kamera telah diberikan.',
+        html5QrCode
+            .start(
+                { facingMode: 'environment' },
+                { fps: 10, qrbox: { width: 250, height: 250 } },
+                (decodedText) => {
+                    html5QrCode
+                        .stop()
+                        .then(() => {
+                            setScannerRunning(false);
+                            setIsVerifying(true);
+
+                            router.post(
+                                `/dashboard/events/${event.id}/attendance/scan`,
+                                {
+                                    qr_token: decodedText,
+                                },
+                                {
+                                    preserveScroll: true,
+                                    onSuccess: (page) => {
+                                        setIsVerifying(false);
+                                        const updatedFlash =
+                                            (page.props as any).flash || {};
+
+                                        if (updatedFlash.success) {
+                                            setScanOutcome({
+                                                type: 'success',
+                                                message: updatedFlash.success,
+                                            });
+                                        } else if (updatedFlash.warning) {
+                                            setScanOutcome({
+                                                type: 'warning',
+                                                message: updatedFlash.warning,
+                                            });
+                                        }
+                                    },
+                                    onError: (err) => {
+                                        setIsVerifying(false);
+                                        setScanOutcome({
+                                            type: 'error',
+                                            message:
+                                                err.qr_token ||
+                                                'Gagal memverifikasi tiket.',
+                                        });
+                                    },
+                                },
+                            );
+                        })
+                        .catch((err) =>
+                            console.error('Gagal menghentikan scanner: ', err),
+                        );
+                },
+                () => {
+                    // Keep scanning silently on scan error/no QR detected
+                },
+            )
+            .catch((err) => {
+                console.error('Gagal memulai scanner: ', err);
+                setScannerRunning(false);
+                setScanOutcome({
+                    type: 'error',
+                    message:
+                        'Gagal mengakses kamera. Pastikan izin kamera telah diberikan.',
+                });
             });
-        });
 
         return () => {
             if (html5QrCode.isScanning) {
-                html5QrCode.stop().catch((err) => console.error('Gagal menghentikan scanner: ', err));
+                html5QrCode
+                    .stop()
+                    .catch((err) =>
+                        console.error('Gagal menghentikan scanner: ', err),
+                    );
             }
         };
     }, [isScanModalOpen, scannerRunning]);
@@ -311,7 +342,7 @@ export default function Show({
 
                                 {/* Title & Category Stacked */}
                                 <div className="flex flex-col gap-2">
-                                    <h1 className="font-brand text-2xl leading-tight font-black text-neutral-900 md:text-3xl">
+                                    <h1 className="font-brand text-h1-mobile leading-tight font-black text-neutral-900 lg:text-h1-web">
                                         {event.title}
                                     </h1>
                                     {event.category && (
@@ -346,7 +377,7 @@ export default function Show({
 
                                 {/* Waktu & Lokasi */}
                                 <div className="flex flex-col gap-4">
-                                    <h4 className="font-brand text-lg font-black text-neutral-900">
+                                    <h4 className="font-brand text-h4-mobile font-black text-neutral-900 lg:text-h4-web">
                                         Waktu & Lokasi
                                     </h4>
 
@@ -466,7 +497,7 @@ export default function Show({
 
                                 {/* Deskripsi */}
                                 <div className="border-t border-neutral-100 pt-6">
-                                    <h4 className="mb-3 font-brand text-lg font-black text-neutral-900">
+                                    <h4 className="mb-3 font-brand text-h4-mobile font-black text-neutral-900 lg:text-h4-web">
                                         Deskripsi
                                     </h4>
                                     <p className="text-base leading-relaxed font-medium whitespace-pre-wrap text-neutral-700">
@@ -494,7 +525,7 @@ export default function Show({
                                 {/* Contacts Metadata if present */}
                                 {contacts && (
                                     <div className="border-t border-neutral-100 pt-6">
-                                        <h4 className="mb-4 font-brand text-lg font-black text-neutral-900">
+                                        <h4 className="mb-4 font-brand text-h4-mobile font-black text-neutral-900 lg:text-h4-web">
                                             Contact Person
                                         </h4>
                                         {parsedContacts.length > 0 ? (
@@ -558,7 +589,7 @@ export default function Show({
                             {/* Stats Card */}
                             <div className="flex flex-col gap-4 rounded-3xl border border-neutral-300 bg-white p-6 shadow-sm">
                                 <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
-                                    <h4 className="font-brand text-base font-black text-neutral-900">
+                                    <h4 className="font-brand text-h6-mobile font-black text-neutral-900 lg:text-h6-web">
                                         Analitik Peserta
                                     </h4>
                                     <div className="flex items-center gap-1.5 rounded-full border border-neutral-200/40 bg-neutral-50 px-2.5 py-1 text-xs font-bold text-neutral-500">
@@ -660,7 +691,7 @@ export default function Show({
                         <div className="border-neutral-150 animate-in fade-in zoom-in-95 relative z-[101] flex w-full max-w-md flex-col gap-6 overflow-hidden rounded-3xl border bg-white p-6 shadow-2xl duration-200">
                             {/* Modal Header */}
                             <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
-                                <h4 className="flex items-center gap-2 font-brand text-lg font-black text-neutral-900">
+                                <h4 className="flex items-center gap-2 font-brand text-h6-mobile font-black text-neutral-900 lg:text-h6-web">
                                     <QrCode
                                         size={20}
                                         className="text-primary-500"
@@ -681,30 +712,42 @@ export default function Show({
                                 {isVerifying ? (
                                     <div className="flex flex-col items-center justify-center p-6 text-center text-white">
                                         <RefreshCw className="mb-4 h-12 w-12 animate-spin text-primary-500" />
-                                        <h5 className="text-base font-bold text-white">Memverifikasi Tiket...</h5>
-                                        <p className="text-xs text-neutral-400 mt-1">Harap tunggu sebentar</p>
+                                        <h5 className="text-base font-bold text-white">
+                                            Memverifikasi Tiket...
+                                        </h5>
+                                        <p className="mt-1 text-xs text-neutral-400">
+                                            Harap tunggu sebentar
+                                        </p>
                                     </div>
                                 ) : scanOutcome.type === 'idle' ? (
                                     scannerRunning ? (
-                                        <div className="relative w-full h-full">
+                                        <div className="relative h-full w-full">
                                             {/* html5-qrcode target region */}
-                                            <div id={qrCodeRegionId} className="w-full h-full object-cover [&_video]:!object-cover [&_video]:!w-full [&_video]:!h-full" />
-                                            
+                                            <div
+                                                id={qrCodeRegionId}
+                                                className="h-full w-full object-cover [&_video]:!h-full [&_video]:!w-full [&_video]:!object-cover"
+                                            />
+
                                             {/* Overlay scanning frame guide */}
-                                            <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-end pb-8">
-                                                <span className="text-[0.65rem] font-bold tracking-widest text-white/75 bg-neutral-900/60 px-3 py-1.5 rounded-full uppercase backdrop-blur-xs">
+                                            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-end pb-8">
+                                                <span className="rounded-full bg-neutral-900/60 px-3 py-1.5 text-[0.65rem] font-bold tracking-widest text-white/75 uppercase backdrop-blur-xs">
                                                     Arahkan Kamera ke QR Code
                                                 </span>
                                             </div>
                                         </div>
                                     ) : (
                                         <div className="flex flex-col items-center justify-center p-6 text-center text-neutral-400">
-                                            <Camera size={40} className="mb-3 text-neutral-600" />
-                                            <span className="text-sm font-medium">Kamera dinonaktifkan</span>
+                                            <Camera
+                                                size={40}
+                                                className="mb-3 text-neutral-600"
+                                            />
+                                            <span className="text-sm font-medium">
+                                                Kamera dinonaktifkan
+                                            </span>
                                             <button
                                                 type="button"
                                                 onClick={startScanning}
-                                                className="mt-4 flex items-center gap-2 rounded-full bg-primary-500 px-4 py-2 text-xs font-bold text-white shadow-md hover:bg-primary-600 transition-colors"
+                                                className="mt-4 flex items-center gap-2 rounded-full bg-primary-500 px-4 py-2 text-xs font-bold text-white shadow-md transition-colors hover:bg-primary-600"
                                             >
                                                 <RefreshCw size={12} />
                                                 Mulai Scanner
@@ -713,45 +756,51 @@ export default function Show({
                                     )
                                 ) : (
                                     /* Premium scan outcomes in Bahasa Indonesia */
-                                    <div className="flex flex-col items-center justify-center p-8 text-center w-full h-full animate-in fade-in zoom-in-95 duration-200">
+                                    <div className="animate-in fade-in zoom-in-95 flex h-full w-full flex-col items-center justify-center p-8 text-center duration-200">
                                         {scanOutcome.type === 'success' && (
-                                            <div className="flex flex-col items-center animate-bounce">
-                                                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-green-500/10 text-green-500 mb-4 ring-8 ring-green-500/5">
+                                            <div className="flex animate-bounce flex-col items-center">
+                                                <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-green-500/10 text-green-500 ring-8 ring-green-500/5">
                                                     <CheckCircle2 size={44} />
                                                 </div>
-                                                <h5 className="text-lg font-black text-white mb-2">Check-in Berhasil!</h5>
-                                                <p className="text-sm text-neutral-300 max-w-[280px]">
+                                                <h5 className="mb-2 text-h6-mobile font-black text-white lg:text-h6-web">
+                                                    Check-in Berhasil!
+                                                </h5>
+                                                <p className="max-w-[280px] text-sm text-neutral-300">
                                                     {scanOutcome.message}
                                                 </p>
                                             </div>
                                         )}
                                         {scanOutcome.type === 'warning' && (
-                                            <div className="flex flex-col items-center animate-pulse">
-                                                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-yellow-500/10 text-yellow-500 mb-4 ring-8 ring-yellow-500/5">
+                                            <div className="flex animate-pulse flex-col items-center">
+                                                <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-yellow-500/10 text-yellow-500 ring-8 ring-yellow-500/5">
                                                     <AlertTriangle size={44} />
                                                 </div>
-                                                <h5 className="text-lg font-black text-white mb-2">Peringatan</h5>
-                                                <p className="text-sm text-neutral-300 max-w-[280px]">
+                                                <h5 className="mb-2 text-h6-mobile font-black text-white lg:text-h6-web">
+                                                    Peringatan
+                                                </h5>
+                                                <p className="max-w-[280px] text-sm text-neutral-300">
                                                     {scanOutcome.message}
                                                 </p>
                                             </div>
                                         )}
                                         {scanOutcome.type === 'error' && (
-                                            <div className="flex flex-col items-center animate-pulse">
-                                                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-500/10 text-red-500 mb-4 ring-8 ring-red-500/5">
+                                            <div className="flex animate-pulse flex-col items-center">
+                                                <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-red-500/10 text-red-500 ring-8 ring-red-500/5">
                                                     <XCircle size={44} />
                                                 </div>
-                                                <h5 className="text-lg font-black text-white mb-2">Check-in Gagal</h5>
-                                                <p className="text-sm text-neutral-300 max-w-[280px]">
+                                                <h5 className="mb-2 text-h6-mobile font-black text-white lg:text-h6-web">
+                                                    Check-in Gagal
+                                                </h5>
+                                                <p className="max-w-[280px] text-sm text-neutral-300">
                                                     {scanOutcome.message}
                                                 </p>
                                             </div>
                                         )}
-                                        
+
                                         <button
                                             type="button"
                                             onClick={startScanning}
-                                            className="mt-6 flex items-center gap-2 rounded-full bg-white/10 border border-white/20 px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-white/20 transition-all active:scale-[0.98]"
+                                            className="mt-6 flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-2.5 text-xs font-bold text-white shadow-md transition-all hover:bg-white/20 active:scale-[0.98]"
                                         >
                                             <RefreshCw size={12} />
                                             <span>Scan Tiket Lain</span>

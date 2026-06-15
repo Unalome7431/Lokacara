@@ -70,8 +70,6 @@ export default function Ticket({ event, registration }: TicketProps) {
                 <Head title={`Tiket Event - ${event.title}`} />
 
                 <div className="mx-auto max-w-3xl px-4 pt-28 pb-16 md:px-8">
-
-
                     {/* Ticket Container */}
                     <div className="flex flex-col overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-lg md:flex-row">
                         {/* Left / Top Section: Event Info (Ticket Body) */}
@@ -85,7 +83,7 @@ export default function Ticket({ event, registration }: TicketProps) {
                                 )}
 
                                 {/* Title */}
-                                <h2 className="font-brand text-xl leading-snug font-black text-neutral-900 md:text-2xl">
+                                <h2 className="font-brand text-h6-mobile leading-snug font-black text-neutral-900 lg:text-h6-web">
                                     {event.title}
                                 </h2>
 
@@ -209,7 +207,9 @@ export default function Ticket({ event, registration }: TicketProps) {
                             className="mt-0.5 shrink-0 text-blue-500"
                         />
                         <div className="flex flex-col gap-1 text-small">
-                            <h5 className="font-bold">Petunjuk Check-in</h5>
+                            <h5 className="text-base font-bold">
+                                Petunjuk Check-in
+                            </h5>
                             <p className="leading-relaxed font-medium text-blue-800">
                                 Tunjukkan QR Code ini kepada
                                 panitia/penyelenggara acara saat tiba di lokasi.

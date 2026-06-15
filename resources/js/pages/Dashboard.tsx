@@ -171,30 +171,50 @@ export default function Dashboard({
                             setCurrentPage((prev) => Math.max(1, prev - 1))
                         }
                         disabled={currentPage === 1}
-                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border text-micro font-bold ${
+                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border text-[10px] font-bold sm:h-9 sm:w-9 sm:text-micro ${
                             currentPage === 1
                                 ? 'border-neutral-150 cursor-not-allowed bg-neutral-50 text-gray-300'
                                 : 'cursor-pointer border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50'
                         }`}
                         title="Sebelumnya"
                     >
-                        <ChevronLeft size={16} />
+                        <ChevronLeft size={14} className="sm:h-4 sm:w-4" />
                     </button>
 
-                    {getPageNumbers().map((pageNumber) => (
-                        <button
-                            key={pageNumber}
-                            type="button"
-                            onClick={() => setCurrentPage(pageNumber)}
-                            className={`flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg border text-micro font-bold ${
-                                currentPage === pageNumber
-                                    ? 'border-primary-500 bg-primary-500 text-white shadow-sm'
-                                    : 'border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50'
-                            }`}
-                        >
-                            {pageNumber}
-                        </button>
-                    ))}
+                    {getPageNumbers().map((pageNumber) => {
+                        const isMobileHidden = (() => {
+                            if (totalPages <= 3) {
+                                return false;
+                            }
+
+                            if (currentPage === 1) {
+                                return pageNumber > 3;
+                            }
+
+                            if (currentPage === totalPages) {
+                                return pageNumber < totalPages - 2;
+                            }
+
+                            return Math.abs(pageNumber - currentPage) > 1;
+                        })();
+
+                        return (
+                            <button
+                                key={pageNumber}
+                                type="button"
+                                onClick={() => setCurrentPage(pageNumber)}
+                                className={`h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg border text-[10px] font-bold sm:h-9 sm:w-9 sm:text-micro ${
+                                    isMobileHidden ? 'hidden sm:flex' : 'flex'
+                                } ${
+                                    currentPage === pageNumber
+                                        ? 'border-primary-500 bg-primary-500 text-white shadow-sm'
+                                        : 'border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50'
+                                }`}
+                            >
+                                {pageNumber}
+                            </button>
+                        );
+                    })}
 
                     <button
                         type="button"
@@ -204,14 +224,14 @@ export default function Dashboard({
                             )
                         }
                         disabled={currentPage === totalPages}
-                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border text-micro font-bold ${
+                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border text-[10px] font-bold sm:h-9 sm:w-9 sm:text-micro ${
                             currentPage === totalPages
                                 ? 'border-neutral-150 cursor-not-allowed bg-neutral-50 text-gray-300'
                                 : 'cursor-pointer border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50'
                         }`}
                         title="Selanjutnya"
                     >
-                        <ChevronRight size={16} />
+                        <ChevronRight size={14} className="sm:h-4 sm:w-4" />
                     </button>
                 </div>
             </div>
@@ -237,7 +257,7 @@ export default function Dashboard({
                         </div>
                         <div className="flex-grow text-center md:text-left">
                             <div className="mb-1.5 flex flex-col justify-center gap-2 md:flex-row md:items-center md:justify-start">
-                                <h2 className="font-brand text-2xl leading-none font-black tracking-tight text-neutral-900">
+                                <h2 className="font-brand text-h2-mobile leading-none font-black tracking-tight text-neutral-900 lg:text-h2-web">
                                     {user?.name || 'Pengguna Lokacara'}
                                 </h2>
                                 {user?.role === 'admin' && (
@@ -350,7 +370,7 @@ export default function Dashboard({
                                         <Calendar size={28} />
                                     </div>
                                     <div className="flex flex-col gap-1">
-                                        <h4 className="text-base font-bold text-neutral-800">
+                                        <h4 className="text-h6-mobile font-bold text-neutral-800 lg:text-h6-web">
                                             Belum Ada Event
                                         </h4>
                                         <p className="max-w-[280px] text-small text-gray-400">
@@ -373,7 +393,7 @@ export default function Dashboard({
                                         className="animate-pulse text-gray-400"
                                     />
                                     <div className="flex flex-col gap-1">
-                                        <h4 className="text-base font-bold text-neutral-800">
+                                        <h4 className="text-h6-mobile font-bold text-neutral-800 lg:text-h6-web">
                                             Event Tidak Ditemukan
                                         </h4>
                                         <p className="max-w-[280px] text-small text-gray-400">
@@ -462,7 +482,7 @@ export default function Dashboard({
                                         <Bookmark size={28} />
                                     </div>
                                     <div className="flex flex-col gap-1">
-                                        <h4 className="text-base font-bold text-neutral-800">
+                                        <h4 className="text-h6-mobile font-bold text-neutral-800 lg:text-h6-web">
                                             Belum Ada Event Terdaftar
                                         </h4>
                                         <p className="max-w-[280px] text-small text-gray-400">
@@ -484,7 +504,7 @@ export default function Dashboard({
                                         className="animate-pulse text-gray-400"
                                     />
                                     <div className="flex flex-col gap-1">
-                                        <h4 className="text-base font-bold text-neutral-800">
+                                        <h4 className="text-h6-mobile font-bold text-neutral-800 lg:text-h6-web">
                                             Event Tidak Ditemukan
                                         </h4>
                                         <p className="max-w-[280px] text-small text-gray-400">
@@ -528,7 +548,7 @@ export default function Dashboard({
                                                     </div>
                                                     <div className="flex h-[170px] shrink-0 flex-col justify-between p-4 sm:h-[180px] lg:h-[190px]">
                                                         <div className="flex flex-col gap-1.5">
-                                                            <h4 className="line-clamp-2 h-[34px] overflow-hidden text-xs leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[40px] sm:text-sm lg:h-[48px] lg:text-base">
+                                                            <h4 className="line-clamp-2 h-[34px] overflow-hidden text-small leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[40px] lg:h-[48px] lg:text-base">
                                                                 {event.title}
                                                             </h4>
                                                             <div className="flex flex-col gap-1 border-t border-gray-100/50 pt-1.5 text-[10px] font-semibold text-gray-400 sm:text-micro">
@@ -594,7 +614,7 @@ export default function Dashboard({
                                         <Award size={28} />
                                     </div>
                                     <div className="flex flex-col gap-1">
-                                        <h4 className="text-base font-bold text-neutral-800">
+                                        <h4 className="text-h6-mobile font-bold text-neutral-800 lg:text-h6-web">
                                             Belum Ada Sertifikat
                                         </h4>
                                         <p className="max-w-[280px] text-small text-gray-400">
@@ -619,7 +639,7 @@ export default function Dashboard({
                                                     <span className="text-micro font-bold tracking-wider text-gray-400 uppercase">
                                                         E-SERTIFIKAT RESMI
                                                     </span>
-                                                    <h4 className="text-base leading-tight font-extrabold text-neutral-900">
+                                                    <h4 className="text-h6-mobile leading-tight font-extrabold text-neutral-900 lg:text-h6-web">
                                                         {cert.eventRegistration
                                                             ?.event?.title ||
                                                             'Event Lokacara'}
