@@ -14,14 +14,17 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'user_id', 'category_id', 'type', 'poster', 'title', 'description', 'price',
     'location_name', 'address', 'latitude', 'longitude', 
     'platform_name', 'link',
-    'start_datetime', 'end_datetime', 'capacity', 'view_count'
+    'start_datetime', 'end_datetime', 'capacity', 'view_count',
+    'certificate_template', 'certificate_font_family', 'certificate_font_size',
+    'certificate_font_color', 'certificate_x_pos', 'certificate_is_x_center',
+    'certificate_y_pos', 'certificate_is_y_center'
 ])]
 class Event extends Model
 {
     /** @use HasFactory<EventFactory> */
     use HasFactory, SoftDeletes;
 
-    protected $appends = ['poster_url'];
+    protected $appends = ['poster_url', 'certificate_template_url'];
     
     /**
      * @return array<string, string>
@@ -31,7 +34,11 @@ class Event extends Model
             'start_datetime'=> 'datetime',
             'end_datetime'=> 'datetime',
             'latitude'=> 'decimal:8',
-            'longitude'=> 'decimal:8'
+            'longitude'=> 'decimal:8',
+            'certificate_is_x_center' => 'boolean',
+            'certificate_is_y_center' => 'boolean',
+            'certificate_x_pos' => 'double',
+            'certificate_y_pos' => 'double',
         ];
     }
 
@@ -45,6 +52,17 @@ class Event extends Model
                         : route('poster.show', ['filename' => $filename]);
                 }
                 return asset('covers/default_cover.jpg');
+            }
+        );
+    }
+
+    protected function certificateTemplateUrl(): Attribute {
+        return Attribute::make(
+            get: function ($value, $attributes) {
+                if (!empty($attributes['certificate_template'])) {
+                    return route('dashboard.events.certificates.template', ['event' => $attributes['id']]);
+                }
+                return null;
             }
         );
     }
