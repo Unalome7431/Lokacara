@@ -21,6 +21,11 @@ import {
     geocodeAddress,
     reverseGeocode,
 } from '@/lib/geocoding';
+import EventCard from '@/components/ui/EventCard';
+import EventSlider from '@/components/ui/EventSlider';
+import Pagination from '@/components/ui/Pagination';
+import FilterPanel from '@/components/ui/FilterPanel';
+import { formatIndonesianDate, formatShortDate } from '@/lib/utils';
 
 interface Event {
     id: number;
@@ -81,8 +86,6 @@ export default function Home({
             : 0;
 
     const heroTrackRef = useRef<HTMLDivElement>(null);
-    const joinedTrackRef = useRef<HTMLDivElement>(null);
-    const nearbyTrackRef = useRef<HTMLDivElement>(null);
     const tabAllRef = useRef<HTMLButtonElement>(null);
     const tabOnlineRef = useRef<HTMLButtonElement>(null);
     const tabOfflineRef = useRef<HTMLButtonElement>(null);
@@ -215,148 +218,7 @@ export default function Home({
         }
     };
 
-    // Carousel states for Joined and Nearby Events
-    const [joinedIndex, setJoinedIndex] = useState(0);
-    const [nearbyIndex, setNearbyIndex] = useState(0);
-    const [cardsToShow, setCardsToShow] = useState(3);
 
-    const displayJoined =
-        joinedEvents.length > cardsToShow
-            ? [...joinedEvents, ...joinedEvents.slice(0, cardsToShow)]
-            : joinedEvents;
-
-    const displayNearby =
-        filteredNearbyEvents.length > cardsToShow
-            ? [
-                  ...filteredNearbyEvents,
-                  ...filteredNearbyEvents.slice(0, cardsToShow),
-              ]
-            : filteredNearbyEvents;
-
-    useEffect(() => {
-        const handleResize = () => {
-            if (window.innerWidth < 768) {
-                setCardsToShow(2);
-            } else if (window.innerWidth < 1024) {
-                setCardsToShow(3);
-            } else {
-                setCardsToShow(4);
-            }
-        };
-
-        handleResize();
-        window.addEventListener('resize', handleResize);
-
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
-
-    const handleJoinedNext = () => {
-        if (joinedEvents.length === 0) {
-            return;
-        }
-
-        setJoinedIndex((prev) => {
-            const nextIndex = prev + cardsToShow;
-            const maxIndex = joinedEvents.length - cardsToShow;
-
-            if (prev < maxIndex) {
-                return Math.min(nextIndex, maxIndex);
-            }
-
-            return joinedEvents.length;
-        });
-    };
-
-    const handleJoinedPrev = () => {
-        if (joinedEvents.length === 0) {
-            return;
-        }
-
-        if (joinedIndex === 0) {
-            const track = joinedTrackRef.current;
-
-            if (track) {
-                const cardElement = track.firstElementChild as HTMLElement;
-
-                if (cardElement) {
-                    const cardWidth =
-                        cardElement.getBoundingClientRect().width ||
-                        (track.getBoundingClientRect().width -
-                            (cardsToShow - 1) * 24) /
-                            cardsToShow;
-                    const gap = 24;
-
-                    gsap.set(track, {
-                        x: -joinedEvents.length * (cardWidth + gap),
-                    });
-
-                    const maxIndex = joinedEvents.length - cardsToShow;
-
-                    setJoinedIndex(maxIndex);
-                }
-            }
-        } else {
-            setJoinedIndex((prev) => {
-                const prevIndex = prev - cardsToShow;
-
-                return Math.max(0, prevIndex);
-            });
-        }
-    };
-
-    const handleNearbyNext = () => {
-        if (filteredNearbyEvents.length === 0) {
-            return;
-        }
-
-        setNearbyIndex((prev) => {
-            const nextIndex = prev + cardsToShow;
-            const maxIndex = filteredNearbyEvents.length - cardsToShow;
-
-            if (prev < maxIndex) {
-                return Math.min(nextIndex, maxIndex);
-            }
-
-            return filteredNearbyEvents.length;
-        });
-    };
-
-    const handleNearbyPrev = () => {
-        if (filteredNearbyEvents.length === 0) {
-            return;
-        }
-
-        if (nearbyIndex === 0) {
-            const track = nearbyTrackRef.current;
-
-            if (track) {
-                const cardElement = track.firstElementChild as HTMLElement;
-
-                if (cardElement) {
-                    const cardWidth =
-                        cardElement.getBoundingClientRect().width ||
-                        (track.getBoundingClientRect().width -
-                            (cardsToShow - 1) * 24) /
-                            cardsToShow;
-                    const gap = 24;
-
-                    gsap.set(track, {
-                        x: -filteredNearbyEvents.length * (cardWidth + gap),
-                    });
-
-                    const maxIndex = filteredNearbyEvents.length - cardsToShow;
-
-                    setNearbyIndex(maxIndex);
-                }
-            }
-        } else {
-            setNearbyIndex((prev) => {
-                const prevIndex = prev - cardsToShow;
-
-                return Math.max(0, prevIndex);
-            });
-        }
-    };
 
     // Pointer drag / swipe handlers for touch & mouse
     const heroDragStartX = useRef<number | null>(null);
@@ -388,63 +250,7 @@ export default function Home({
         }
     };
 
-    const joinedDragStartX = useRef<number | null>(null);
-    const joinedDragStartY = useRef<number | null>(null);
-    const handleJoinedPointerDown = (e: React.PointerEvent) => {
-        joinedDragStartX.current = e.clientX;
-        joinedDragStartY.current = e.clientY;
-    };
-    const handleJoinedPointerUp = (e: React.PointerEvent) => {
-        if (
-            joinedDragStartX.current === null ||
-            joinedDragStartY.current === null
-        ) {
-            return;
-        }
 
-        const diffX = joinedDragStartX.current - e.clientX;
-        const diffY = joinedDragStartY.current - e.clientY;
-
-        joinedDragStartX.current = null;
-        joinedDragStartY.current = null;
-
-        if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY)) {
-            if (diffX > 0) {
-                handleJoinedNext();
-            } else {
-                handleJoinedPrev();
-            }
-        }
-    };
-
-    const nearbyDragStartX = useRef<number | null>(null);
-    const nearbyDragStartY = useRef<number | null>(null);
-    const handleNearbyPointerDown = (e: React.PointerEvent) => {
-        nearbyDragStartX.current = e.clientX;
-        nearbyDragStartY.current = e.clientY;
-    };
-    const handleNearbyPointerUp = (e: React.PointerEvent) => {
-        if (
-            nearbyDragStartX.current === null ||
-            nearbyDragStartY.current === null
-        ) {
-            return;
-        }
-
-        const diffX = nearbyDragStartX.current - e.clientX;
-        const diffY = nearbyDragStartY.current - e.clientY;
-
-        nearbyDragStartX.current = null;
-        nearbyDragStartY.current = null;
-
-        if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY)) {
-            if (diffX > 0) {
-                handleNearbyNext();
-            } else {
-                handleNearbyPrev();
-            }
-        }
-    };
 
     // GSAP Slider animations
     useEffect(() => {
@@ -495,63 +301,7 @@ export default function Home({
         return () => clearInterval(interval);
     }, [activeIndex, heroEvents.length]);
 
-    useEffect(() => {
-        if (joinedTrackRef.current) {
-            const cardElement = joinedTrackRef.current
-                .firstElementChild as HTMLElement;
 
-            if (cardElement) {
-                const cardWidth =
-                    cardElement.getBoundingClientRect().width ||
-                    (joinedTrackRef.current.getBoundingClientRect().width -
-                        (cardsToShow - 1) * 24) /
-                        cardsToShow;
-                const gap = 24;
-                const targetX = -joinedIndex * (cardWidth + gap);
-
-                gsap.to(joinedTrackRef.current, {
-                    x: targetX,
-                    duration: 0.6,
-                    ease: 'power2.out',
-                    onComplete: () => {
-                        if (joinedIndex === joinedEvents.length) {
-                            gsap.set(joinedTrackRef.current, { x: 0 });
-                            setJoinedIndex(0);
-                        }
-                    },
-                });
-            }
-        }
-    }, [joinedIndex, cardsToShow, joinedEvents]);
-
-    useEffect(() => {
-        if (nearbyTrackRef.current) {
-            const cardElement = nearbyTrackRef.current
-                .firstElementChild as HTMLElement;
-
-            if (cardElement) {
-                const cardWidth =
-                    cardElement.getBoundingClientRect().width ||
-                    (nearbyTrackRef.current.getBoundingClientRect().width -
-                        (cardsToShow - 1) * 24) /
-                        cardsToShow;
-                const gap = 24;
-                const targetX = -nearbyIndex * (cardWidth + gap);
-
-                gsap.to(nearbyTrackRef.current, {
-                    x: targetX,
-                    duration: 0.6,
-                    ease: 'power2.out',
-                    onComplete: () => {
-                        if (nearbyIndex === filteredNearbyEvents.length) {
-                            gsap.set(nearbyTrackRef.current, { x: 0 });
-                            setNearbyIndex(0);
-                        }
-                    },
-                });
-            }
-        }
-    }, [nearbyIndex, cardsToShow, filteredNearbyEvents]);
 
     // 3. Category & Type Catalog Filter State
     const [activeCategory, setActiveCategory] = useState<number | null>(null);
@@ -790,30 +540,7 @@ export default function Home({
         );
     };
 
-    const formatIndonesianDate = (dateString: string) => {
-        const dateObj = new Date(dateString);
-
-        return new Intl.DateTimeFormat('id-ID', {
-            weekday: 'long',
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric',
-        }).format(dateObj);
-    };
-
-    const formatShortDate = (dateString: string) => {
-        const dateObj = new Date(dateString);
-
-        return (
-            new Intl.DateTimeFormat('id-ID', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-            }).format(dateObj) + ' WIB'
-        );
-    };
+    // Date formatting functions imported from @/lib/utils
 
     return (
         <div className="flex min-h-screen flex-col justify-between bg-white">
@@ -952,102 +679,7 @@ export default function Home({
                                         </div>
                                     </div>
                                 ) : (
-                                    <div
-                                        onPointerDown={handleJoinedPointerDown}
-                                        onPointerUp={handleJoinedPointerUp}
-                                        className="relative w-full touch-pan-y overflow-hidden select-none"
-                                    >
-                                        <div
-                                            ref={joinedTrackRef}
-                                            className="flex w-full gap-6"
-                                        >
-                                            {displayJoined.map((event, idx) => (
-                                                <div
-                                                    key={`${event.id}-clone-${idx}`}
-                                                    className="border-neutral-150 group relative flex h-[340px] w-[calc((100%-24px)/2)] shrink-0 flex-col justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md md:h-[370px] md:w-[calc((100%-48px)/3)] lg:h-[400px] lg:w-[calc((100%-72px)/4)]"
-                                                >
-                                                    <div className="absolute top-4 left-4 z-10 rounded-md bg-secondary-400 px-3 py-1 text-[0.6275rem] font-extrabold text-secondary-900 shadow-sm">
-                                                        {event.price === 0
-                                                            ? 'GRATIS'
-                                                            : `Rp ${Number(event.price).toLocaleString('id-ID')}`}
-                                                    </div>
-
-                                                    <div className="relative h-[170px] w-full shrink-0 overflow-hidden border-b border-gray-100 bg-gray-50 md:h-[190px] lg:h-[210px]">
-                                                        <img
-                                                            src={
-                                                                event.poster_url ||
-                                                                DefaultCover
-                                                            }
-                                                            alt={event.title}
-                                                            draggable="false"
-                                                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                                        />
-                                                    </div>
-                                                    <div className="flex h-[170px] shrink-0 flex-col justify-between p-4 md:h-[180px] lg:h-[190px]">
-                                                        <div className="flex flex-col gap-1.5">
-                                                            <h4 className="line-clamp-2 h-[34px] overflow-hidden text-small leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 md:h-[40px] lg:h-[48px] lg:text-base">
-                                                                {event.title}
-                                                            </h4>
-                                                            <div className="flex flex-col gap-1 border-t border-gray-100/50 pt-1.5 text-[10px] font-semibold text-gray-400 md:text-micro">
-                                                                <span className="flex items-center gap-1.5">
-                                                                    <Calendar
-                                                                        size={
-                                                                            12
-                                                                        }
-                                                                        className="shrink-0 text-gray-400"
-                                                                    />
-                                                                    {formatShortDate(
-                                                                        event.start_datetime,
-                                                                    )}
-                                                                </span>
-                                                                <span className="flex items-start gap-1.5">
-                                                                    <MapPin
-                                                                        size={
-                                                                            12
-                                                                        }
-                                                                        className="mt-0.5 shrink-0 text-gray-400"
-                                                                    />
-                                                                    <span className="line-clamp-2 overflow-hidden">
-                                                                        {event.type ===
-                                                                        'online'
-                                                                            ? 'Online'
-                                                                            : event.location_name ||
-                                                                              'Lokasi Offline'}
-                                                                    </span>
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                        <div className="pt-1">
-                                                            <Button
-                                                                href={`/events/${event.id}`}
-                                                                className="w-full py-1.5 text-[10px] sm:py-2 sm:text-small"
-                                                            >
-                                                                Detail Event
-                                                            </Button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                        {joinedEvents.length > cardsToShow && (
-                                            <>
-                                                <button
-                                                    onClick={handleJoinedPrev}
-                                                    className="absolute top-1/2 left-4 z-20 flex -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-neutral-200/80 bg-white/80 p-3 text-neutral-800 opacity-0 shadow-md backdrop-blur-md transition-all duration-300 group-hover/slider:opacity-100 hover:scale-105 hover:bg-white active:scale-95"
-                                                    title="Halaman Sebelumnya"
-                                                >
-                                                    <ChevronLeft size={22} />
-                                                </button>
-                                                <button
-                                                    onClick={handleJoinedNext}
-                                                    className="absolute top-1/2 right-4 z-20 flex -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-neutral-200/80 bg-white/80 p-3 text-neutral-800 opacity-0 shadow-md backdrop-blur-md transition-all duration-300 group-hover/slider:opacity-100 hover:scale-105 hover:bg-white active:scale-95"
-                                                    title="Halaman Selanjutnya"
-                                                >
-                                                    <ChevronRight size={22} />
-                                                </button>
-                                            </>
-                                        )}
-                                    </div>
+                                    <EventSlider events={joinedEvents} />
                                 )}
                             </div>
                         </div>
@@ -1089,104 +721,11 @@ export default function Home({
                                     Tidak ada event terdekat di sekitarmu.
                                 </div>
                             ) : (
-                                <div
-                                    onPointerDown={handleNearbyPointerDown}
-                                    onPointerUp={handleNearbyPointerUp}
-                                    className="relative w-full touch-pan-y overflow-hidden select-none"
-                                >
-                                    <div
-                                        ref={nearbyTrackRef}
-                                        className="flex w-full gap-6"
-                                    >
-                                        {displayNearby.map((event, idx) => (
-                                            <div
-                                                key={`${event.id}-clone-${idx}`}
-                                                className="border-neutral-150 group relative flex h-[340px] w-[calc((100%-24px)/2)] shrink-0 flex-col justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md md:h-[370px] md:w-[calc((100%-48px)/3)] lg:h-[400px] lg:w-[calc((100%-72px)/4)]"
-                                            >
-                                                <div className="absolute top-4 left-4 z-10 rounded-md bg-secondary-400 px-3 py-1 text-[0.6275rem] font-extrabold text-secondary-900 shadow-sm">
-                                                    {event.price === 0
-                                                        ? 'GRATIS'
-                                                        : `Rp ${Number(event.price).toLocaleString('id-ID')}`}
-                                                </div>
-
-                                                <div className="relative h-[170px] w-full shrink-0 overflow-hidden border-b border-gray-100 bg-gray-50 md:h-[190px] lg:h-[210px]">
-                                                    <img
-                                                        src={
-                                                            event.poster_url ||
-                                                            DefaultCover
-                                                        }
-                                                        alt={event.title}
-                                                        draggable="false"
-                                                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                                    />
-                                                </div>
-                                                <div className="flex h-[170px] shrink-0 flex-col justify-between p-4 md:h-[180px] lg:h-[190px]">
-                                                    <div className="flex flex-col gap-1.5">
-                                                        <h4 className="line-clamp-2 h-[34px] overflow-hidden text-small leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 md:h-[40px] lg:h-[48px] lg:text-base">
-                                                            {event.title}
-                                                        </h4>
-                                                        <div className="flex flex-col gap-1 border-t border-gray-100/50 pt-1.5 text-[10px] font-semibold text-gray-400 md:text-micro">
-                                                            <span className="flex items-center gap-1.5">
-                                                                <Calendar
-                                                                    size={12}
-                                                                    className="shrink-0 text-gray-400"
-                                                                />
-                                                                {formatShortDate(
-                                                                    event.start_datetime,
-                                                                )}
-                                                            </span>
-                                                            <span className="flex items-start gap-1.5">
-                                                                <MapPin
-                                                                    size={12}
-                                                                    className="mt-0.5 shrink-0 text-gray-400"
-                                                                />
-                                                                <span className="line-clamp-2 overflow-hidden">
-                                                                    {event.type ===
-                                                                    'online'
-                                                                        ? 'Online'
-                                                                        : event.location_name ||
-                                                                          'Lokasi Offline'}
-                                                                </span>
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                    <div className="pt-1">
-                                                        <Button
-                                                            href={`/events/${event.id}`}
-                                                            className="w-full py-1.5 text-[10px] sm:py-2 sm:text-small"
-                                                        >
-                                                            Detail Event
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    {filteredNearbyEvents.length >
-                                        cardsToShow && (
-                                        <>
-                                            <button
-                                                onClick={handleNearbyPrev}
-                                                className="absolute top-1/2 left-4 z-20 flex -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-neutral-200/80 bg-white/80 p-3 text-neutral-800 opacity-0 shadow-md backdrop-blur-md transition-all duration-300 group-hover/slider:opacity-100 hover:scale-105 hover:bg-white active:scale-95"
-                                                title="Halaman Sebelumnya"
-                                            >
-                                                <ChevronLeft size={22} />
-                                            </button>
-                                            <button
-                                                onClick={handleNearbyNext}
-                                                className="absolute top-1/2 right-4 z-20 flex -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-neutral-200/80 bg-white/80 p-3 text-neutral-800 opacity-0 shadow-md backdrop-blur-md transition-all duration-300 group-hover/slider:opacity-100 hover:scale-105 hover:bg-white active:scale-95"
-                                                title="Halaman Selanjutnya"
-                                            >
-                                                <ChevronRight size={22} />
-                                            </button>
-                                        </>
-                                    )}
-                                </div>
+                                <EventSlider events={filteredNearbyEvents} />
                             )}
                         </div>
                     </div>
 
-                    {/* 4. MAIN CATALOGUE & FILTER SECTION */}
                     {/* 4. MAIN CATALOGUE & FILTER SECTION */}
                     <div
                         id="catalog"
@@ -1202,209 +741,51 @@ export default function Home({
                                     Preferensi
                                 </h4>
 
-                                {/* Kategori Section */}
-                                <div className="flex flex-col gap-3">
-                                    <h5 className="text-small font-extrabold tracking-wider text-neutral-400 uppercase">
-                                        Kategori
-                                    </h5>
-                                    <div className="flex flex-row flex-wrap items-start gap-x-4 gap-y-3.5 lg:flex-col lg:gap-3">
-                                        {categories.map((cat) => {
-                                            const isActive =
-                                                activeCategory === cat.id;
-
-                                            return (
-                                                <button
-                                                    key={cat.id}
-                                                    onClick={() => {
-                                                        setActiveCategory(
-                                                            isActive
-                                                                ? null
-                                                                : cat.id,
-                                                        );
-                                                        setCurrentPage(1);
-                                                    }}
-                                                    className="group flex cursor-pointer items-center gap-3 text-sm font-semibold text-neutral-600 transition-colors hover:text-primary-500"
-                                                >
-                                                    {/* Square bullet style */}
-                                                    <div
-                                                        className={`h-3.5 w-3.5 rounded-sm border-2 transition-all duration-200 ${isActive ? 'border-secondary-500 bg-secondary-500' : 'border-secondary-400 bg-white group-hover:border-secondary-500'}`}
-                                                    ></div>
-                                                    <span>{cat.name}</span>
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-
-                                {/* Harga Section */}
-                                <div className="flex flex-col gap-3 border-t border-neutral-100 pt-5">
-                                    <h5 className="text-small font-extrabold tracking-wider text-neutral-400 uppercase">
-                                        Harga
-                                    </h5>
-                                    <div className="flex flex-col gap-3">
-                                        <div className="flex flex-col gap-1.5">
-                                            <span className="text-xs font-bold text-neutral-500">
-                                                Harga Minimum
-                                            </span>
-                                            <div className="flex items-center gap-2 rounded-xl border border-neutral-300 bg-white px-3 py-2 transition-colors duration-150 focus-within:border-primary-500">
-                                                <span className="text-sm font-bold text-neutral-400">
-                                                    Rp
-                                                </span>
-                                                <input
-                                                    type="number"
-                                                    placeholder="0"
-                                                    value={tempMinPrice}
-                                                    onChange={(e) =>
-                                                        setTempMinPrice(
-                                                            e.target.value,
-                                                        )
-                                                    }
-                                                    className="w-full text-sm font-semibold text-neutral-800 outline-none"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="flex flex-col gap-1.5">
-                                            <span className="text-xs font-bold text-neutral-500">
-                                                Harga Maksimum
-                                            </span>
-                                            <div className="flex items-center gap-2 rounded-xl border border-neutral-300 bg-white px-3 py-2 transition-colors duration-150 focus-within:border-primary-500">
-                                                <span className="text-sm font-bold text-neutral-400">
-                                                    Rp
-                                                </span>
-                                                <input
-                                                    type="number"
-                                                    placeholder="Maks"
-                                                    value={tempMaxPrice}
-                                                    onChange={(e) =>
-                                                        setTempMaxPrice(
-                                                            e.target.value,
-                                                        )
-                                                    }
-                                                    className="w-full text-sm font-semibold text-neutral-800 outline-none"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="flex gap-2">
-                                            <button
-                                                onClick={() => {
-                                                    const minVal =
-                                                        tempMinPrice === ''
-                                                            ? null
-                                                            : Number(
-                                                                  tempMinPrice,
-                                                              );
-                                                    const maxVal =
-                                                        tempMaxPrice === ''
-                                                            ? null
-                                                            : Number(
-                                                                  tempMaxPrice,
-                                                              );
-                                                    setAppliedMinPrice(minVal);
-                                                    setAppliedMaxPrice(maxVal);
-                                                    setCurrentPage(1);
-                                                }}
-                                                className="w-full cursor-pointer rounded-xl bg-primary-500 py-2 text-center text-xs font-bold text-white shadow-xs transition-colors duration-150 hover:bg-primary-600"
-                                            >
-                                                Terapkan Harga
-                                            </button>
-                                            {(appliedMinPrice !== null ||
-                                                appliedMaxPrice !== null) && (
-                                                <button
-                                                    onClick={() => {
-                                                        setTempMinPrice('');
-                                                        setTempMaxPrice('');
-                                                        setAppliedMinPrice(
-                                                            null,
-                                                        );
-                                                        setAppliedMaxPrice(
-                                                            null,
-                                                        );
-                                                        setCurrentPage(1);
-                                                    }}
-                                                    className="cursor-pointer rounded-xl border border-neutral-300 px-3 py-2 text-center text-xs font-bold text-neutral-600 transition-colors duration-150 hover:bg-neutral-50"
-                                                >
-                                                    Reset
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Tanggal Section */}
-                                <div className="flex flex-col gap-3 border-t border-neutral-100 pt-5">
-                                    <h5 className="text-small font-extrabold tracking-wider text-neutral-400 uppercase">
-                                        Tanggal
-                                    </h5>
-                                    <div className="flex flex-col gap-3">
-                                        <div className="flex flex-col gap-1.5">
-                                            <span className="text-xs font-bold text-neutral-500">
-                                                Dari
-                                            </span>
-                                            <input
-                                                type="date"
-                                                min={todayString}
-                                                value={tempStartDate}
-                                                onChange={(e) =>
-                                                    setTempStartDate(
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                className="w-full cursor-pointer rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm font-semibold text-neutral-800 transition-colors duration-150 outline-none focus:border-primary-500"
-                                            />
-                                        </div>
-                                        <div className="flex flex-col gap-1.5">
-                                            <span className="text-xs font-bold text-neutral-500">
-                                                Sampai
-                                            </span>
-                                            <input
-                                                type="date"
-                                                min={
-                                                    tempStartDate || todayString
-                                                }
-                                                value={tempEndDate}
-                                                onChange={(e) =>
-                                                    setTempEndDate(
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                className="w-full cursor-pointer rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm font-semibold text-neutral-800 transition-colors duration-150 outline-none focus:border-primary-500"
-                                            />
-                                        </div>
-                                        <div className="flex gap-2">
-                                            <button
-                                                onClick={() => {
-                                                    setAppliedStartDate(
-                                                        tempStartDate || null,
-                                                    );
-                                                    setAppliedEndDate(
-                                                        tempEndDate || null,
-                                                    );
-                                                    setCurrentPage(1);
-                                                }}
-                                                className="w-full cursor-pointer rounded-xl bg-primary-500 py-2 text-center text-xs font-bold text-white shadow-xs transition-colors duration-150 hover:bg-primary-600"
-                                            >
-                                                Terapkan Tanggal
-                                            </button>
-                                            {(appliedStartDate ||
-                                                appliedEndDate) && (
-                                                <button
-                                                    onClick={() => {
-                                                        setTempStartDate('');
-                                                        setTempEndDate('');
-                                                        setAppliedStartDate(
-                                                            null,
-                                                        );
-                                                        setAppliedEndDate(null);
-                                                        setCurrentPage(1);
-                                                    }}
-                                                    className="cursor-pointer rounded-xl border border-neutral-300 px-3 py-2 text-center text-xs font-bold text-neutral-600 transition-colors duration-150 hover:bg-neutral-50"
-                                                >
-                                                    Reset
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
+                                <FilterPanel
+                                    categories={categories}
+                                    activeCategory={activeCategory}
+                                    onCategorySelect={(id) => {
+                                        setActiveCategory(id);
+                                        setCurrentPage(1);
+                                    }}
+                                    tempMinPrice={tempMinPrice}
+                                    setTempMinPrice={setTempMinPrice}
+                                    tempMaxPrice={tempMaxPrice}
+                                    setTempMaxPrice={setTempMaxPrice}
+                                    onApplyPrice={() => {
+                                        const minVal = tempMinPrice === '' ? null : Number(tempMinPrice);
+                                        const maxVal = tempMaxPrice === '' ? null : Number(tempMaxPrice);
+                                        setAppliedMinPrice(minVal);
+                                        setAppliedMaxPrice(maxVal);
+                                        setCurrentPage(1);
+                                    }}
+                                    onResetPrice={() => {
+                                        setTempMinPrice('');
+                                        setTempMaxPrice('');
+                                        setAppliedMinPrice(null);
+                                        setAppliedMaxPrice(null);
+                                        setCurrentPage(1);
+                                    }}
+                                    hasAppliedPrice={appliedMinPrice !== null || appliedMaxPrice !== null}
+                                    tempStartDate={tempStartDate}
+                                    setTempStartDate={setTempStartDate}
+                                    tempEndDate={tempEndDate}
+                                    setTempEndDate={setTempEndDate}
+                                    onApplyDate={() => {
+                                        setAppliedStartDate(tempStartDate || null);
+                                        setAppliedEndDate(tempEndDate || null);
+                                        setCurrentPage(1);
+                                    }}
+                                    onResetDate={() => {
+                                        setTempStartDate('');
+                                        setTempEndDate('');
+                                        setAppliedStartDate(null);
+                                        setAppliedEndDate(null);
+                                        setCurrentPage(1);
+                                    }}
+                                    hasAppliedDate={appliedStartDate !== null || appliedEndDate !== null}
+                                    todayString={todayString}
+                                />
                             </div>
 
                             {/* Right Column: Events Catalogue Listing */}
@@ -1561,282 +942,55 @@ export default function Home({
                                             </div>
 
                                             {/* Drawer Filters */}
-                                            <div className="flex flex-col gap-6">
-                                                {/* Kategori Section */}
-                                                <div className="flex flex-col gap-3">
-                                                    <h5 className="text-small font-extrabold tracking-wider text-neutral-400 uppercase">
-                                                        Kategori
-                                                    </h5>
-                                                    <div className="flex flex-col gap-3">
-                                                        {categories.map(
-                                                            (cat) => {
-                                                                const isActive =
-                                                                    activeCategory ===
-                                                                    cat.id;
-
-                                                                return (
-                                                                    <button
-                                                                        key={
-                                                                            cat.id
-                                                                        }
-                                                                        onClick={() => {
-                                                                            setActiveCategory(
-                                                                                isActive
-                                                                                    ? null
-                                                                                    : cat.id,
-                                                                            );
-                                                                            setCurrentPage(
-                                                                                1,
-                                                                            );
-                                                                        }}
-                                                                        className="group flex cursor-pointer items-center gap-3 text-sm font-semibold text-neutral-600 transition-colors hover:text-primary-500"
-                                                                    >
-                                                                        <div
-                                                                            className={`h-3.5 w-3.5 rounded-sm border-2 transition-all duration-200 ${isActive ? 'border-secondary-500 bg-secondary-500' : 'border-secondary-400 bg-white group-hover:border-secondary-500'}`}
-                                                                        ></div>
-                                                                        <span>
-                                                                            {
-                                                                                cat.name
-                                                                            }
-                                                                        </span>
-                                                                    </button>
-                                                                );
-                                                            },
-                                                        )}
-                                                    </div>
-                                                </div>
-
-                                                {/* Harga Section */}
-                                                <div className="flex flex-col gap-3 border-t border-neutral-100 pt-5">
-                                                    <h5 className="text-small font-extrabold tracking-wider text-neutral-400 uppercase">
-                                                        Harga
-                                                    </h5>
-                                                    <div className="flex flex-col gap-3">
-                                                        <div className="flex flex-col gap-1.5">
-                                                            <span className="text-xs font-bold text-neutral-500">
-                                                                Harga Minimum
-                                                            </span>
-                                                            <div className="flex items-center gap-2 rounded-xl border border-neutral-300 bg-white px-3 py-2 transition-colors duration-150 focus-within:border-primary-500">
-                                                                <span className="text-sm font-bold text-neutral-400">
-                                                                    Rp
-                                                                </span>
-                                                                <input
-                                                                    type="number"
-                                                                    placeholder="0"
-                                                                    value={
-                                                                        tempMinPrice
-                                                                    }
-                                                                    onChange={(
-                                                                        e,
-                                                                    ) =>
-                                                                        setTempMinPrice(
-                                                                            e
-                                                                                .target
-                                                                                .value,
-                                                                        )
-                                                                    }
-                                                                    className="w-full text-sm font-semibold text-neutral-800 outline-none"
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex flex-col gap-1.5">
-                                                            <span className="text-xs font-bold text-neutral-500">
-                                                                Harga Maksimum
-                                                            </span>
-                                                            <div className="flex items-center gap-2 rounded-xl border border-neutral-300 bg-white px-3 py-2 transition-colors duration-150 focus-within:border-primary-500">
-                                                                <span className="text-sm font-bold text-neutral-400">
-                                                                    Rp
-                                                                </span>
-                                                                <input
-                                                                    type="number"
-                                                                    placeholder="Maks"
-                                                                    value={
-                                                                        tempMaxPrice
-                                                                    }
-                                                                    onChange={(
-                                                                        e,
-                                                                    ) =>
-                                                                        setTempMaxPrice(
-                                                                            e
-                                                                                .target
-                                                                                .value,
-                                                                        )
-                                                                    }
-                                                                    className="w-full text-sm font-semibold text-neutral-800 outline-none"
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex gap-2">
-                                                            <button
-                                                                onClick={() => {
-                                                                    const minVal =
-                                                                        tempMinPrice ===
-                                                                        ''
-                                                                            ? null
-                                                                            : Number(
-                                                                                  tempMinPrice,
-                                                                              );
-                                                                    const maxVal =
-                                                                        tempMaxPrice ===
-                                                                        ''
-                                                                            ? null
-                                                                            : Number(
-                                                                                  tempMaxPrice,
-                                                                              );
-                                                                    setAppliedMinPrice(
-                                                                        minVal,
-                                                                    );
-                                                                    setAppliedMaxPrice(
-                                                                        maxVal,
-                                                                    );
-                                                                    setCurrentPage(
-                                                                        1,
-                                                                    );
-                                                                    setIsMobileFilterOpen(
-                                                                        false,
-                                                                    );
-                                                                }}
-                                                                className="w-full cursor-pointer rounded-xl bg-primary-500 py-2 text-center text-xs font-bold text-white shadow-xs transition-colors duration-150 hover:bg-primary-600"
-                                                            >
-                                                                Terapkan
-                                                            </button>
-                                                            {(appliedMinPrice !==
-                                                                null ||
-                                                                appliedMaxPrice !==
-                                                                    null) && (
-                                                                <button
-                                                                    onClick={() => {
-                                                                        setTempMinPrice(
-                                                                            '',
-                                                                        );
-                                                                        setTempMaxPrice(
-                                                                            '',
-                                                                        );
-                                                                        setAppliedMinPrice(
-                                                                            null,
-                                                                        );
-                                                                        setAppliedMaxPrice(
-                                                                            null,
-                                                                        );
-                                                                        setCurrentPage(
-                                                                            1,
-                                                                        );
-                                                                        setIsMobileFilterOpen(
-                                                                            false,
-                                                                        );
-                                                                    }}
-                                                                    className="cursor-pointer rounded-xl border border-neutral-300 px-3 py-2 text-center text-xs font-bold text-neutral-600 transition-colors duration-150 hover:bg-neutral-50"
-                                                                >
-                                                                    Reset
-                                                                </button>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                {/* Tanggal Section */}
-                                                <div className="flex flex-col gap-3 border-t border-neutral-100 pt-5">
-                                                    <h5 className="text-xs font-extrabold tracking-wider text-neutral-400 uppercase">
-                                                        Tanggal
-                                                    </h5>
-                                                    <div className="flex flex-col gap-3">
-                                                        <div className="flex flex-col gap-1.5">
-                                                            <span className="text-xs font-bold text-neutral-500">
-                                                                Dari
-                                                            </span>
-                                                            <input
-                                                                type="date"
-                                                                min={
-                                                                    todayString
-                                                                }
-                                                                value={
-                                                                    tempStartDate
-                                                                }
-                                                                onChange={(e) =>
-                                                                    setTempStartDate(
-                                                                        e.target
-                                                                            .value,
-                                                                    )
-                                                                }
-                                                                className="w-full cursor-pointer rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm font-semibold text-neutral-800 transition-colors duration-150 outline-none focus:border-primary-500"
-                                                            />
-                                                        </div>
-                                                        <div className="flex flex-col gap-1.5">
-                                                            <span className="text-xs font-bold text-neutral-500">
-                                                                Sampai
-                                                            </span>
-                                                            <input
-                                                                type="date"
-                                                                min={
-                                                                    tempStartDate ||
-                                                                    todayString
-                                                                }
-                                                                value={
-                                                                    tempEndDate
-                                                                }
-                                                                onChange={(e) =>
-                                                                    setTempEndDate(
-                                                                        e.target
-                                                                            .value,
-                                                                    )
-                                                                }
-                                                                className="w-full cursor-pointer rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm font-semibold text-neutral-800 transition-colors duration-150 outline-none focus:border-primary-500"
-                                                            />
-                                                        </div>
-                                                        <div className="flex gap-2">
-                                                            <button
-                                                                onClick={() => {
-                                                                    setAppliedStartDate(
-                                                                        tempStartDate ||
-                                                                            null,
-                                                                    );
-                                                                    setAppliedEndDate(
-                                                                        tempEndDate ||
-                                                                            null,
-                                                                    );
-                                                                    setCurrentPage(
-                                                                        1,
-                                                                    );
-                                                                    setIsMobileFilterOpen(
-                                                                        false,
-                                                                    );
-                                                                }}
-                                                                className="w-full cursor-pointer rounded-xl bg-primary-500 py-2 text-center text-xs font-bold text-white shadow-xs transition-colors duration-150 hover:bg-primary-600"
-                                                            >
-                                                                Terapkan
-                                                            </button>
-                                                            {(appliedStartDate ||
-                                                                appliedEndDate) && (
-                                                                <button
-                                                                    onClick={() => {
-                                                                        setTempStartDate(
-                                                                            '',
-                                                                        );
-                                                                        setTempEndDate(
-                                                                            '',
-                                                                        );
-                                                                        setAppliedStartDate(
-                                                                            null,
-                                                                        );
-                                                                        setAppliedEndDate(
-                                                                            null,
-                                                                        );
-                                                                        setCurrentPage(
-                                                                            1,
-                                                                        );
-                                                                        setIsMobileFilterOpen(
-                                                                            false,
-                                                                        );
-                                                                    }}
-                                                                    className="cursor-pointer rounded-xl border border-neutral-300 px-3 py-2 text-center text-xs font-bold text-neutral-600 transition-colors duration-150 hover:bg-neutral-50"
-                                                                >
-                                                                    Reset
-                                                                </button>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                            <FilterPanel
+                                                categories={categories}
+                                                activeCategory={activeCategory}
+                                                onCategorySelect={(id) => {
+                                                    setActiveCategory(id);
+                                                    setCurrentPage(1);
+                                                }}
+                                                tempMinPrice={tempMinPrice}
+                                                setTempMinPrice={setTempMinPrice}
+                                                tempMaxPrice={tempMaxPrice}
+                                                setTempMaxPrice={setTempMaxPrice}
+                                                onApplyPrice={() => {
+                                                    const minVal = tempMinPrice === '' ? null : Number(tempMinPrice);
+                                                    const maxVal = tempMaxPrice === '' ? null : Number(tempMaxPrice);
+                                                    setAppliedMinPrice(minVal);
+                                                    setAppliedMaxPrice(maxVal);
+                                                    setCurrentPage(1);
+                                                    setIsMobileFilterOpen(false);
+                                                }}
+                                                onResetPrice={() => {
+                                                    setTempMinPrice('');
+                                                    setTempMaxPrice('');
+                                                    setAppliedMinPrice(null);
+                                                    setAppliedMaxPrice(null);
+                                                    setCurrentPage(1);
+                                                    setIsMobileFilterOpen(false);
+                                                }}
+                                                hasAppliedPrice={appliedMinPrice !== null || appliedMaxPrice !== null}
+                                                tempStartDate={tempStartDate}
+                                                setTempStartDate={setTempStartDate}
+                                                tempEndDate={tempEndDate}
+                                                setTempEndDate={setTempEndDate}
+                                                onApplyDate={() => {
+                                                    setAppliedStartDate(tempStartDate || null);
+                                                    setAppliedEndDate(tempEndDate || null);
+                                                    setCurrentPage(1);
+                                                    setIsMobileFilterOpen(false);
+                                                }}
+                                                onResetDate={() => {
+                                                    setTempStartDate('');
+                                                    setTempEndDate('');
+                                                    setAppliedStartDate(null);
+                                                    setAppliedEndDate(null);
+                                                    setCurrentPage(1);
+                                                    setIsMobileFilterOpen(false);
+                                                }}
+                                                hasAppliedDate={appliedStartDate !== null || appliedEndDate !== null}
+                                                todayString={todayString}
+                                            />
                                         </div>
                                     </div>
                                 )}
@@ -1850,197 +1004,21 @@ export default function Home({
                                         </div>
                                     ) : (
                                         paginatedCatalogEvents.map((event) => (
-                                            <div
+                                            <EventCard
                                                 key={event.id}
-                                                className="border-neutral-150 group relative flex h-[160px] w-full flex-row justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:mx-auto sm:h-[400px] sm:w-full sm:flex-col"
-                                            >
-                                                <div className="absolute top-3 left-3 z-10 rounded-md bg-secondary-400 px-3 py-1 text-[0.6275rem] font-extrabold text-secondary-900 shadow-sm sm:top-4">
-                                                    {event.price === 0
-                                                        ? 'GRATIS'
-                                                        : `Rp ${Number(event.price).toLocaleString('id-ID')}`}
-                                                </div>
- 
-                                                <div className="sm:aspect-none relative aspect-square h-full w-[160px] shrink-0 overflow-hidden border-r border-gray-100 bg-gray-50 sm:h-[210px] sm:w-full sm:border-r-0 sm:border-b">
-                                                    <img
-                                                        src={
-                                                            event.poster_url ||
-                                                            DefaultCover
-                                                        }
-                                                        alt={event.title}
-                                                        draggable="false"
-                                                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                                    />
-                                                </div>
- 
-                                                <div className="flex grow flex-col justify-between gap-1 overflow-hidden p-3 sm:h-[190px] sm:flex-none sm:shrink-0 sm:p-4">
-                                                    <div className="flex flex-col gap-1 sm:gap-1.5">
-                                                        <h4 className="line-clamp-2 h-[36px] overflow-hidden text-small leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[48px] sm:text-base">
-                                                            {event.title}
-                                                        </h4>
- 
-                                                        <div className="flex flex-col gap-0.5 border-t border-gray-100/50 pt-1 text-[10px] font-semibold text-gray-400 sm:gap-1 sm:pt-1.5 sm:text-micro">
-                                                            <span className="flex items-center gap-1.5">
-                                                                <Calendar
-                                                                    size={12}
-                                                                    className="shrink-0 text-gray-400"
-                                                                />
-                                                                {formatShortDate(
-                                                                    event.start_datetime,
-                                                                )}
-                                                            </span>
-                                                            <span className="flex items-start gap-1.5">
-                                                                <MapPin
-                                                                    size={12}
-                                                                    className="mt-0.5 shrink-0 text-gray-400"
-                                                                />
-                                                                <span className="line-clamp-2 overflow-hidden">
-                                                                    {event.type ===
-                                                                    'online'
-                                                                        ? 'Online'
-                                                                        : event.location_name ||
-                                                                          'Lokasi Offline'}
-                                                                </span>
-                                                            </span>
-                                                        </div>
-                                                    </div>
- 
-                                                    <div className="pt-1">
-                                                        <Button
-                                                            href={`/events/${event.id}`}
-                                                            className="w-full py-1 text-[10px] sm:py-2 sm:text-small"
-                                                        >
-                                                            Detail Event
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                                event={event}
+                                                variant="grid"
+                                                detailUrl={`/events/${event.id}`}
+                                            />
                                         ))
                                     )}
                                 </div>
 
-                                {/* Pagination Controls */}
-                                {totalPages > 1 && (
-                                    <div className="mt-4 flex items-center justify-between border-t border-neutral-100 pt-6">
-                                        <span className="text-micro font-semibold text-gray-400">
-                                            Halaman {currentPage} dari{' '}
-                                            {totalPages}
-                                        </span>
-
-                                        <div className="flex gap-2">
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    setCurrentPage((prev) =>
-                                                        Math.max(1, prev - 1),
-                                                    )
-                                                }
-                                                disabled={currentPage === 1}
-                                                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border text-[10px] font-bold sm:h-9 sm:w-9 sm:text-micro ${
-                                                    currentPage === 1
-                                                        ? 'border-neutral-150 cursor-not-allowed bg-neutral-50 text-gray-300'
-                                                        : 'cursor-pointer border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50'
-                                                }`}
-                                                title="Sebelumnya"
-                                            >
-                                                <ChevronLeft
-                                                    size={14}
-                                                    className="sm:h-4 sm:w-4"
-                                                />
-                                            </button>
-
-                                            {getPageNumbers().map(
-                                                (pageNumber) => {
-                                                    const isMobileHidden =
-                                                        (() => {
-                                                            if (
-                                                                totalPages <= 3
-                                                            ) {
-                                                                return false;
-                                                            }
-
-                                                            if (
-                                                                currentPage ===
-                                                                1
-                                                            ) {
-                                                                return (
-                                                                    pageNumber >
-                                                                    3
-                                                                );
-                                                            }
-
-                                                            if (
-                                                                currentPage ===
-                                                                totalPages
-                                                            ) {
-                                                                return (
-                                                                    pageNumber <
-                                                                    totalPages -
-                                                                        2
-                                                                );
-                                                            }
-
-                                                            return (
-                                                                Math.abs(
-                                                                    pageNumber -
-                                                                        currentPage,
-                                                                ) > 1
-                                                            );
-                                                        })();
-
-                                                    return (
-                                                        <button
-                                                            key={pageNumber}
-                                                            type="button"
-                                                            onClick={() =>
-                                                                setCurrentPage(
-                                                                    pageNumber,
-                                                                )
-                                                            }
-                                                            className={`h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg border text-[10px] font-bold sm:h-9 sm:w-9 sm:text-micro ${
-                                                                isMobileHidden
-                                                                    ? 'hidden sm:flex'
-                                                                    : 'flex'
-                                                            } ${
-                                                                currentPage ===
-                                                                pageNumber
-                                                                    ? 'border-primary-500 bg-primary-500 text-white shadow-sm'
-                                                                    : 'border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50'
-                                                            }`}
-                                                        >
-                                                            {pageNumber}
-                                                        </button>
-                                                    );
-                                                },
-                                            )}
-
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    setCurrentPage((prev) =>
-                                                        Math.min(
-                                                            totalPages,
-                                                            prev + 1,
-                                                        ),
-                                                    )
-                                                }
-                                                disabled={
-                                                    currentPage === totalPages
-                                                }
-                                                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border text-[10px] font-bold sm:h-9 sm:w-9 sm:text-micro ${
-                                                    currentPage === totalPages
-                                                        ? 'border-neutral-150 cursor-not-allowed bg-neutral-50 text-gray-300'
-                                                        : 'cursor-pointer border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50'
-                                                }`}
-                                                title="Selanjutnya"
-                                            >
-                                                <ChevronRight
-                                                    size={14}
-                                                    className="sm:h-4 sm:w-4"
-                                                />
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
+                                <Pagination
+                                    currentPage={currentPage}
+                                    totalPages={totalPages}
+                                    onPageChange={setCurrentPage}
+                                />
                             </div>
                         </div>
                     </div>
