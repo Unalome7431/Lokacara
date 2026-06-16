@@ -14,13 +14,14 @@ interface UserData {
     email_verified_at?: string | null;
 }
 
-interface PageProps {
+interface PageProps extends Record<string, any> {
     auth?: {
         user?: UserData;
     };
     flash?: {
         success?: string;
         error?: string;
+        warning?: string;
     };
 }
 

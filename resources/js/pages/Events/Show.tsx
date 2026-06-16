@@ -244,7 +244,7 @@ export default function Show({ event, isRegistered, certificateUrl }: ShowProps)
 
     return (
         <div className="bg-primary-50/20 animate-in fade-in flex min-h-screen flex-col justify-between duration-200">
-            <div className="flex-grow">
+            <div className="grow">
                 <NavBar />
                 <Head title={`${event.title} - Lokacara`} />
 

@@ -138,6 +138,7 @@ return matchesSearch;
 
     const filteredCertificates = certificates.filter((cert) => {
         const title = cert.event_registration?.event?.title || cert.eventRegistration?.event?.title;
+
         return title?.toLowerCase().includes(searchQuery.toLowerCase());
     });
 
@@ -331,7 +332,7 @@ return matchesSearch;
 
     return (
         <div className="flex min-h-screen flex-col justify-between bg-neutral-50/50">
-            <div className="flex-grow">
+            <div className="grow">
                 <NavBar />
                 <Head title="Dashboard Saya - Lokacara" />
 
@@ -346,7 +347,7 @@ return matchesSearch;
                                 className="h-full w-full object-cover"
                             />
                         </div>
-                        <div className="flex-grow text-center md:text-left">
+                        <div className="grow text-center md:text-left">
                             <div className="mb-1.5 flex flex-col justify-center gap-2 md:flex-row md:items-center md:justify-start">
                                 <h2 className="font-brand text-h2-mobile leading-none font-black tracking-tight text-neutral-900 lg:text-h3-web">
                                     {user?.name || 'Pengguna Lokacara'}
@@ -568,7 +569,7 @@ return matchesSearch;
                                                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                                                     />
                                                 </div>
-                                                <div className="flex flex-grow flex-col justify-between gap-1 overflow-hidden p-3 sm:h-[180px] sm:flex-none sm:shrink-0 sm:p-4 lg:h-[190px]">
+                                                <div className="flex grow flex-col justify-between gap-1 overflow-hidden p-3 sm:h-[180px] sm:flex-none sm:shrink-0 sm:p-4 lg:h-[190px]">
                                                     <div className="flex flex-col gap-1 sm:gap-1.5">
                                                         <h4 className="line-clamp-2 h-[36px] overflow-hidden text-xs leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[40px] sm:text-sm lg:h-[48px] lg:text-base">
                                                             {event.title}
@@ -689,7 +690,7 @@ return matchesSearch;
                                                             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                                                         />
                                                     </div>
-                                                    <div className="flex flex-grow flex-col justify-between gap-1 overflow-hidden p-3 sm:h-[180px] sm:flex-none sm:shrink-0 sm:p-4 lg:h-[190px]">
+                                                    <div className="flex grow flex-col justify-between gap-1 overflow-hidden p-3 sm:h-[180px] sm:flex-none sm:shrink-0 sm:p-4 lg:h-[190px]">
                                                         <div className="flex flex-col gap-1 sm:gap-1.5">
                                                             <h4 className="line-clamp-2 h-[36px] overflow-hidden text-xs leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[40px] sm:text-sm lg:h-[48px] lg:text-base">
                                                                 {event.title}
@@ -726,7 +727,7 @@ return matchesSearch;
                                                         <div className="flex gap-2 pt-1">
                                                             <Link
                                                                 href={`/events/${event.id}`}
-                                                                className="flex flex-grow items-center justify-center rounded-full bg-primary-500 py-1 text-center text-[10px] font-bold text-white transition-colors hover:bg-primary-600 sm:py-2 sm:text-small"
+                                                                className="flex grow items-center justify-center rounded-full bg-primary-500 py-1 text-center text-[10px] font-bold text-white transition-colors hover:bg-primary-600 sm:py-2 sm:text-small"
                                                             >
                                                                 Detail Event
                                                             </Link>

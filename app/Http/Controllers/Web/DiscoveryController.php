@@ -55,20 +55,78 @@ class DiscoveryController extends Controller
         $query = Event::with(['category', 'user'])->where('start_datetime', '>=', now());
 
         if ($request->filled('keyword')) {
-            $query->where('title', 'like', '%' . $request->keyword . '%');
+            $query->whereRaw('LOWER(title) LIKE ?', ['%' . strtolower($request->keyword) . '%']);
         }
 
         if ($request->filled('category_id')) {
             $query->where('category_id', $request->category_id);
         }
 
-        $events = $query->orderBy('start_datetime', 'asc')->paginate(15);
+        if ($request->filled('type') && $request->type !== 'all') {
+            $query->where('type', $request->type);
+        }
+
+        if ($request->filled('min_price')) {
+            $query->where('price', '>=', (float) $request->min_price);
+        }
+
+        if ($request->filled('max_price')) {
+            $query->where('price', '<=', (float) $request->max_price);
+        }
+
+        if ($request->filled('start_date')) {
+            $query->where('start_datetime', '>=', $request->start_date . ' 00:00:00');
+        }
+
+        if ($request->filled('end_date')) {
+            $query->where('start_datetime', '<=', $request->end_date . ' 23:59:59');
+        }
+
+        // Sorting
+        $sortBy = $request->input('sort_by', 'popular');
+        if ($sortBy === 'popular') {
+            $query->orderByRaw('(view_count * 1.0 / COALESCE(NULLIF(capacity, 0), 1)) DESC');
+        } elseif ($sortBy === 'date_asc') {
+            $query->orderBy('start_datetime', 'asc');
+        } elseif ($sortBy === 'date_desc') {
+            $query->orderBy('start_datetime', 'desc');
+        } elseif ($sortBy === 'price_asc') {
+            $query->orderBy('price', 'asc');
+        } elseif ($sortBy === 'price_desc') {
+            $query->orderBy('price', 'desc');
+        } elseif ($sortBy === 'nearest' && $request->filled('latitude') && $request->filled('longitude')) {
+            $lat = (float) $request->latitude;
+            $lng = (float) $request->longitude;
+            $driver = $query->getConnection()->getDriverName();
+            if ($driver === 'sqlite') {
+                $query->orderByRaw('(CASE WHEN latitude IS NULL THEN 1 ELSE 0 END) ASC')
+                      ->orderByRaw('((latitude - ?) * (latitude - ?) + (longitude - ?) * (longitude - ?)) ASC', [$lat, $lat, $lng, $lng]);
+            } else {
+                $query->orderByRaw('(CASE WHEN latitude IS NULL THEN 1 ELSE 0 END) ASC')
+                      ->orderByRaw('(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) ASC', [$lat, $lng, $lat]);
+            }
+        } else {
+            $query->orderBy('start_datetime', 'asc');
+        }
+
+        $events = $query->paginate(15)->withQueryString();
         $categories = Category::all();
 
         return Inertia::render('Events/Search', [
             'events' => $events,
             'categories' => $categories,
-            'filters' => $request->only('keyword', 'category_id')
+            'filters' => [
+                'keyword' => $request->keyword ?? '',
+                'category_id' => $request->category_id ? (int)$request->category_id : null,
+                'type' => $request->type ?? 'all',
+                'min_price' => $request->min_price ?? '',
+                'max_price' => $request->max_price ?? '',
+                'start_date' => $request->start_date ?? '',
+                'end_date' => $request->end_date ?? '',
+                'sort_by' => $sortBy,
+                'latitude' => $request->latitude ? (float)$request->latitude : null,
+                'longitude' => $request->longitude ? (float)$request->longitude : null,
+            ]
         ]);
     }
 

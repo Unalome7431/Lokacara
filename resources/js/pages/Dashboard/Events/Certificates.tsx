@@ -28,7 +28,7 @@ interface Event {
     certificate_max_height?: number;
 }
 
-interface PageProps {
+interface PageProps extends Record<string, any> {
     event: Event;
     presentCount: number;
     isDone: boolean;
@@ -94,9 +94,11 @@ export default function Certificates() {
 
         try {
             const formData = new FormData();
+
             if (data.template) {
                 formData.append('template', data.template);
             }
+
             formData.append('font_family', data.font_family);
             formData.append('font_size', data.font_size);
             formData.append('font_color', data.font_color);
@@ -133,6 +135,7 @@ export default function Certificates() {
                     errData.message ||
                     'Gagal mengunduh pratinjau.';
                 setPreviewError(errMsg);
+
                 return;
             }
 
@@ -142,13 +145,16 @@ export default function Certificates() {
             link.href = downloadUrl;
 
             let extension = 'png';
+
             if (data.template) {
                 const parts = data.template.name.split('.');
+
                 if (parts.length > 1) {
                     extension = parts.pop() || 'png';
                 }
             } else if (event.certificate_template) {
                 const parts = event.certificate_template.split('.');
+
                 if (parts.length > 1) {
                     extension = parts.pop() || 'png';
                 }
