@@ -166,7 +166,7 @@ export default function Show({
                     );
             }
         };
-    }, [isScanModalOpen, scannerRunning]);
+    }, [isScanModalOpen, scannerRunning, event.id]);
 
     // Helper to parse description metadata
     const parseDescription = (desc: string) => {
@@ -321,7 +321,7 @@ export default function Show({
 
     return (
         <div className="bg-primary-50/20 animate-in fade-in flex min-h-screen flex-col justify-between duration-200">
-            <div className="flex-grow">
+            <div className="grow">
                 <NavBar />
                 <Head title={`Detail Event - ${event.title}`} />
 
@@ -698,7 +698,7 @@ export default function Show({
 
                 {/* QR SCAN MODAL */}
                 {isScanModalOpen && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
                         {/* Backdrop */}
                         <div
                             className="animate-in fade-in fixed inset-0 bg-neutral-900/40 backdrop-blur-xs duration-200"
@@ -706,7 +706,7 @@ export default function Show({
                         />
 
                         {/* Modal Container */}
-                        <div className="border-neutral-150 animate-in fade-in zoom-in-95 relative z-[101] flex w-full max-w-md flex-col gap-6 overflow-hidden rounded-3xl border bg-white p-6 shadow-2xl duration-200">
+                        <div className="border-neutral-150 animate-in fade-in zoom-in-95 relative z-101 flex w-full max-w-md flex-col gap-6 overflow-hidden rounded-3xl border bg-white p-6 shadow-2xl duration-200">
                             {/* Modal Header */}
                             <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
                                 <h4 className="flex items-center gap-2 font-brand text-h6-mobile font-black text-neutral-900 lg:text-h6-web">
@@ -743,7 +743,7 @@ export default function Show({
                                             {/* html5-qrcode target region */}
                                             <div
                                                 id={qrCodeRegionId}
-                                                className="h-full w-full object-cover [&_video]:!h-full [&_video]:!w-full [&_video]:!object-cover"
+                                                className="h-full w-full object-cover [&_video]:h-full! [&_video]:w-full! [&_video]:object-cover!"
                                             />
 
                                             {/* Overlay scanning frame guide */}

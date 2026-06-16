@@ -110,7 +110,7 @@ export default function VerifyEmail() {
 
     return (
         <div className="flex min-h-screen flex-col justify-between bg-neutral-50/50">
-            <div className="flex-grow">
+            <div className="grow">
                 <NavBar />
                 <Head
                     title={

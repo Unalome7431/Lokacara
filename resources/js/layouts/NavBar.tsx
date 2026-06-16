@@ -104,8 +104,8 @@ export default function NavBar({
 
     const currentFilters = (page.props.filters as any) || {};
     const [keyword, setKeyword] = useState(currentFilters.keyword || '');
-
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setKeyword(currentFilters.keyword || '');
     }, [currentFilters.keyword]);
 

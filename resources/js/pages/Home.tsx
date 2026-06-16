@@ -817,7 +817,7 @@ export default function Home({
 
     return (
         <div className="flex min-h-screen flex-col justify-between bg-white">
-            <div className="flex-grow">
+            <div className="grow">
                 <NavBar
                     locationValue={locationName}
                     onLocationSubmit={handleLocationSubmit}
@@ -888,7 +888,7 @@ export default function Home({
                                         className="h-full w-full object-cover transition-transform duration-700 group-hover/hero-slide:scale-[1.03]"
                                     />
                                     {/* Dark gradient overlay */}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/95 via-neutral-900/40 to-transparent"></div>
+                                    <div className="absolute inset-0 bg-linear-to-t from-neutral-950/95 via-neutral-900/40 to-transparent"></div>
 
                                     {/* Text overlay */}
                                     <div className="absolute right-0 bottom-0 left-0 ml-4 flex max-w-[800px] flex-col gap-2 pt-6 pr-8 pb-12 pl-8 md:pt-10 md:pr-16 md:pb-16 md:pl-16">
@@ -1408,7 +1408,7 @@ export default function Home({
                             </div>
 
                             {/* Right Column: Events Catalogue Listing */}
-                            <div className="flex flex-grow flex-col gap-8">
+                            <div className="flex grow flex-col gap-8">
                                 {/* Tab Filter Type */}
                                 <div className="flex items-end justify-between border-b border-neutral-100">
                                     <div className="scrollbar-none relative flex items-center gap-6 overflow-x-auto sm:gap-8">
@@ -1872,7 +1872,7 @@ export default function Home({
                                                     />
                                                 </div>
  
-                                                <div className="flex flex-grow flex-col justify-between gap-1 overflow-hidden p-3 sm:h-[190px] sm:flex-none sm:shrink-0 sm:p-4">
+                                                <div className="flex grow flex-col justify-between gap-1 overflow-hidden p-3 sm:h-[190px] sm:flex-none sm:shrink-0 sm:p-4">
                                                     <div className="flex flex-col gap-1 sm:gap-1.5">
                                                         <h4 className="line-clamp-2 h-[36px] overflow-hidden text-small leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[48px] sm:text-base">
                                                             {event.title}

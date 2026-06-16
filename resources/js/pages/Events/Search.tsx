@@ -107,11 +107,13 @@ export default function SearchPage({
         if (filters.latitude && filters.longitude) {
             return { lat: Number(filters.latitude), lng: Number(filters.longitude) };
         }
+
         return null;
     });
 
     // Sync input states when url filters change
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setTempMinPrice(filters.min_price || '');
         setTempMaxPrice(filters.max_price || '');
         setTempStartDate(filters.start_date || '');
@@ -129,6 +131,7 @@ export default function SearchPage({
             }
         }
         document.addEventListener('mousedown', handleClickOutside);
+
         return () =>
             document.removeEventListener('mousedown', handleClickOutside);
     }, []);
@@ -139,26 +142,33 @@ export default function SearchPage({
     const tabOfflineRef = useRef<HTMLButtonElement>(null);
     const [underlineStyle, setUnderlineStyle] = useState({ left: 0, width: 0 });
 
-    const updateUnderline = () => {
-        let activeRef = tabAllRef;
-        if (activeType === 'online') activeRef = tabOnlineRef;
-        if (activeType === 'offline') activeRef = tabOfflineRef;
-
-        if (activeRef.current) {
-            setUnderlineStyle({
-                left: activeRef.current.offsetLeft,
-                width: activeRef.current.offsetWidth,
-            });
-        }
-    };
-
     useEffect(() => {
+        const updateUnderline = () => {
+            let activeRef = tabAllRef;
+
+            if (activeType === 'online') {
+                activeRef = tabOnlineRef;
+            }
+
+            if (activeType === 'offline') {
+                activeRef = tabOfflineRef;
+            }
+
+            if (activeRef.current) {
+                setUnderlineStyle({
+                    left: activeRef.current.offsetLeft,
+                    width: activeRef.current.offsetWidth,
+                });
+            }
+        };
+
         // Run updateUnderline after DOM paints
         const timer = setTimeout(() => {
             updateUnderline();
         }, 50);
 
         window.addEventListener('resize', updateUnderline);
+
         return () => {
             clearTimeout(timer);
             window.removeEventListener('resize', updateUnderline);
@@ -168,6 +178,7 @@ export default function SearchPage({
     // Helper functions
     const formatShortDate = (dateString: string) => {
         const dateObj = new Date(dateString);
+
         return (
             new Intl.DateTimeFormat('id-ID', {
                 day: 'numeric',
@@ -180,7 +191,7 @@ export default function SearchPage({
     };
 
     const handleFilterChange = (newFilters: Record<string, any>) => {
-        const mergedFilters = {
+        const mergedFilters: Record<string, any> = {
             ...filters,
             ...newFilters,
             page: 1, // Reset page to 1 when changing filters
@@ -269,20 +280,17 @@ export default function SearchPage({
 
     const getPageNumbers = () => {
         const pages = [];
+
         for (let i = 1; i <= totalPages; i++) {
             pages.push(i);
         }
+
         return pages;
     };
 
     const page = usePage();
     const pageFilters = (page.props.filters as any) || {};
     const currentKeyword = pageFilters.keyword || '';
-
-    // Title label requirement
-    const searchLabel = currentKeyword
-        ? `Pencarian untuk '${currentKeyword}'`
-        : 'Jelajah Event';
 
     return (
         <div className="flex min-h-screen flex-col justify-between bg-white">
@@ -295,7 +303,7 @@ export default function SearchPage({
             />
             <NavBar />
 
-            <div className="flex-grow">
+            <div className="grow">
                 <div className="mx-auto w-full max-w-[1280px] px-4 pt-24 pb-16 sm:px-6 lg:px-8">
                     {/* Catalog section */}
                     <div id="catalog" className="flex flex-col gap-6">
@@ -324,6 +332,7 @@ export default function SearchPage({
                                     <div className="flex flex-row flex-wrap items-start gap-x-4 gap-y-3.5 lg:flex-col lg:gap-3">
                                         {categories.map((cat) => {
                                             const isActive = activeCategory === cat.id;
+
                                             return (
                                                 <button
                                                     key={cat.id}
@@ -491,7 +500,7 @@ export default function SearchPage({
                             </div>
 
                             {/* Right Listing Grid */}
-                            <div className="flex flex-grow flex-col gap-8">
+                            <div className="flex grow flex-col gap-8">
                                 {/* Tab selection and sorting controls */}
                                 <div className="flex items-end justify-between border-b border-neutral-100">
                                     <div className="scrollbar-none relative flex items-center gap-6 overflow-x-auto sm:gap-8">
@@ -622,7 +631,7 @@ export default function SearchPage({
                                                     />
                                                 </div>
 
-                                                <div className="flex flex-grow flex-col justify-between gap-1 overflow-hidden p-3 sm:h-[190px] sm:flex-none sm:shrink-0 sm:p-4">
+                                                <div className="flex grow flex-col justify-between gap-1 overflow-hidden p-3 sm:h-[190px] sm:flex-none sm:shrink-0 sm:p-4">
                                                     <div className="flex flex-col gap-1 sm:gap-1.5">
                                                         <h4 className="line-clamp-2 h-[36px] overflow-hidden text-small leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[48px] sm:text-base">
                                                             {event.title}
@@ -689,9 +698,18 @@ export default function SearchPage({
 
                                             {getPageNumbers().map((pageNumber) => {
                                                 const isMobileHidden = (() => {
-                                                    if (totalPages <= 3) return false;
-                                                    if (currentPage === 1) return pageNumber > 3;
-                                                    if (currentPage === totalPages) return pageNumber < totalPages - 2;
+                                                    if (totalPages <= 3) {
+return false;
+}
+
+                                                    if (currentPage === 1) {
+return pageNumber > 3;
+}
+
+                                                    if (currentPage === totalPages) {
+return pageNumber < totalPages - 2;
+}
+
                                                     return Math.abs(pageNumber - currentPage) > 1;
                                                 })();
 
@@ -765,6 +783,7 @@ export default function SearchPage({
                                 <div className="flex flex-col gap-3">
                                     {categories.map((cat) => {
                                         const isActive = activeCategory === cat.id;
+
                                         return (
                                             <button
                                                 key={cat.id}
