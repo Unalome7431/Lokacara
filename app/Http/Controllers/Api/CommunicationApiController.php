@@ -12,7 +12,7 @@ class CommunicationApiController extends Controller
 {
     #[OA\Post(
         path: '/api/organizer/events/{event}/reminders',
-        summary: 'Send email reminders to all participants',
+        summary: 'Send reminder notifications to all participants',
         tags: ['Organizer'],
         security: [['sanctum' => []]]
     )]
@@ -28,7 +28,7 @@ class CommunicationApiController extends Controller
         description: 'Reminders are being sent',
         content: new OA\JsonContent(
             properties: [
-                new OA\Property(property: 'message', type: 'string', example: 'Email reminders are being sent in the background.'),
+                new OA\Property(property: 'message', type: 'string', example: 'Reminder notifications are being sent in the background.'),
             ]
         )
     )]
@@ -43,7 +43,7 @@ class CommunicationApiController extends Controller
         SendEventRemindersJob::dispatch($event);
 
         return response()->json([
-            'message' => 'Email reminders are being sent in the background.'
+            'message' => 'Reminder notifications are being sent in the background.'
         ]);
     }
 }

@@ -47,7 +47,7 @@ class SendPushNotificationJob implements ShouldQueue
 
         foreach ($tokens as $token) {
             try {
-                $messaging->send($message->withChangedTarget('token', $token));
+                $messaging->send($message->withToken($token));
             } catch (\Throwable $e) {
                 report($e);
             }
