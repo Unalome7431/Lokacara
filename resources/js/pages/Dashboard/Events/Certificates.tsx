@@ -1,6 +1,5 @@
-import { useForm, usePage, Head, Link } from '@inertiajs/react';
+import { useForm, usePage, Head } from '@inertiajs/react';
 import {
-    ChevronLeft,
     Award,
     FileImage,
     Settings,
