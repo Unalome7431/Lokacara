@@ -59,6 +59,8 @@ export default function Certificates() {
     const [previewUrl, setPreviewUrl] = useState<string | null>(
         event.certificate_template_url || null,
     );
+    const [downloadingPreview, setDownloadingPreview] = useState(false);
+    const [previewError, setPreviewError] = useState<string | null>(null);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -66,6 +68,7 @@ export default function Certificates() {
         if (file) {
             setData('template', file);
             setPreviewUrl(URL.createObjectURL(file));
+            setPreviewError(null);
         }
     };
 
@@ -79,10 +82,90 @@ export default function Certificates() {
 
     const saveConfig = (e: React.FormEvent) => {
         e.preventDefault();
+        setPreviewError(null);
         post(`/dashboard/events/${event.id}/certificates/save`, {
             forceFormData: true,
             preserveScroll: true,
         });
+    };
+
+    const downloadPreview = async () => {
+        setDownloadingPreview(true);
+        setPreviewError(null);
+
+        try {
+            const formData = new FormData();
+            if (data.template) {
+                formData.append('template', data.template);
+            }
+            formData.append('font_family', data.font_family);
+            formData.append('font_size', data.font_size);
+            formData.append('font_color', data.font_color);
+            formData.append('x_pos', String(data.x_pos));
+            formData.append('is_x_center', data.is_x_center ? '1' : '0');
+            formData.append('y_pos', String(data.y_pos));
+            formData.append('is_y_center', data.is_y_center ? '1' : '0');
+            formData.append('max_width', String(data.max_width));
+            formData.append('max_height', String(data.max_height));
+
+            const xsrfCookie = document.cookie
+                .split('; ')
+                .find((row) => row.startsWith('XSRF-TOKEN='));
+            const xsrfToken = xsrfCookie
+                ? decodeURIComponent(xsrfCookie.split('=')[1])
+                : '';
+
+            const response = await fetch(
+                `/dashboard/events/${event.id}/certificates/preview`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'X-XSRF-TOKEN': xsrfToken,
+                        Accept: 'application/json',
+                    },
+                    body: formData,
+                },
+            );
+
+            if (!response.ok) {
+                const errData = await response.json();
+                const errMsg =
+                    errData.error ||
+                    errData.message ||
+                    'Gagal mengunduh pratinjau.';
+                setPreviewError(errMsg);
+                return;
+            }
+
+            const blob = await response.blob();
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+
+            let extension = 'png';
+            if (data.template) {
+                const parts = data.template.name.split('.');
+                if (parts.length > 1) {
+                    extension = parts.pop() || 'png';
+                }
+            } else if (event.certificate_template) {
+                const parts = event.certificate_template.split('.');
+                if (parts.length > 1) {
+                    extension = parts.pop() || 'png';
+                }
+            }
+
+            link.setAttribute('download', `preview_sertifikat.${extension}`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(downloadUrl);
+        } catch (error) {
+            console.error('Error downloading certificate preview:', error);
+            setPreviewError('Terjadi kesalahan jaringan atau server.');
+        } finally {
+            setDownloadingPreview(false);
+        }
     };
 
     const distributeCertificates = () => {
@@ -116,17 +199,6 @@ export default function Certificates() {
                 <NavBar />
 
                 <div className="mx-auto max-w-7xl px-4 pt-28 pb-16 md:px-8">
-                    {/* Navigation Breadcrumbs */}
-                    <div className="mb-6">
-                        <Link
-                            href={`/dashboard/events/${event.id}`}
-                            className="inline-flex items-center gap-1.5 text-small font-bold text-gray-500 transition-colors duration-150 hover:text-primary-500"
-                        >
-                            <ChevronLeft size={16} />
-                            <span>Kembali ke Detail Event</span>
-                        </Link>
-                    </div>
-
                     {/* Alert Banners */}
                     {!isDone && (
                         <div className="mb-6 flex gap-3.5 rounded-3xl border border-secondary-200 bg-secondary-100/30 p-5 shadow-xs duration-200">
@@ -145,30 +217,6 @@ export default function Certificates() {
                                     tanggal event selesai.
                                 </p>
                             </div>
-                        </div>
-                    )}
-
-                    {flash?.success && (
-                        <div className="mb-6 flex gap-3.5 rounded-3xl border border-green-200 bg-green-50 p-5 shadow-xs duration-200">
-                            <Check
-                                size={20}
-                                className="mt-0.5 shrink-0 text-green-600"
-                            />
-                            <p className="text-small font-bold text-green-700">
-                                {flash.success}
-                            </p>
-                        </div>
-                    )}
-
-                    {flash?.error && (
-                        <div className="mb-6 flex gap-3.5 rounded-3xl border border-red-200 bg-red-50 p-5 shadow-xs duration-200">
-                            <AlertCircle
-                                size={20}
-                                className="mt-0.5 shrink-0 text-red-600"
-                            />
-                            <p className="text-small font-bold text-red-700">
-                                {flash.error}
-                            </p>
                         </div>
                     )}
 
@@ -233,9 +281,9 @@ export default function Certificates() {
                                                     top: data.is_y_center
                                                         ? '50%'
                                                         : `${data.y_pos}%`,
-                                                    transform: `translate(${data.is_x_center ? '-50%' : '0px'}, ${data.is_y_center ? '-50%' : '0px'})`,
-                                                    justifyContent: data.is_x_center ? 'center' : 'flex-start',
-                                                    alignItems: data.is_y_center ? 'center' : 'flex-start',
+                                                    transform: 'translate(-50%, -50%)',
+                                                    justifyContent: 'center',
+                                                    alignItems: 'center',
                                                 }}
                                             >
                                                 {/* Dynamic Name Overlay */}
@@ -599,58 +647,70 @@ export default function Certificates() {
                                     </p>
                                 </div>
 
-                                {/* Status Labels */}
-                                {flash?.success && (
-                                    <div className="flex items-center gap-2 rounded-xl bg-green-50 border border-green-200 p-3.5 text-xs font-bold text-green-700">
-                                        <Check size={16} className="shrink-0" />
-                                        <span>{flash.success}</span>
-                                    </div>
-                                )}
+                                 {/* Status Labels */}
+                                 {flash?.success && (
+                                     <div className="flex items-center gap-2 rounded-xl bg-green-50 border border-green-200 p-3.5 text-xs font-bold text-green-700">
+                                         <Check size={16} className="shrink-0" />
+                                         <span>{flash.success}</span>
+                                     </div>
+                                 )}
 
-                                {(flash?.error || Object.keys(errors).length > 0) && (
-                                    <div className="flex flex-col gap-1 rounded-xl bg-red-50 border border-red-200 p-3.5 text-xs font-bold text-red-700">
-                                        <div className="flex items-center gap-2">
-                                            <AlertCircle size={16} className="shrink-0" />
-                                            <span>{flash?.error || 'Gagal menyimpan konfigurasi. Periksa input.'}</span>
-                                        </div>
-                                        {Object.keys(errors).length > 0 && (
-                                            <ul className="mt-1 pl-5 list-disc text-[10px] font-semibold text-red-600">
-                                                {Object.entries(errors).map(([key, val]) => (
-                                                    <li key={key}>{val}</li>
-                                                ))}
-                                            </ul>
-                                        )}
-                                    </div>
-                                )}
+                                 {(flash?.error || Object.keys(errors).length > 0 || previewError) && (
+                                     <div className="flex flex-col gap-1 rounded-xl bg-red-50 border border-red-200 p-3.5 text-xs font-bold text-red-700">
+                                         <div className="flex items-center gap-2">
+                                             <AlertCircle size={16} className="shrink-0" />
+                                             <span>{previewError || flash?.error || 'Gagal menyimpan konfigurasi. Periksa input.'}</span>
+                                         </div>
+                                         {Object.keys(errors).length > 0 && !previewError && (
+                                             <ul className="mt-1 pl-5 list-disc text-[10px] font-semibold text-red-600">
+                                                 {Object.entries(errors).map(([key, val]) => (
+                                                     <li key={key}>{val}</li>
+                                                 ))}
+                                             </ul>
+                                         )}
+                                     </div>
+                                 )}
 
-                                {/* Form Buttons */}
-                                <div className="mt-2 flex flex-col gap-3">
-                                    {/* Save Config Button */}
-                                    <button
-                                        type="submit"
-                                        disabled={processing}
-                                        className="w-full cursor-pointer rounded-full bg-neutral-100 py-3.5 text-center text-base font-bold text-neutral-800 transition-colors hover:bg-neutral-200 active:scale-[0.99] disabled:bg-neutral-50 disabled:text-neutral-350"
-                                    >
-                                        {processing
-                                            ? 'Menyimpan...'
-                                            : 'Simpan Konfigurasi Layout'}
-                                    </button>
+                                 {/* Form Buttons */}
+                                 <div className="mt-2 flex flex-col gap-3">
+                                     {/* Save Config Button */}
+                                     <button
+                                         type="submit"
+                                         disabled={processing}
+                                         className="w-full cursor-pointer rounded-full bg-neutral-100 py-3.5 text-center text-base font-bold text-neutral-800 transition-colors hover:bg-neutral-200 active:scale-[0.99] disabled:bg-neutral-50 disabled:text-neutral-350"
+                                     >
+                                         {processing
+                                             ? 'Menyimpan...'
+                                             : 'Simpan Konfigurasi Layout'}
+                                     </button>
 
-                                    {/* Generate & Distribute Button */}
-                                    <button
-                                        type="button"
-                                        onClick={distributeCertificates}
-                                        disabled={
-                                            processing ||
-                                            !isDone ||
-                                            presentCount === 0 ||
-                                            !previewUrl
-                                        }
-                                        className="w-full cursor-pointer rounded-full bg-primary-500 py-3.5 text-center text-base font-bold text-white shadow-md transition-colors hover:bg-primary-600 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-gray-400 disabled:shadow-none"
-                                    >
-                                        Generate & Kirim Sertifikat ({presentCount})
-                                    </button>
-                                </div>
+                                     {/* Unduh Pratinjau Button */}
+                                     <button
+                                         type="button"
+                                         onClick={downloadPreview}
+                                         disabled={processing || downloadingPreview || !previewUrl}
+                                         className="w-full cursor-pointer rounded-full bg-secondary-500 py-3.5 text-center text-base font-bold text-neutral-900 shadow-md transition-colors hover:bg-secondary-600 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-gray-400 disabled:shadow-none"
+                                     >
+                                         {downloadingPreview
+                                             ? 'Mengunduh Pratinjau...'
+                                             : 'Unduh Pratinjau Sertifikat'}
+                                     </button>
+
+                                     {/* Generate & Distribute Button */}
+                                     <button
+                                         type="button"
+                                         onClick={distributeCertificates}
+                                         disabled={
+                                             processing ||
+                                             !isDone ||
+                                             presentCount === 0 ||
+                                             !previewUrl
+                                         }
+                                         className="w-full cursor-pointer rounded-full bg-primary-500 py-3.5 text-center text-base font-bold text-white shadow-md transition-colors hover:bg-primary-600 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-gray-400 disabled:shadow-none"
+                                     >
+                                         Generate & Kirim Sertifikat ({presentCount})
+                                     </button>
+                                 </div>
 
                                 {/* Explanatory help/status texts */}
                                 <div className="flex flex-col gap-1 text-[10px] font-bold text-gray-400">
