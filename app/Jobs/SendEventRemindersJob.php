@@ -3,10 +3,9 @@
 namespace App\Jobs;
 
 use App\Models\Event;
-use App\Mail\EventReminderMail;
+use App\Services\NotificationDispatchService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Support\Facades\Mail;
 
 class SendEventRemindersJob implements ShouldQueue
 {
@@ -23,12 +22,19 @@ class SendEventRemindersJob implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(): void
+    public function handle(NotificationDispatchService $notifications): void
     {
-        $this->event->eventRegistrations()->with('user')->chunk(100, function ($registrations) {
+        $this->event->eventRegistrations()->with('user')->chunk(100, function ($registrations) use ($notifications) {
             foreach ($registrations as $registration) {
                 if ($registration->user) {
-                    Mail::to($registration->user->email)->send(new EventReminderMail($this->event, $registration->user));
+                    $notifications->dispatch(
+                        recipient: $registration->user,
+                        category: 'event_reminder',
+                        title: 'Reminder event',
+                        body: "Event {$this->event->title} akan dimulai.",
+                        target: 'event_detail',
+                        event: $this->event,
+                    );
                 }
             }
         });

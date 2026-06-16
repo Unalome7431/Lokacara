@@ -18,6 +18,6 @@ class CommunicationController extends Controller
         // Dispatch the job to the queue
         SendEventRemindersJob::dispatch($event);
 
-        return redirect()->back()->with('success', 'Email reminders are being sent in the background.');
+        return redirect()->back()->with('success', 'Reminder notifications are being sent in the background.');
     }
 }
