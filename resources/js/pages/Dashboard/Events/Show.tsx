@@ -1,18 +1,16 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import {
     Calendar,
     MapPin,
     Edit,
     Users,
     ArrowUpRight,
-    CheckCircle2,
-    AlertTriangle,
     Camera,
     Eye,
     Award,
 } from 'lucide-react';
 import TicketScannerModal from '@/components/ui/TicketScannerModal';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import DefaultCover from '@/../../public/covers/default_cover.jpg';
 import Footer from '@/layouts/Footer';
 import NavBar from '@/layouts/NavBar';

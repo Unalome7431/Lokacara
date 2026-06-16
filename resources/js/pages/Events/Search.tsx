@@ -1,22 +1,15 @@
 import { Head, usePage, router } from '@inertiajs/react';
 import {
-    ChevronRight,
-    ChevronLeft,
-    Calendar,
-    MapPin,
     ChevronDown,
     Filter,
     X,
 } from 'lucide-react';
 import { useState, useEffect, useRef, useMemo } from 'react';
-import DefaultCover from '@/../../public/covers/default_cover.jpg';
-import Button from '@/components/ui/Button';
 import Footer from '@/layouts/Footer';
 import NavBar from '@/layouts/NavBar';
 import EventCard from '@/components/ui/EventCard';
 import Pagination from '@/components/ui/Pagination';
 import FilterPanel from '@/components/ui/FilterPanel';
-import { formatShortDate } from '@/lib/utils';
 
 interface Event {
     id: number;
@@ -270,15 +263,6 @@ export default function SearchPage({
     const totalPages = events.last_page;
     const currentPage = events.current_page;
 
-    const getPageNumbers = () => {
-        const pages = [];
-
-        for (let i = 1; i <= totalPages; i++) {
-            pages.push(i);
-        }
-
-        return pages;
-    };
 
     const page = usePage();
     const pageFilters = (page.props.filters as any) || {};

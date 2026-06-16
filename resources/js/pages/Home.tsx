@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import DefaultCover from '@/../../public/covers/default_cover.jpg';
-import Button from '@/components/ui/Button';
 import Footer from '@/layouts/Footer';
 import NavBar from '@/layouts/NavBar';
 import {
@@ -25,7 +24,7 @@ import EventCard from '@/components/ui/EventCard';
 import EventSlider from '@/components/ui/EventSlider';
 import Pagination from '@/components/ui/Pagination';
 import FilterPanel from '@/components/ui/FilterPanel';
-import { formatIndonesianDate, formatShortDate } from '@/lib/utils';
+import { formatIndonesianDate } from '@/lib/utils';
 
 interface Event {
     id: number;
@@ -519,26 +518,6 @@ export default function Home({
         currentPage * eventsPerPage,
     );
 
-    // Get the page numbers to display, limiting to a maximum of 5 pages
-    const getPageNumbers = () => {
-        const maxPageButtons = 5;
-
-        if (totalPages <= maxPageButtons) {
-            return Array.from({ length: totalPages }, (_, idx) => idx + 1);
-        }
-
-        let startPage = Math.max(1, currentPage - 2);
-        const endPage = Math.min(totalPages, startPage + 4);
-
-        if (endPage - startPage < 4) {
-            startPage = Math.max(1, endPage - 4);
-        }
-
-        return Array.from(
-            { length: endPage - startPage + 1 },
-            (_, idx) => startPage + idx,
-        );
-    };
 
     // Date formatting functions imported from @/lib/utils
 
