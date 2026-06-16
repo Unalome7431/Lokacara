@@ -13,6 +13,7 @@ import React, { useState } from 'react';
 import DefaultCover from '@/../../public/covers/default_cover.jpg';
 import Footer from '@/layouts/Footer';
 import NavBar from '@/layouts/NavBar';
+import { formatIndonesianDate as formatLongDate, parseDescription, getContactDetails } from '@/lib/utils';
 
 interface Category {
     id: number;
@@ -61,42 +62,7 @@ export default function Show({ event, isRegistered, certificateUrl }: ShowProps)
     const [showVerificationWarning, setShowVerificationWarning] =
         useState(false);
 
-    // Helper to parse description metadata
-    const parseDescription = (desc: string) => {
-        if (!desc) {
-            return { cleanDesc: '', organizer: '', tags: '', contacts: '' };
-        }
-
-        const parts = desc.split('---');
-        const cleanDesc = parts[0].trim();
-
-        let organizer = '';
-        let tags = '';
-        let contacts = '';
-
-        if (parts.length > 1) {
-            const metadata = parts[1];
-            const organizerMatch = metadata.match(
-                /\*\*Penyelenggara:\*\*\s*(.*)/,
-            );
-            const tagsMatch = metadata.match(/\*\*Tags:\*\*\s*(.*)/);
-            const contactsMatch = metadata.match(/\*\*Kontak:\*\*\s*([\s\S]*)/);
-
-            if (organizerMatch) {
-                organizer = organizerMatch[1].trim();
-            }
-
-            if (tagsMatch) {
-                tags = tagsMatch[1].trim();
-            }
-
-            if (contactsMatch) {
-                contacts = contactsMatch[1].trim();
-            }
-        }
-
-        return { cleanDesc, organizer, tags, contacts };
-    };
+    // parseDescription helper imported from @/lib/utils
 
     const { cleanDesc, organizer, contacts } = parseDescription(
         event.description,
@@ -129,77 +95,7 @@ export default function Show({ event, isRegistered, certificateUrl }: ShowProps)
               .filter(Boolean) as { name: string; info: string }[])
         : [];
 
-    const getContactDetails = (info: string) => {
-        const cleanInfo = info.trim();
-
-        if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanInfo)) {
-            return {
-                href: `mailto:${cleanInfo}`,
-                type: 'mail',
-                label: cleanInfo,
-            };
-        }
-
-        if (
-            /^(https?:\/\/)?([\w.-]+)\.([a-z]{2,6}\.?)(\/[\w.-]*)*\/?$/i.test(
-                cleanInfo,
-            )
-        ) {
-            const href = cleanInfo.startsWith('http')
-                ? cleanInfo
-                : `https://${cleanInfo}`;
-
-            return {
-                href,
-                type: 'web',
-                label: cleanInfo,
-            };
-        }
-
-        if (/^\+?[\d\s()-.]{7,18}$/.test(cleanInfo)) {
-            const digits = cleanInfo.replace(/[^\d+]/g, '');
-            let href = `tel:${digits}`;
-
-            if (
-                digits.startsWith('+62') ||
-                digits.startsWith('62') ||
-                digits.startsWith('08')
-            ) {
-                let waNumber = digits;
-
-                if (waNumber.startsWith('08')) {
-                    waNumber = '628' + waNumber.slice(2);
-                } else if (waNumber.startsWith('+')) {
-                    waNumber = waNumber.slice(1);
-                }
-
-                href = `https://wa.me/${waNumber}`;
-            }
-
-            return {
-                href,
-                type: 'phone',
-                label: cleanInfo,
-            };
-        }
-
-        return {
-            href: null,
-            type: 'general',
-            label: cleanInfo,
-        };
-    };
-
-    const formatLongDate = (dateString: string) => {
-        const dateObj = new Date(dateString);
-
-        return new Intl.DateTimeFormat('id-ID', {
-            weekday: 'long',
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric',
-        }).format(dateObj);
-    };
+    // getContactDetails and formatLongDate (formatIndonesianDate) helper imported from @/lib/utils
 
     const formatTime = (dateString: string) => {
         const dateObj = new Date(dateString);

@@ -1,24 +1,12 @@
 import { Head, useForm, router } from '@inertiajs/react';
-import {
-    GoogleMap,
-    useJsApiLoader,
-    MarkerF,
-    Autocomplete,
-} from '@react-google-maps/api';
-import {
-    Camera,
-    Plus,
-    Minus,
-    MapPin,
-    Trash2,
-    Upload,
-    Inbox,
-} from 'lucide-react';
+import { Plus, Minus, Inbox, Upload } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import Footer from '@/layouts/Footer';
 import NavBar from '@/layouts/NavBar';
-
-const GOOGLE_MAPS_LIBRARIES: any = ['places'];
+import EventFormMap from '@/components/ui/EventFormMap';
+import TagsInputList from '@/components/ui/TagsInputList';
+import ContactsInputList from '@/components/ui/ContactsInputList';
+import PosterPicker from '@/components/ui/PosterPicker';
 
 interface Category {
     id: number;
@@ -51,72 +39,11 @@ export default function Create({ categories }: CreateProps) {
 
     const [isFree, setIsFree] = useState(true);
 
-    const { isLoaded } = useJsApiLoader({
-        id: 'google-map-script',
-        googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
-        libraries: GOOGLE_MAPS_LIBRARIES,
-    });
-
-    const autocompleteRef = useRef<any>(null);
-    const mapRef = useRef<any>(null);
-
-    const handlePlaceChanged = () => {
-        if (autocompleteRef.current) {
-            const place = autocompleteRef.current.getPlace();
-
-            if (place.geometry && place.geometry.location) {
-                const lat = place.geometry.location.lat();
-                const lng = place.geometry.location.lng();
-                const addressName = place.formatted_address || '';
-                const nameOfPlace = place.name || addressName;
-
-                setData((prev) => ({
-                    ...prev,
-                    location_name: nameOfPlace,
-                    address: addressName,
-                    latitude: lat,
-                    longitude: lng,
-                }));
-
-                if (mapRef.current) {
-                    mapRef.current.panTo({ lat, lng });
-                    mapRef.current.setZoom(16);
-                }
-            }
-        }
-    };
-
-    const handleMarkerDragEnd = (e: any) => {
-        if (e.latLng) {
-            const lat = e.latLng.lat();
-            const lng = e.latLng.lng();
-
-            setData((prev) => ({
-                ...prev,
-                latitude: lat,
-                longitude: lng,
-            }));
-
-            if (typeof window !== 'undefined' && (window as any).google) {
-                const geocoder = new (window as any).google.maps.Geocoder();
-                geocoder.geocode(
-                    { location: { lat, lng } },
-                    (results: any, status: any) => {
-                        if (status === 'OK' && results?.[0]) {
-                            const formattedAddress =
-                                results[0].formatted_address;
-                            setData((prev) => ({
-                                ...prev,
-                                location_name: formattedAddress,
-                                address: formattedAddress,
-                                latitude: lat,
-                                longitude: lng,
-                            }));
-                        }
-                    },
-                );
-            }
-        }
+    const onChangeLocation = (updatedFields: Record<string, any>) => {
+        setData((prev) => ({
+            ...prev,
+            ...updatedFields,
+        }));
     };
 
     // 2. Mockup-only fields (local state)
@@ -177,24 +104,6 @@ export default function Create({ categories }: CreateProps) {
         };
     }, []);
 
-    // 3. Poster Upload & Preview State
-    const [posterPreview, setPosterPreview] = useState<string | null>(null);
-    const fileInputRef = useRef<HTMLInputElement>(null);
-
-    const handlePosterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-
-        if (file) {
-            setData('poster', file);
-            const url = URL.createObjectURL(file);
-            setPosterPreview(url);
-        }
-    };
-
-    const triggerFileInput = () => {
-        fileInputRef.current?.click();
-    };
-
     // 4. Capacity Stepper Actions
     const incrementCapacity = () => {
         setData((prev) => ({
@@ -208,44 +117,6 @@ export default function Create({ categories }: CreateProps) {
             ...prev,
             capacity: Number(prev.capacity) > 1 ? Number(prev.capacity) - 1 : 1,
         }));
-    };
-
-    // Tags list builder actions
-    const addTag = () => {
-        setTags([...tags, '']);
-    };
-
-    const removeTag = (index: number) => {
-        if (tags.length > 1) {
-            setTags(tags.filter((_, i) => i !== index));
-        }
-    };
-
-    const updateTag = (index: number, value: string) => {
-        const newTags = [...tags];
-        newTags[index] = value;
-        setTags(newTags);
-    };
-
-    // 5. Contacts List Actions
-    const addContact = () => {
-        setContacts([...contacts, { name: '', info: '' }]);
-    };
-
-    const removeContact = (index: number) => {
-        if (contacts.length > 1) {
-            setContacts(contacts.filter((_, i) => i !== index));
-        }
-    };
-
-    const updateContact = (
-        index: number,
-        field: 'name' | 'info',
-        value: string,
-    ) => {
-        const newContacts = [...contacts];
-        newContacts[index][field] = value;
-        setContacts(newContacts);
     };
 
     // 6. Submit Event Handler
@@ -320,123 +191,13 @@ export default function Create({ categories }: CreateProps) {
                         {/* LEFT COLUMN: Poster, Tags, Capacity, Dates, Access */}
                         <div className="flex w-full flex-col gap-6 lg:col-span-5">
                             {/* Poster Event */}
-                            <div className="flex flex-col gap-3">
-                                <h3 className="font-brand text-h5-mobile font-black text-neutral-900 lg:text-h5-web">
-                                    Poster Event
-                                </h3>
-
-                                <div
-                                    onClick={triggerFileInput}
-                                    className="hover:bg-primary-50/10 relative flex aspect-16/9 w-full cursor-pointer flex-col items-center justify-center gap-3 overflow-hidden rounded-3xl border-2 border-dashed border-neutral-300 bg-white p-6 text-center shadow-xs transition-all duration-300 hover:border-primary-400"
-                                >
-                                    {posterPreview ? (
-                                        <img
-                                            src={posterPreview}
-                                            alt="Preview"
-                                            className="absolute inset-0 h-full w-full object-cover"
-                                        />
-                                    ) : (
-                                        <div className="flex flex-col items-center justify-center gap-2">
-                                            <div className="flex items-center gap-1.5 text-secondary-500">
-                                                <Camera
-                                                    size={24}
-                                                    className="stroke-[1.5]"
-                                                />
-                                                <Plus
-                                                    size={16}
-                                                    className="stroke-[2.5]"
-                                                />
-                                            </div>
-                                            <span className="font-brand text-base font-bold text-gray-500">
-                                                Unggah Poster (16:9)
-                                            </span>
-                                        </div>
-                                    )}
-                                </div>
-                                <span className="text-center text-xs font-semibold text-gray-400">
-                                    ukuran maksimal 5mb, png, jpg, svg
-                                </span>
-
-                                <input
-                                    type="file"
-                                    ref={fileInputRef}
-                                    onChange={handlePosterChange}
-                                    accept="image/*"
-                                    className="hidden"
-                                />
-
-                                <button
-                                    type="button"
-                                    onClick={triggerFileInput}
-                                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border-0 bg-primary-500 py-3.5 text-base font-bold text-white shadow-md transition-all duration-200 hover:bg-primary-600 active:scale-[0.98]"
-                                >
-                                    <span>Ubah Poster</span>
-                                    <Upload size={16} />
-                                </button>
-                                {errors.poster && (
-                                    <span className="mt-1 pl-1 text-xs font-bold text-red-500">
-                                        {errors.poster}
-                                    </span>
-                                )}
-                            </div>
+                            <PosterPicker
+                                error={errors.poster}
+                                onChange={(file) => setData('poster', file)}
+                            />
 
                             {/* Tags Pencarian */}
-                            <div className="flex flex-col gap-4 rounded-3xl bg-primary-100/30 p-6">
-                                <div className="flex items-center justify-between">
-                                    <span className="font-brand text-base font-extrabold text-neutral-800">
-                                        Tags Pencarian
-                                    </span>
-                                </div>
-
-                                <div className="flex flex-col gap-3">
-                                    {tags.map((tag, index) => (
-                                        <div
-                                            key={index}
-                                            className="flex items-center gap-2"
-                                        >
-                                            <div className="flex flex-grow items-center rounded-full border border-neutral-100 bg-white px-5 py-3 shadow-xs">
-                                                <span className="mr-1.5 font-extrabold text-secondary-500 select-none">
-                                                    #
-                                                </span>
-                                                <input
-                                                    type="text"
-                                                    placeholder="tag"
-                                                    value={tag}
-                                                    onChange={(e) =>
-                                                        updateTag(
-                                                            index,
-                                                            e.target.value,
-                                                        )
-                                                    }
-                                                    className="w-full border-0 bg-transparent p-0 text-base font-semibold text-neutral-800 placeholder-gray-400 outline-none focus:ring-0"
-                                                />
-                                            </div>
-                                            {tags.length > 1 && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        removeTag(index)
-                                                    }
-                                                    className="shrink-0 cursor-pointer rounded-full border border-neutral-200 bg-white p-2.5 text-red-500 transition-all duration-200 hover:bg-red-50 active:scale-95"
-                                                >
-                                                    <Trash2 size={16} />
-                                                </button>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <button
-                                    type="button"
-                                    onClick={addTag}
-                                    className="flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-full border-0 bg-primary-500 py-3 text-base font-bold text-white shadow-md transition-all duration-200 hover:bg-primary-600 active:scale-[0.98]"
-                                >
-                                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-secondary-500 text-white">
-                                        <Plus size={12} strokeWidth={3} />
-                                    </span>
-                                    <span>Tambah tag</span>
-                                </button>
-                            </div>
+                            <TagsInputList tags={tags} onChange={setTags} />
 
                             {/* Kuota Peserta */}
                             <div className="flex flex-col gap-4 rounded-3xl bg-primary-100/30 p-6">
@@ -752,73 +513,7 @@ export default function Create({ categories }: CreateProps) {
                             </div>
 
                             {/* Kontak */}
-                            <div className="flex flex-col gap-3">
-                                <h3 className="font-brand text-h5-mobile font-black text-neutral-900 lg:text-h5-web">
-                                    Kontak
-                                </h3>
-                                <div className="flex flex-col gap-4 rounded-3xl bg-primary-100/30 p-6">
-                                    <div className="flex flex-col gap-3">
-                                        {contacts.map((contact, index) => (
-                                            <div
-                                                key={index}
-                                                className="flex items-center gap-2"
-                                            >
-                                                <div className="flex flex-grow overflow-hidden rounded-full border border-neutral-100 bg-white shadow-xs">
-                                                    <input
-                                                        type="text"
-                                                        placeholder="Nama"
-                                                        value={contact.name}
-                                                        onChange={(e) =>
-                                                            updateContact(
-                                                                index,
-                                                                'name',
-                                                                e.target.value,
-                                                            )
-                                                        }
-                                                        className="w-3/5 border-0 bg-transparent px-5 py-3 text-base font-semibold text-neutral-800 placeholder-gray-400 outline-none focus:ring-0"
-                                                    />
-                                                    <div className="my-2 w-px shrink-0 bg-neutral-200"></div>
-                                                    <input
-                                                        type="text"
-                                                        placeholder="No. Telepon / E-mail"
-                                                        value={contact.info}
-                                                        onChange={(e) =>
-                                                            updateContact(
-                                                                index,
-                                                                'info',
-                                                                e.target.value,
-                                                            )
-                                                        }
-                                                        className="w-2/5 border-0 bg-transparent px-5 py-3 pl-4 text-base font-semibold text-neutral-800 placeholder-gray-400 outline-none focus:ring-0"
-                                                    />
-                                                </div>
-                                                {contacts.length > 1 && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() =>
-                                                            removeContact(index)
-                                                        }
-                                                        className="shrink-0 cursor-pointer rounded-full border border-neutral-200 bg-white p-2.5 text-red-500 transition-all duration-200 hover:bg-red-50 active:scale-95"
-                                                    >
-                                                        <Trash2 size={16} />
-                                                    </button>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    <button
-                                        type="button"
-                                        onClick={addContact}
-                                        className="flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-full border-0 bg-primary-500 py-3.5 text-base font-bold text-white shadow-md transition-all duration-200 hover:bg-primary-600 active:scale-[0.98]"
-                                    >
-                                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-secondary-500 text-white">
-                                            <Plus size={12} strokeWidth={3} />
-                                        </span>
-                                        <span>Tambah kontak/email</span>
-                                    </button>
-                                </div>
-                            </div>
+                            <ContactsInputList contacts={contacts} onChange={setContacts} />
 
                             {/* Detail Event */}
                             <div className="flex flex-col gap-3">
@@ -827,173 +522,19 @@ export default function Create({ categories }: CreateProps) {
                                 </h3>
 
                                 <div className="flex flex-col gap-6 rounded-3xl bg-primary-100/30 p-6">
-                                    {/* Lokasi */}
-                                    <div className="flex flex-col gap-2">
-                                        <label className="font-brand text-base font-extrabold text-neutral-800">
-                                            Lokasi
-                                        </label>
-
-                                        <div className="flex w-full flex-col items-center gap-4 sm:flex-row">
-                                            <div className="relative flex h-9 w-48 shrink-0 overflow-hidden rounded-full border border-neutral-100 bg-white p-0.5 shadow-xs select-none">
-                                                {/* Sliding background */}
-                                                <div
-                                                    className={`absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-2px)] rounded-full bg-primary-500 transition-all duration-300 ease-in-out ${
-                                                        data.type === 'online'
-                                                            ? 'translate-x-0'
-                                                            : 'translate-x-full'
-                                                    }`}
-                                                />
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        setData(
-                                                            'type',
-                                                            'online',
-                                                        )
-                                                    }
-                                                    className={`relative z-10 w-1/2 rounded-full border-0 py-1.5 text-xs font-bold transition-colors duration-300 ${data.type === 'online' ? 'cursor-default text-white' : 'cursor-pointer bg-transparent text-neutral-500 hover:text-neutral-800'}`}
-                                                >
-                                                    Online
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        setData(
-                                                            'type',
-                                                            'offline',
-                                                        )
-                                                    }
-                                                    className={`relative z-10 w-1/2 rounded-full border-0 py-1.5 text-xs font-bold transition-colors duration-300 ${data.type === 'offline' ? 'cursor-default text-white' : 'cursor-pointer bg-transparent text-neutral-500 hover:text-neutral-800'}`}
-                                                >
-                                                    Offline
-                                                </button>
-                                            </div>
-
-                                            {data.type === 'online' ? (
-                                                <input
-                                                    type="text"
-                                                    placeholder="Link Zoom/Gmeet/apapun"
-                                                    value={data.link}
-                                                    onChange={(e) =>
-                                                        setData(
-                                                            'link',
-                                                            e.target.value,
-                                                        )
-                                                    }
-                                                    required
-                                                    className="w-full flex-grow rounded-full border-0 bg-white px-5 py-2.5 text-base font-medium text-neutral-800 shadow-xs focus:ring-2 focus:ring-primary-500 focus:outline-none"
-                                                />
-                                            ) : isLoaded ? (
-                                                <div className="w-full flex-grow">
-                                                    <Autocomplete
-                                                        onLoad={(
-                                                            autocomplete,
-                                                        ) => {
-                                                            autocompleteRef.current =
-                                                                autocomplete;
-                                                        }}
-                                                        onPlaceChanged={
-                                                            handlePlaceChanged
-                                                        }
-                                                    >
-                                                        <input
-                                                            type="text"
-                                                            placeholder="Cari Alamat atau Nama Tempat..."
-                                                            value={
-                                                                data.location_name
-                                                            }
-                                                            onChange={(e) =>
-                                                                setData(
-                                                                    'location_name',
-                                                                    e.target
-                                                                        .value,
-                                                                )
-                                                            }
-                                                            required
-                                                            className="w-full rounded-full border-0 bg-white px-5 py-2.5 text-base font-medium text-neutral-800 shadow-xs focus:ring-2 focus:ring-primary-500 focus:outline-none"
-                                                        />
-                                                    </Autocomplete>
-                                                </div>
-                                            ) : (
-                                                <input
-                                                    type="text"
-                                                    placeholder="Memuat Pencarian Alamat..."
-                                                    disabled
-                                                    className="w-full flex-grow rounded-full border-0 bg-neutral-100 px-5 py-2.5 text-base font-medium text-neutral-400"
-                                                />
-                                            )}
-                                        </div>
-                                        {errors.location_name && (
-                                            <span className="mt-1 pl-1 text-xs font-bold text-red-500">
-                                                {errors.location_name}
-                                            </span>
-                                        )}
-                                        {errors.link && (
-                                            <span className="mt-1 pl-1 text-xs font-bold text-red-500">
-                                                {errors.link}
-                                            </span>
-                                        )}
-                                    </div>
-
-                                    {/* Google Map Box for Offline */}
-                                    {data.type === 'offline' && (
-                                        <div className="flex w-full flex-col gap-2 border-t border-neutral-200/40 pt-4">
-                                            <div className="relative h-[220px] w-full overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-100 shadow-sm">
-                                                {isLoaded ? (
-                                                    <GoogleMap
-                                                        mapContainerStyle={{
-                                                            width: '100%',
-                                                            height: '220px',
-                                                        }}
-                                                        center={{
-                                                            lat: data.latitude,
-                                                            lng: data.longitude,
-                                                        }}
-                                                        zoom={15}
-                                                        onLoad={(map) => {
-                                                            mapRef.current =
-                                                                map;
-                                                        }}
-                                                        options={{
-                                                            disableDefaultUI: true,
-                                                            zoomControl: true,
-                                                            streetViewControl: false,
-                                                        }}
-                                                    >
-                                                        <MarkerF
-                                                            position={{
-                                                                lat: data.latitude,
-                                                                lng: data.longitude,
-                                                            }}
-                                                            draggable={true}
-                                                            onDragEnd={
-                                                                handleMarkerDragEnd
-                                                            }
-                                                        />
-                                                    </GoogleMap>
-                                                ) : (
-                                                    <div className="flex h-full w-full flex-col items-center justify-center gap-1.5 text-gray-400">
-                                                        <MapPin
-                                                            size={24}
-                                                            className="animate-bounce text-primary-500"
-                                                        />
-                                                        <span className="font-brand text-sm font-bold text-gray-500">
-                                                            Memuat Google
-                                                            Maps...
-                                                        </span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                            {data.address && (
-                                                <div className="mt-1 px-1 text-xs font-semibold text-neutral-500">
-                                                    <span className="font-extrabold text-neutral-800">
-                                                        Alamat Lengkap:
-                                                    </span>{' '}
-                                                    {data.address}
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
+                                    {/* Lokasi (extracted to EventFormMap) */}
+                                    <EventFormMap
+                                        type={data.type}
+                                        onChangeType={(type) => setData('type', type)}
+                                        locationName={data.location_name}
+                                        address={data.address}
+                                        latitude={data.latitude}
+                                        longitude={data.longitude}
+                                        link={data.link}
+                                        errorLocationName={errors.location_name}
+                                        errorLink={errors.link}
+                                        onChangeLocation={onChangeLocation}
+                                    />
 
                                     {/* Deskripsi */}
                                     <div className="flex flex-col gap-2">

@@ -1,18 +1,15 @@
 import { Head, usePage, router } from '@inertiajs/react';
 import {
-    ChevronRight,
-    ChevronLeft,
-    Calendar,
-    MapPin,
     ChevronDown,
     Filter,
     X,
 } from 'lucide-react';
 import { useState, useEffect, useRef, useMemo } from 'react';
-import DefaultCover from '@/../../public/covers/default_cover.jpg';
-import Button from '@/components/ui/Button';
 import Footer from '@/layouts/Footer';
 import NavBar from '@/layouts/NavBar';
+import EventCard from '@/components/ui/EventCard';
+import Pagination from '@/components/ui/Pagination';
+import FilterPanel from '@/components/ui/FilterPanel';
 
 interface Event {
     id: number;
@@ -176,19 +173,7 @@ export default function SearchPage({
     }, [activeType]);
 
     // Helper functions
-    const formatShortDate = (dateString: string) => {
-        const dateObj = new Date(dateString);
-
-        return (
-            new Intl.DateTimeFormat('id-ID', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-            }).format(dateObj) + ' WIB'
-        );
-    };
+    // Date formatting helpers imported from @/lib/utils
 
     const handleFilterChange = (newFilters: Record<string, any>) => {
         const mergedFilters: Record<string, any> = {
@@ -278,15 +263,6 @@ export default function SearchPage({
     const totalPages = events.last_page;
     const currentPage = events.current_page;
 
-    const getPageNumbers = () => {
-        const pages = [];
-
-        for (let i = 1; i <= totalPages; i++) {
-            pages.push(i);
-        }
-
-        return pages;
-    };
 
     const page = usePage();
     const pageFilters = (page.props.filters as any) || {};
@@ -324,179 +300,52 @@ export default function SearchPage({
                                     Preferensi
                                 </h4>
 
-                                {/* Kategori */}
-                                <div className="flex flex-col gap-3">
-                                    <h5 className="text-small font-extrabold tracking-wider text-neutral-400 uppercase">
-                                        Kategori
-                                    </h5>
-                                    <div className="flex flex-row flex-wrap items-start gap-x-4 gap-y-3.5 lg:flex-col lg:gap-3">
-                                        {categories.map((cat) => {
-                                            const isActive = activeCategory === cat.id;
-
-                                            return (
-                                                <button
-                                                    key={cat.id}
-                                                    type="button"
-                                                    onClick={() => {
-                                                        handleFilterChange({
-                                                            category_id: isActive ? null : cat.id,
-                                                        });
-                                                    }}
-                                                    className="group flex cursor-pointer items-center gap-3 text-sm font-semibold text-neutral-600 transition-colors hover:text-primary-500"
-                                                >
-                                                    <div
-                                                        className={`h-3.5 w-3.5 rounded-sm border-2 transition-all duration-200 ${
-                                                            isActive
-                                                                ? 'border-secondary-500 bg-secondary-500'
-                                                                : 'border-secondary-400 bg-white group-hover:border-secondary-500'
-                                                        }`}
-                                                    ></div>
-                                                    <span>{cat.name}</span>
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-
-                                {/* Harga */}
-                                <div className="flex flex-col gap-3 border-t border-neutral-100 pt-5">
-                                    <h5 className="text-small font-extrabold tracking-wider text-neutral-400 uppercase">
-                                        Harga
-                                    </h5>
-                                    <div className="flex flex-col gap-3">
-                                        <div className="flex flex-col gap-1.5">
-                                            <span className="text-xs font-bold text-neutral-500">
-                                                Harga Minimum
-                                            </span>
-                                            <div className="flex items-center gap-2 rounded-xl border border-neutral-300 bg-white px-3 py-2 transition-colors duration-150 focus-within:border-primary-500">
-                                                <span className="text-sm font-bold text-neutral-400">
-                                                    Rp
-                                                </span>
-                                                <input
-                                                    type="number"
-                                                    placeholder="0"
-                                                    value={tempMinPrice}
-                                                    onChange={(e) => setTempMinPrice(e.target.value)}
-                                                    className="w-full text-sm font-semibold text-neutral-800 outline-none"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div className="flex flex-col gap-1.5">
-                                            <span className="text-xs font-bold text-neutral-500">
-                                                Harga Maksimum
-                                            </span>
-                                            <div className="flex items-center gap-2 rounded-xl border border-neutral-300 bg-white px-3 py-2 transition-colors duration-150 focus-within:border-primary-500">
-                                                <span className="text-sm font-bold text-neutral-400">
-                                                    Rp
-                                                </span>
-                                                <input
-                                                    type="number"
-                                                    placeholder="Maks"
-                                                    value={tempMaxPrice}
-                                                    onChange={(e) => setTempMaxPrice(e.target.value)}
-                                                    className="w-full text-sm font-semibold text-neutral-800 outline-none"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div className="flex gap-2">
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    handleFilterChange({
-                                                        min_price: tempMinPrice || null,
-                                                        max_price: tempMaxPrice || null,
-                                                    });
-                                                }}
-                                                className="w-full cursor-pointer rounded-xl bg-primary-500 py-2 text-center text-xs font-bold text-white shadow-xs transition-colors duration-150 hover:bg-primary-600"
-                                            >
-                                                Terapkan Harga
-                                            </button>
-                                            {(filters.min_price || filters.max_price) && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setTempMinPrice('');
-                                                        setTempMaxPrice('');
-                                                        handleFilterChange({
-                                                            min_price: null,
-                                                            max_price: null,
-                                                        });
-                                                    }}
-                                                    className="cursor-pointer rounded-xl border border-neutral-300 px-3 py-2 text-center text-xs font-bold text-neutral-600 transition-colors duration-150 hover:bg-neutral-50"
-                                                >
-                                                    Reset
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Tanggal */}
-                                <div className="flex flex-col gap-3 border-t border-neutral-100 pt-5">
-                                    <h5 className="text-small font-extrabold tracking-wider text-neutral-400 uppercase">
-                                        Tanggal
-                                    </h5>
-                                    <div className="flex flex-col gap-3">
-                                        <div className="flex flex-col gap-1.5">
-                                            <span className="text-xs font-bold text-neutral-500">
-                                                Dari
-                                            </span>
-                                            <input
-                                                type="date"
-                                                min={todayString}
-                                                value={tempStartDate}
-                                                onChange={(e) => setTempStartDate(e.target.value)}
-                                                className="w-full cursor-pointer rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm font-semibold text-neutral-800 transition-colors duration-150 outline-none focus:border-primary-500"
-                                            />
-                                        </div>
-
-                                        <div className="flex flex-col gap-1.5">
-                                            <span className="text-xs font-bold text-neutral-500">
-                                                Sampai
-                                            </span>
-                                            <input
-                                                type="date"
-                                                min={tempStartDate || todayString}
-                                                value={tempEndDate}
-                                                onChange={(e) => setTempEndDate(e.target.value)}
-                                                className="w-full cursor-pointer rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm font-semibold text-neutral-800 transition-colors duration-150 outline-none focus:border-primary-500"
-                                            />
-                                        </div>
-
-                                        <div className="flex gap-2">
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    handleFilterChange({
-                                                        start_date: tempStartDate || null,
-                                                        end_date: tempEndDate || null,
-                                                    });
-                                                }}
-                                                className="w-full cursor-pointer rounded-xl bg-primary-500 py-2 text-center text-xs font-bold text-white shadow-xs transition-colors duration-150 hover:bg-primary-600"
-                                            >
-                                                Terapkan Tanggal
-                                            </button>
-                                            {(filters.start_date || filters.end_date) && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setTempStartDate('');
-                                                        setTempEndDate('');
-                                                        handleFilterChange({
-                                                            start_date: null,
-                                                            end_date: null,
-                                                        });
-                                                    }}
-                                                    className="cursor-pointer rounded-xl border border-neutral-300 px-3 py-2 text-center text-xs font-bold text-neutral-600 transition-colors duration-150 hover:bg-neutral-50"
-                                                >
-                                                    Reset
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
+                                <FilterPanel
+                                    categories={categories}
+                                    activeCategory={activeCategory}
+                                    onCategorySelect={(id) => {
+                                        handleFilterChange({ category_id: id });
+                                    }}
+                                    tempMinPrice={tempMinPrice}
+                                    setTempMinPrice={setTempMinPrice}
+                                    tempMaxPrice={tempMaxPrice}
+                                    setTempMaxPrice={setTempMaxPrice}
+                                    onApplyPrice={() => {
+                                        handleFilterChange({
+                                            min_price: tempMinPrice || null,
+                                            max_price: tempMaxPrice || null,
+                                        });
+                                    }}
+                                    onResetPrice={() => {
+                                        setTempMinPrice('');
+                                        setTempMaxPrice('');
+                                        handleFilterChange({
+                                            min_price: null,
+                                            max_price: null,
+                                        });
+                                    }}
+                                    hasAppliedPrice={!!(filters.min_price || filters.max_price)}
+                                    tempStartDate={tempStartDate}
+                                    setTempStartDate={setTempStartDate}
+                                    tempEndDate={tempEndDate}
+                                    setTempEndDate={setTempEndDate}
+                                    onApplyDate={() => {
+                                        handleFilterChange({
+                                            start_date: tempStartDate || null,
+                                            end_date: tempEndDate || null,
+                                        });
+                                    }}
+                                    onResetDate={() => {
+                                        setTempStartDate('');
+                                        setTempEndDate('');
+                                        handleFilterChange({
+                                            start_date: null,
+                                            end_date: null,
+                                        });
+                                    }}
+                                    hasAppliedDate={!!(filters.start_date || filters.end_date)}
+                                    todayString={todayString}
+                                />
                             </div>
 
                             {/* Right Listing Grid */}
@@ -612,141 +461,21 @@ export default function SearchPage({
                                         </div>
                                     ) : (
                                         events.data.map((event) => (
-                                            <div
+                                            <EventCard
                                                 key={event.id}
-                                                className="border-neutral-150 group relative flex h-[160px] w-full flex-row justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:mx-auto sm:h-[400px] sm:w-full sm:flex-col"
-                                            >
-                                                <div className="absolute top-3 left-3 z-10 rounded-md bg-secondary-400 px-3 py-1 text-[0.6275rem] font-extrabold text-secondary-900 shadow-sm sm:top-4">
-                                                    {event.price === 0
-                                                        ? 'GRATIS'
-                                                        : `Rp ${Number(event.price).toLocaleString('id-ID')}`}
-                                                </div>
-
-                                                <div className="sm:aspect-none relative aspect-square h-full w-[160px] shrink-0 overflow-hidden border-r border-gray-100 bg-gray-50 sm:h-[210px] sm:w-full sm:border-r-0 sm:border-b">
-                                                    <img
-                                                        src={event.poster_url || DefaultCover}
-                                                        alt={event.title}
-                                                        draggable="false"
-                                                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                                    />
-                                                </div>
-
-                                                <div className="flex grow flex-col justify-between gap-1 overflow-hidden p-3 sm:h-[190px] sm:flex-none sm:shrink-0 sm:p-4">
-                                                    <div className="flex flex-col gap-1 sm:gap-1.5">
-                                                        <h4 className="line-clamp-2 h-[36px] overflow-hidden text-small leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[48px] sm:text-base">
-                                                            {event.title}
-                                                        </h4>
-
-                                                        <div className="flex flex-col gap-0.5 border-t border-gray-100/50 pt-1 text-[10px] font-semibold text-gray-400 sm:gap-1 sm:pt-1.5 sm:text-micro">
-                                                            <span className="flex items-center gap-1.5">
-                                                                <Calendar
-                                                                    size={12}
-                                                                    className="shrink-0 text-gray-400"
-                                                                />
-                                                                {formatShortDate(event.start_datetime)}
-                                                            </span>
-                                                            <span className="flex items-start gap-1.5">
-                                                                <MapPin
-                                                                    size={12}
-                                                                    className="mt-0.5 shrink-0 text-gray-400"
-                                                                />
-                                                                <span className="line-clamp-2 overflow-hidden">
-                                                                    {event.type === 'online'
-                                                                        ? 'Online'
-                                                                        : event.location_name ||
-                                                                          'Lokasi Offline'}
-                                                                </span>
-                                                            </span>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="pt-1">
-                                                        <Button
-                                                            href={`/events/${event.id}`}
-                                                            className="w-full py-1 text-[10px] sm:py-2 sm:text-small"
-                                                        >
-                                                            Detail Event
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                                event={event}
+                                                variant="grid"
+                                                detailUrl={`/events/${event.id}`}
+                                            />
                                         ))
                                     )}
                                 </div>
 
-                                {/* Pagination Controls */}
-                                {totalPages > 1 && (
-                                    <div className="mt-4 flex items-center justify-between border-t border-neutral-100 pt-6">
-                                        <span className="text-micro font-semibold text-gray-400">
-                                            Halaman {currentPage} dari {totalPages}
-                                        </span>
-
-                                        <div className="flex gap-2">
-                                            <button
-                                                type="button"
-                                                onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-                                                disabled={currentPage === 1}
-                                                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border text-[10px] font-bold sm:h-9 sm:w-9 sm:text-micro ${
-                                                    currentPage === 1
-                                                        ? 'border-neutral-150 cursor-not-allowed bg-neutral-50 text-gray-300'
-                                                        : 'cursor-pointer border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50'
-                                                }`}
-                                                title="Sebelumnya"
-                                            >
-                                                <ChevronLeft size={14} className="sm:h-4 sm:w-4" />
-                                            </button>
-
-                                            {getPageNumbers().map((pageNumber) => {
-                                                const isMobileHidden = (() => {
-                                                    if (totalPages <= 3) {
-return false;
-}
-
-                                                    if (currentPage === 1) {
-return pageNumber > 3;
-}
-
-                                                    if (currentPage === totalPages) {
-return pageNumber < totalPages - 2;
-}
-
-                                                    return Math.abs(pageNumber - currentPage) > 1;
-                                                })();
-
-                                                return (
-                                                    <button
-                                                        key={pageNumber}
-                                                        type="button"
-                                                        onClick={() => handlePageChange(pageNumber)}
-                                                        className={`h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg border text-[10px] font-bold sm:h-9 sm:w-9 sm:text-micro ${
-                                                            isMobileHidden ? 'hidden sm:flex' : 'flex'
-                                                        } ${
-                                                            currentPage === pageNumber
-                                                                ? 'border-primary-500 bg-primary-500 text-white shadow-sm'
-                                                                : 'border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50'
-                                                        }`}
-                                                    >
-                                                        {pageNumber}
-                                                    </button>
-                                                );
-                                            })}
-
-                                            <button
-                                                type="button"
-                                                onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-                                                disabled={currentPage === totalPages}
-                                                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border text-[10px] font-bold sm:h-9 sm:w-9 sm:text-micro ${
-                                                    currentPage === totalPages
-                                                        ? 'border-neutral-150 cursor-not-allowed bg-neutral-50 text-gray-300'
-                                                        : 'cursor-pointer border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50'
-                                                }`}
-                                                title="Selanjutnya"
-                                            >
-                                                <ChevronRight size={14} className="sm:h-4 sm:w-4" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
+                                <Pagination
+                                    currentPage={currentPage}
+                                    totalPages={totalPages}
+                                    onPageChange={handlePageChange}
+                                />
                             </div>
                         </div>
                     </div>
@@ -774,173 +503,56 @@ return pageNumber < totalPages - 2;
                             </button>
                         </div>
 
-                        <div className="flex flex-col gap-6">
-                            {/* Mobile Kategori */}
-                            <div className="flex flex-col gap-3">
-                                <h5 className="text-small font-extrabold tracking-wider text-neutral-400 uppercase">
-                                    Kategori
-                                </h5>
-                                <div className="flex flex-col gap-3">
-                                    {categories.map((cat) => {
-                                        const isActive = activeCategory === cat.id;
-
-                                        return (
-                                            <button
-                                                key={cat.id}
-                                                type="button"
-                                                onClick={() => {
-                                                    handleFilterChange({
-                                                        category_id: isActive ? null : cat.id,
-                                                    });
-                                                }}
-                                                className="group flex cursor-pointer items-center gap-3 text-sm font-semibold text-neutral-600 transition-colors hover:text-primary-500"
-                                            >
-                                                <div
-                                                    className={`h-3.5 w-3.5 rounded-sm border-2 transition-all duration-200 ${
-                                                        isActive
-                                                            ? 'border-secondary-500 bg-secondary-500'
-                                                            : 'border-secondary-400 bg-white group-hover:border-secondary-500'
-                                                    }`}
-                                                ></div>
-                                                <span>{cat.name}</span>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-
-                            {/* Mobile Harga */}
-                            <div className="flex flex-col gap-3 border-t border-neutral-100 pt-5">
-                                <h5 className="text-small font-extrabold tracking-wider text-neutral-400 uppercase">
-                                    Harga
-                                </h5>
-                                <div className="flex flex-col gap-3">
-                                    <div className="flex flex-col gap-1.5">
-                                        <span className="text-xs font-bold text-neutral-500">
-                                            Harga Minimum
-                                        </span>
-                                        <div className="flex items-center gap-2 rounded-xl border border-neutral-300 bg-white px-3 py-2 transition-colors duration-150 focus-within:border-primary-500">
-                                            <span className="text-sm font-bold text-neutral-400">Rp</span>
-                                            <input
-                                                type="number"
-                                                placeholder="0"
-                                                value={tempMinPrice}
-                                                onChange={(e) => setTempMinPrice(e.target.value)}
-                                                className="w-full text-sm font-semibold text-neutral-800 outline-none"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-col gap-1.5">
-                                        <span className="text-xs font-bold text-neutral-500">
-                                            Harga Maksimum
-                                        </span>
-                                        <div className="flex items-center gap-2 rounded-xl border border-neutral-300 bg-white px-3 py-2 transition-colors duration-150 focus-within:border-primary-500">
-                                            <span className="text-sm font-bold text-neutral-400">Rp</span>
-                                            <input
-                                                type="number"
-                                                placeholder="Maks"
-                                                value={tempMaxPrice}
-                                                onChange={(e) => setTempMaxPrice(e.target.value)}
-                                                className="w-full text-sm font-semibold text-neutral-800 outline-none"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                handleFilterChange({
-                                                    min_price: tempMinPrice || null,
-                                                    max_price: tempMaxPrice || null,
-                                                });
-                                                setIsMobileFilterOpen(false);
-                                            }}
-                                            className="w-full cursor-pointer rounded-xl bg-primary-500 py-2 text-center text-xs font-bold text-white shadow-xs transition-colors duration-150 hover:bg-primary-600"
-                                        >
-                                            Terapkan
-                                        </button>
-                                        {(filters.min_price || filters.max_price) && (
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setTempMinPrice('');
-                                                    setTempMaxPrice('');
-                                                    handleFilterChange({
-                                                        min_price: null,
-                                                        max_price: null,
-                                                    });
-                                                    setIsMobileFilterOpen(false);
-                                                }}
-                                                className="cursor-pointer rounded-xl border border-neutral-300 px-3 py-2 text-center text-xs font-bold text-neutral-600 transition-colors duration-150 hover:bg-neutral-50"
-                                            >
-                                                Reset
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Mobile Tanggal */}
-                            <div className="flex flex-col gap-3 border-t border-neutral-100 pt-5">
-                                <h5 className="text-xs font-extrabold tracking-wider text-neutral-400 uppercase">
-                                    Tanggal
-                                </h5>
-                                <div className="flex flex-col gap-3">
-                                    <div className="flex flex-col gap-1.5">
-                                        <span className="text-xs font-bold text-neutral-500">Dari</span>
-                                        <input
-                                            type="date"
-                                            min={todayString}
-                                            value={tempStartDate}
-                                            onChange={(e) => setTempStartDate(e.target.value)}
-                                            className="w-full cursor-pointer rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm font-semibold text-neutral-800 transition-colors duration-150 outline-none focus:border-primary-500"
-                                        />
-                                    </div>
-                                    <div className="flex flex-col gap-1.5">
-                                        <span className="text-xs font-bold text-neutral-500">Sampai</span>
-                                        <input
-                                            type="date"
-                                            min={tempStartDate || todayString}
-                                            value={tempEndDate}
-                                            onChange={(e) => setTempEndDate(e.target.value)}
-                                            className="w-full cursor-pointer rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm font-semibold text-neutral-800 transition-colors duration-150 outline-none focus:border-primary-500"
-                                        />
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                handleFilterChange({
-                                                    start_date: tempStartDate || null,
-                                                    end_date: tempEndDate || null,
-                                                });
-                                                setIsMobileFilterOpen(false);
-                                            }}
-                                            className="w-full cursor-pointer rounded-xl bg-primary-500 py-2 text-center text-xs font-bold text-white shadow-xs transition-colors duration-150 hover:bg-primary-600"
-                                        >
-                                            Terapkan
-                                        </button>
-                                        {(filters.start_date || filters.end_date) && (
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setTempStartDate('');
-                                                    setTempEndDate('');
-                                                    handleFilterChange({
-                                                        start_date: null,
-                                                        end_date: null,
-                                                    });
-                                                    setIsMobileFilterOpen(false);
-                                                }}
-                                                className="cursor-pointer rounded-xl border border-neutral-300 px-3 py-2 text-center text-xs font-bold text-neutral-600 transition-colors duration-150 hover:bg-neutral-50"
-                                            >
-                                                Reset
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <FilterPanel
+                            categories={categories}
+                            activeCategory={activeCategory}
+                            onCategorySelect={(id) => {
+                                handleFilterChange({ category_id: id });
+                            }}
+                            tempMinPrice={tempMinPrice}
+                            setTempMinPrice={setTempMinPrice}
+                            tempMaxPrice={tempMaxPrice}
+                            setTempMaxPrice={setTempMaxPrice}
+                            onApplyPrice={() => {
+                                handleFilterChange({
+                                    min_price: tempMinPrice || null,
+                                    max_price: tempMaxPrice || null,
+                                });
+                                setIsMobileFilterOpen(false);
+                            }}
+                            onResetPrice={() => {
+                                setTempMinPrice('');
+                                setTempMaxPrice('');
+                                handleFilterChange({
+                                    min_price: null,
+                                    max_price: null,
+                                });
+                                setIsMobileFilterOpen(false);
+                            }}
+                            hasAppliedPrice={!!(filters.min_price || filters.max_price)}
+                            tempStartDate={tempStartDate}
+                            setTempStartDate={setTempStartDate}
+                            tempEndDate={tempEndDate}
+                            setTempEndDate={setTempEndDate}
+                            onApplyDate={() => {
+                                handleFilterChange({
+                                    start_date: tempStartDate || null,
+                                    end_date: tempEndDate || null,
+                                });
+                                setIsMobileFilterOpen(false);
+                            }}
+                            onResetDate={() => {
+                                setTempStartDate('');
+                                setTempEndDate('');
+                                handleFilterChange({
+                                    start_date: null,
+                                    end_date: null,
+                                });
+                                setIsMobileFilterOpen(false);
+                            }}
+                            hasAppliedDate={!!(filters.start_date || filters.end_date)}
+                            todayString={todayString}
+                        />
                     </div>
                 </div>
             )}

@@ -4,19 +4,16 @@ import {
     Bookmark,
     Award,
     Search,
-    MapPin,
     Plus,
     FileText,
     ExternalLink,
-    ChevronLeft,
-    ChevronRight,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import defaultAvatar from '@/../../public/avatars/default.png';
-import DefaultCover from '@/../../public/covers/default_cover.jpg';
-import Button from '@/components/ui/Button';
 import Footer from '@/layouts/Footer';
 import NavBar from '@/layouts/NavBar';
+import EventCard from '@/components/ui/EventCard';
+import Pagination from '@/components/ui/Pagination';
 
 interface Category {
     id: number;
@@ -83,19 +80,7 @@ export default function Dashboard({
     );
     const [searchQuery, setSearchQuery] = useState('');
 
-    const formatShortDate = (dateString: string) => {
-        const dateObj = new Date(dateString);
-
-        return (
-            new Intl.DateTimeFormat('id-ID', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-            }).format(dateObj) + ' WIB'
-        );
-    };
+    // Date formatting helper imported from @/lib/utils
 
     // Client-side searches and time filtering
     const now = new Date();
@@ -224,109 +209,14 @@ return matchesSearch;
         currentPage * itemsPerPage,
     );
 
-    // Get the page numbers to display, limiting to a maximum of 5 pages
-    const getPageNumbers = () => {
-        const maxPageButtons = 5;
-
-        if (totalPages <= maxPageButtons) {
-            return Array.from({ length: totalPages }, (_, idx) => idx + 1);
-        }
-
-        let startPage = Math.max(1, currentPage - 2);
-        const endPage = Math.min(totalPages, startPage + 4);
-
-        if (endPage - startPage < 4) {
-            startPage = Math.max(1, endPage - 4);
-        }
-
-        return Array.from(
-            { length: endPage - startPage + 1 },
-            (_, idx) => startPage + idx,
-        );
-    };
 
     const renderPagination = () => {
-        if (totalPages <= 1) {
-            return null;
-        }
-
         return (
-            <div className="mt-4 flex items-center justify-between border-t border-neutral-100 pt-6">
-                <span className="text-micro font-semibold text-gray-400">
-                    Halaman {currentPage} dari {totalPages}
-                </span>
-
-                <div className="flex gap-2">
-                    <button
-                        type="button"
-                        onClick={() =>
-                            setCurrentPage((prev) => Math.max(1, prev - 1))
-                        }
-                        disabled={currentPage === 1}
-                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border text-[10px] font-bold sm:h-9 sm:w-9 sm:text-micro ${
-                            currentPage === 1
-                                ? 'border-neutral-150 cursor-not-allowed bg-neutral-50 text-gray-300'
-                                : 'cursor-pointer border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50'
-                        }`}
-                        title="Sebelumnya"
-                    >
-                        <ChevronLeft size={14} className="sm:h-4 sm:w-4" />
-                    </button>
-
-                    {getPageNumbers().map((pageNumber) => {
-                        const isMobileHidden = (() => {
-                            if (totalPages <= 3) {
-                                return false;
-                            }
-
-                            if (currentPage === 1) {
-                                return pageNumber > 3;
-                            }
-
-                            if (currentPage === totalPages) {
-                                return pageNumber < totalPages - 2;
-                            }
-
-                            return Math.abs(pageNumber - currentPage) > 1;
-                        })();
-
-                        return (
-                            <button
-                                key={pageNumber}
-                                type="button"
-                                onClick={() => setCurrentPage(pageNumber)}
-                                className={`h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg border text-[10px] font-bold sm:h-9 sm:w-9 sm:text-micro ${
-                                    isMobileHidden ? 'hidden sm:flex' : 'flex'
-                                } ${
-                                    currentPage === pageNumber
-                                        ? 'border-primary-500 bg-primary-500 text-white shadow-sm'
-                                        : 'border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50'
-                                }`}
-                            >
-                                {pageNumber}
-                            </button>
-                        );
-                    })}
-
-                    <button
-                        type="button"
-                        onClick={() =>
-                            setCurrentPage((prev) =>
-                                Math.min(totalPages, prev + 1),
-                            )
-                        }
-                        disabled={currentPage === totalPages}
-                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border text-[10px] font-bold sm:h-9 sm:w-9 sm:text-micro ${
-                            currentPage === totalPages
-                                ? 'border-neutral-150 cursor-not-allowed bg-neutral-50 text-gray-300'
-                                : 'cursor-pointer border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50'
-                        }`}
-                        title="Selanjutnya"
-                    >
-                        <ChevronRight size={14} className="sm:h-4 sm:w-4" />
-                    </button>
-                </div>
-            </div>
+            <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+            />
         );
     };
 
@@ -375,13 +265,13 @@ return matchesSearch;
                     {/* Dashboard Navigation & Toggles */}
                     <div className="mb-4 flex flex-col justify-between gap-4 md:flex-row md:items-center">
                         {/* Tab Toggles */}
-                        <div className="relative flex w-full shrink-0 gap-0 overflow-hidden rounded-2xl bg-neutral-100 p-1 sm:w-[500px] md:w-[540px]">
+                        <div className="relative flex h-11 w-full shrink-0 gap-0 overflow-hidden rounded-2xl bg-neutral-100 p-1 md:w-[450px] lg:w-[540px]">
                             {/* Moving highlight pill */}
                             <div
                                 className="absolute top-1 bottom-1 rounded-xl bg-white shadow-sm transition-all duration-300 ease-in-out"
                                 style={{
-                                    left: `calc(${['Event Terbuat', 'Event Tersimpan', 'Sertifikat'].indexOf(activeTab)} * (100% / 3) + 4px)`,
-                                    width: `calc(100% / 3 - 8px)`,
+                                    left: `calc(${['Event Terbuat', 'Event Tersimpan', 'Sertifikat'].indexOf(activeTab)} * (100% - 8px) / 3 + 8px)`,
+                                    width: `calc((100% - 8px) / 3 - 8px)`,
                                 }}
                             />
                             {(
@@ -392,54 +282,54 @@ return matchesSearch;
                                 ] as const
                             ).map((tab) => {
                                 const isActive = activeTab === tab;
-                                let count = 0;
+                                  let count = 0;
 
-                                if (tab === 'Event Terbuat') {
-                                    count = hosted_events.length;
-                                } else if (tab === 'Event Tersimpan') {
-                                    count = joined_events.length;
-                                } else if (tab === 'Sertifikat') {
-                                    count = certificates.length;
-                                }
+                                  if (tab === 'Event Terbuat') {
+                                      count = hosted_events.length;
+                                  } else if (tab === 'Event Tersimpan') {
+                                      count = joined_events.length;
+                                  } else if (tab === 'Sertifikat') {
+                                      count = certificates.length;
+                                  }
 
-                                return (
-                                    <button
-                                        key={tab}
-                                        onClick={() => {
-                                            setActiveTab(tab);
-                                            setSearchQuery('');
-                                            setCurrentPage(1);
-                                        }}
-                                        className={`relative z-10 flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl border-0 px-2 py-2.5 text-xs font-bold whitespace-nowrap transition-colors duration-300 sm:gap-2 sm:px-4 sm:text-small ${
-                                            isActive
-                                                ? 'text-primary-500'
-                                                : 'text-gray-500 hover:text-neutral-900'
-                                        }`}
-                                    >
-                                        <span>{tab}</span>
-                                        <span
-                                            className={`rounded-full px-1.5 py-0.5 text-[9px] font-extrabold transition-colors duration-300 sm:text-micro ${
-                                                isActive
-                                                    ? 'bg-primary-50 text-primary-600'
-                                                    : 'bg-neutral-200 text-gray-600'
-                                            }`}
-                                        >
-                                            {count}
-                                        </span>
-                                    </button>
-                                );
-                            })}
-                        </div>
+                                  return (
+                                      <button
+                                          key={tab}
+                                          onClick={() => {
+                                              setActiveTab(tab);
+                                              setSearchQuery('');
+                                              setCurrentPage(1);
+                                          }}
+                                          className={`relative z-10 flex h-full w-1/3 cursor-pointer items-center justify-center gap-1 rounded-xl border-0 px-1 py-0 text-xs font-bold whitespace-nowrap transition-colors duration-300 sm:gap-2 sm:px-4 sm:text-small ${
+                                              isActive
+                                                  ? 'text-primary-500'
+                                                  : 'text-gray-500 hover:text-neutral-900'
+                                          }`}
+                                      >
+                                          <span>{tab}</span>
+                                          <span
+                                              className={`rounded-full px-1.5 py-0.5 text-[8px] font-extrabold transition-colors duration-300 sm:text-micro ${
+                                                  isActive
+                                                      ? 'bg-primary-50 text-primary-600'
+                                                      : 'bg-neutral-200 text-gray-600'
+                                              }`}
+                                          >
+                                              {count}
+                                          </span>
+                                      </button>
+                                  );
+                              })}
+                          </div>
 
                         {/* Lalu / Mendatang Toggler */}
                         {activeTab !== 'Sertifikat' && (
-                            <div className="relative flex w-full shrink-0 gap-0 overflow-hidden rounded-2xl bg-neutral-100 p-1 sm:w-[240px]">
+                            <div className="relative flex h-11 w-full shrink-0 gap-0 overflow-hidden rounded-2xl bg-neutral-100 p-1 md:w-[200px] lg:w-[240px]">
                                 {/* Moving highlight pill */}
                                 <div
                                     className="absolute top-1 bottom-1 rounded-xl bg-white shadow-sm transition-all duration-300 ease-in-out"
                                     style={{
-                                        left: `calc(${['mendatang', 'lalu'].indexOf(timeFilter)} * (100% / 2) + 4px)`,
-                                        width: `calc(100% / 2 - 8px)`,
+                                        left: `calc(${['mendatang', 'lalu'].indexOf(timeFilter)} * (100% - 8px) / 2 + 8px)`,
+                                        width: `calc((100% - 8px) / 2 - 8px)`,
                                     }}
                                 />
                                 {(
@@ -460,7 +350,7 @@ return matchesSearch;
                                                 setTimeFilter(item.key);
                                                 setCurrentPage(1);
                                             }}
-                                            className={`relative z-10 flex flex-1 cursor-pointer items-center justify-center py-2.5 text-xs font-bold transition-colors duration-300 sm:text-small ${
+                                            className={`relative z-10 flex h-full w-1/2 cursor-pointer items-center justify-center py-0 text-xs font-bold transition-colors duration-300 sm:text-small ${
                                                 isActive
                                                     ? 'text-primary-500'
                                                     : 'text-gray-500 hover:text-neutral-900'
@@ -547,68 +437,12 @@ return matchesSearch;
                                 <div className="flex flex-col gap-6">
                                     <div className="animate-in fade-in grid grid-cols-1 gap-4 duration-200 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                                         {paginatedHostedEvents.map((event) => (
-                                            <div
+                                            <EventCard
                                                 key={event.id}
-                                                className="border-neutral-150 group relative flex h-[160px] w-full flex-row justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:h-[370px] sm:flex-col lg:mx-auto lg:h-[400px] lg:w-full lg:max-w-[300px]"
-                                            >
-                                                {/* "FREE" or price Badge on Top-Left of image */}
-                                                <div className="absolute top-3 left-3 z-10 rounded-md bg-secondary-400 px-3 py-1 text-[0.6275rem] font-extrabold text-secondary-900 shadow-sm sm:top-4 sm:left-4">
-                                                    {event.price === 0
-                                                        ? 'FREE'
-                                                        : `Rp ${Number(event.price).toLocaleString('id-ID')}`}
-                                                </div>
-
-                                                <div className="sm:aspect-none relative aspect-square h-full w-[160px] shrink-0 overflow-hidden border-r border-gray-100 bg-gray-50 sm:h-[190px] sm:w-full sm:border-r-0 sm:border-b lg:h-[210px]">
-                                                    <img
-                                                        src={
-                                                            event.poster_url ||
-                                                            DefaultCover
-                                                        }
-                                                        alt={event.title}
-                                                        draggable="false"
-                                                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                                    />
-                                                </div>
-                                                <div className="flex grow flex-col justify-between gap-1 overflow-hidden p-3 sm:h-[180px] sm:flex-none sm:shrink-0 sm:p-4 lg:h-[190px]">
-                                                    <div className="flex flex-col gap-1 sm:gap-1.5">
-                                                        <h4 className="line-clamp-2 h-[36px] overflow-hidden text-xs leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[40px] sm:text-sm lg:h-[48px] lg:text-base">
-                                                            {event.title}
-                                                        </h4>
-                                                        <div className="flex flex-col gap-0.5 border-t border-gray-100/50 pt-1 text-[10px] font-semibold text-gray-400 sm:gap-1 sm:pt-1.5 sm:text-micro">
-                                                            <span className="flex items-center gap-1.5">
-                                                                <Calendar
-                                                                    size={12}
-                                                                    className="shrink-0 text-gray-400"
-                                                                />
-                                                                {formatShortDate(
-                                                                    event.start_datetime,
-                                                                )}
-                                                            </span>
-                                                            <span className="flex items-start gap-1.5">
-                                                                <MapPin
-                                                                    size={12}
-                                                                    className="mt-0.5 shrink-0 text-gray-400"
-                                                                />
-                                                                <span className="line-clamp-2 overflow-hidden">
-                                                                    {event.type ===
-                                                                    'online'
-                                                                        ? 'Online'
-                                                                        : event.location_name ||
-                                                                          'Lokasi Offline'}
-                                                                </span>
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                    <div className="pt-1">
-                                                        <Button
-                                                            href={`/dashboard/events/${event.id}`}
-                                                            className="w-full py-1 text-[10px] sm:py-2 sm:text-small"
-                                                        >
-                                                            Detail Event
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                                event={event}
+                                                variant="dashboard"
+                                                detailUrl={`/dashboard/events/${event.id}`}
+                                            />
                                         ))}
                                     </div>
                                     {renderPagination()}
@@ -668,62 +502,11 @@ return matchesSearch;
                                             }
 
                                             return (
-                                                <div
+                                                <EventCard
                                                     key={reg.id}
-                                                    className="border-neutral-150 group relative flex h-[160px] w-full flex-row justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:h-[370px] sm:flex-col lg:mx-auto lg:h-[400px] lg:w-full lg:max-w-[300px]"
-                                                >
-                                                    {/* "FREE" or price Badge on Top-Left of image */}
-                                                    <div className="absolute top-3 left-3 z-10 rounded-md bg-secondary-400 px-3 py-1 text-[0.6275rem] font-extrabold text-secondary-900 shadow-sm sm:top-4 sm:left-4">
-                                                        {event.price === 0
-                                                            ? 'FREE'
-                                                            : `Rp ${Number(event.price).toLocaleString('id-ID')}`}
-                                                    </div>
-
-                                                    <div className="sm:aspect-none relative aspect-square h-full w-[160px] shrink-0 overflow-hidden border-r border-gray-100 bg-gray-50 sm:h-[190px] sm:w-full sm:border-r-0 sm:border-b lg:h-[210px]">
-                                                        <img
-                                                            src={
-                                                                event.poster_url ||
-                                                                DefaultCover
-                                                            }
-                                                            alt={event.title}
-                                                            draggable="false"
-                                                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                                        />
-                                                    </div>
-                                                    <div className="flex grow flex-col justify-between gap-1 overflow-hidden p-3 sm:h-[180px] sm:flex-none sm:shrink-0 sm:p-4 lg:h-[190px]">
-                                                        <div className="flex flex-col gap-1 sm:gap-1.5">
-                                                            <h4 className="line-clamp-2 h-[36px] overflow-hidden text-xs leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[40px] sm:text-sm lg:h-[48px] lg:text-base">
-                                                                {event.title}
-                                                            </h4>
-                                                            <div className="flex flex-col gap-0.5 border-t border-gray-100/50 pt-1 text-[10px] font-semibold text-gray-400 sm:gap-1 sm:pt-1.5 sm:text-micro">
-                                                                <span className="flex items-center gap-1.5">
-                                                                    <Calendar
-                                                                        size={
-                                                                            12
-                                                                        }
-                                                                        className="shrink-0 text-gray-400"
-                                                                    />
-                                                                    {formatShortDate(
-                                                                        event.start_datetime,
-                                                                    )}
-                                                                </span>
-                                                                <span className="flex items-start gap-1.5">
-                                                                    <MapPin
-                                                                        size={
-                                                                            12
-                                                                        }
-                                                                        className="mt-0.5 shrink-0 text-gray-400"
-                                                                    />
-                                                                    <span className="line-clamp-2 overflow-hidden">
-                                                                        {event.type ===
-                                                                        'online'
-                                                                            ? 'Online'
-                                                                            : event.location_name ||
-                                                                              'Lokasi Offline'}
-                                                                    </span>
-                                                                </span>
-                                                            </div>
-                                                        </div>
+                                                    event={event}
+                                                    variant="dashboard"
+                                                    footer={
                                                         <div className="flex gap-2 pt-1">
                                                             <Link
                                                                 href={`/events/${event.id}`}
@@ -736,13 +519,11 @@ return matchesSearch;
                                                                 className="flex items-center justify-center rounded-full bg-neutral-100 px-3 text-neutral-800 transition-colors hover:bg-neutral-200"
                                                                 title="Lihat Tiket QR"
                                                             >
-                                                                <FileText
-                                                                    size={14}
-                                                                />
+                                                                <FileText size={14} />
                                                             </Link>
                                                         </div>
-                                                    </div>
-                                                </div>
+                                                    }
+                                                />
                                             );
                                         })}
                                     </div>
