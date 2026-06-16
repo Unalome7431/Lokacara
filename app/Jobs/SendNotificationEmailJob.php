@@ -23,13 +23,14 @@ class SendNotificationEmailJob implements ShouldQueue
         public string $title,
         public string $body,
         public ?Event $event,
+        public ?string $reminderOffset = null,
     ) {}
 
     public function handle(): void
     {
         $mailable = match ($this->category) {
             'registration_success' => new RegistrationSuccessMail($this->event, $this->recipient),
-            'event_reminder' => new EventReminderMail($this->event, $this->recipient),
+            'event_reminder' => new EventReminderMail($this->event, $this->recipient, $this->reminderOffset),
             'event_updated' => new EventUpdatedMail($this->event, $this->recipient),
             'event_cancelled' => new EventCancelledForParticipantMail($this->event, $this->recipient),
             'certificate_available' => new CertificateAvailableMail($this->event, $this->recipient),

@@ -61,7 +61,7 @@ class NotificationDispatchService
         ]);
 
         if (in_array($category, self::EMAIL_AND_PUSH)) {
-            SendNotificationEmailJob::dispatch($recipient, $category, $title, $body, $event);
+            SendNotificationEmailJob::dispatch($recipient, $category, $title, $body, $event, $reminderOffset);
         }
 
         $sendPush = true;
