@@ -39,12 +39,16 @@ services:
       DB_PASSWORD: "${DB_PASSWORD:-secret}"
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      QUEUE_CONNECTION: "${QUEUE_CONNECTION:-redis}"
+      FIREBASE_PROJECT_ID: "${FIREBASE_PROJECT_ID}"
+      GOOGLE_APPLICATION_CREDENTIALS: /var/www/secrets/firebase.json
       RUN_MIGRATIONS: "true"
     volumes:
       - public_data:/var/www/html/public
       - storage_data:/var/www/html/storage
       - ./.env:/var/www/html/.env
       - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+      - ${FIREBASE_CREDENTIALS_FILE:-/dev/null}:/var/www/secrets/firebase.json:ro
     depends_on:
       - db
       - redis
@@ -80,6 +84,72 @@ services:
       - "${FORWARD_REDIS_PORT:-6379}:6379"
     volumes:
       - redis-data:/data
+    networks:
+      - lokacara-network
+
+  # Queue Worker
+  queue:
+    image: lokacara-app:latest
+    container_name: lokacara-queue
+    restart: unless-stopped
+    command: php artisan queue:work --tries=3 --sleep=3
+    environment:
+      APP_NAME: "${APP_NAME:-Lokacara}"
+      APP_ENV: "${APP_ENV:-local}"
+      APP_KEY: "${APP_KEY}"
+      APP_DEBUG: "${APP_DEBUG:-false}"
+      APP_URL: "${APP_URL:-http://localhost:8000}"
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: "${DB_DATABASE:-lokacara}"
+      DB_USERNAME: "${DB_USERNAME:-postgres}"
+      DB_PASSWORD: "${DB_PASSWORD:-secret}"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      QUEUE_CONNECTION: "${QUEUE_CONNECTION:-redis}"
+      FIREBASE_PROJECT_ID: "${FIREBASE_PROJECT_ID}"
+      GOOGLE_APPLICATION_CREDENTIALS: /var/www/secrets/firebase.json
+    volumes:
+      - public_data:/var/www/html/public
+      - storage_data:/var/www/html/storage
+      - ./.env:/var/www/html/.env
+      - ${FIREBASE_CREDENTIALS_FILE:-/dev/null}:/var/www/secrets/firebase.json:ro
+    depends_on:
+      - app
+    networks:
+      - lokacara-network
+
+  # Scheduler
+  scheduler:
+    image: lokacara-app:latest
+    container_name: lokacara-scheduler
+    restart: unless-stopped
+    command: php artisan schedule:work
+    environment:
+      APP_NAME: "${APP_NAME:-Lokacara}"
+      APP_ENV: "${APP_ENV:-local}"
+      APP_KEY: "${APP_KEY}"
+      APP_DEBUG: "${APP_DEBUG:-false}"
+      APP_URL: "${APP_URL:-http://localhost:8000}"
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: "${DB_DATABASE:-lokacara}"
+      DB_USERNAME: "${DB_USERNAME:-postgres}"
+      DB_PASSWORD: "${DB_PASSWORD:-secret}"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      QUEUE_CONNECTION: "${QUEUE_CONNECTION:-redis}"
+      FIREBASE_PROJECT_ID: "${FIREBASE_PROJECT_ID}"
+      GOOGLE_APPLICATION_CREDENTIALS: /var/www/secrets/firebase.json
+    volumes:
+      - public_data:/var/www/html/public
+      - storage_data:/var/www/html/storage
+      - ./.env:/var/www/html/.env
+      - ${FIREBASE_CREDENTIALS_FILE:-/dev/null}:/var/www/secrets/firebase.json:ro
+    depends_on:
+      - app
     networks:
       - lokacara-network
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\EventRegistration;
+use App\Services\NotificationDispatchService;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -107,6 +108,15 @@ class AttendanceApiController extends Controller
             'checked_in_at' => now(),
             'status' => 'present'
         ]);
+
+        app(NotificationDispatchService::class)->dispatch(
+            recipient: $registration->user,
+            category: 'attendance_checked_in',
+            title: 'Check-in berhasil',
+            body: "Kamu berhasil check-in di event {$event->title}.",
+            target: 'tickets',
+            event: $event,
+        );
 
         return response()->json([
             'message' => 'User ' . $registration->user->name . ' successfully checked in.',

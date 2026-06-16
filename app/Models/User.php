@@ -72,6 +72,11 @@ class User extends Authenticatable
         return $this->hasMany(Notification::class)->chaperone();
     }
 
+    public function pushTokens(): HasMany
+    {
+        return $this->hasMany(PushToken::class)->chaperone();
+    }
+
     public function bookmarks(): HasMany
     {
         return $this->hasMany(Bookmark::class)->chaperone();
