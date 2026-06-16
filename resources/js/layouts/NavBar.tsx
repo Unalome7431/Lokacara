@@ -102,6 +102,13 @@ export default function NavBar({
     const [prevLocationValue, setPrevLocationValue] = useState(locationValue);
     const [locationInput, setLocationInput] = useState(locationValue || '');
 
+    const currentFilters = (page.props.filters as any) || {};
+    const [keyword, setKeyword] = useState(currentFilters.keyword || '');
+
+    useEffect(() => {
+        setKeyword(currentFilters.keyword || '');
+    }, [currentFilters.keyword]);
+
     // Sync input depending on page
     useEffect(() => {
         if (isEventDetailsPage) {
@@ -207,9 +214,14 @@ export default function NavBar({
                     action="/events/search"
                     method="GET"
                     onSubmit={(e) => {
-                        if (onLocationSubmit) {
-                            e.preventDefault();
+                        e.preventDefault();
+                        const activeElement = document.activeElement;
+                        const isLocationActive = activeElement && activeElement.getAttribute('name') === 'location';
+
+                        if (isLocationActive && onLocationSubmit) {
                             onLocationSubmit(locationInput);
+                        } else {
+                            router.get('/events/search', { keyword: keyword.trim() });
                         }
                     }}
                     className="flex w-0 max-w-[480px] flex-1 items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50/50 px-3 py-1.5 transition-all duration-200 focus-within:border-primary-500 focus-within:bg-white focus-within:shadow-sm hover:bg-white sm:gap-3 sm:px-5 sm:py-2"
@@ -220,6 +232,8 @@ export default function NavBar({
                         <input
                             type="text"
                             name="keyword"
+                            value={keyword}
+                            onChange={(e) => setKeyword(e.target.value)}
                             placeholder="Cari"
                             className="w-full border-0 bg-transparent font-brand text-xs font-normal text-gray-700 placeholder-gray-400 outline-none focus:ring-0 focus:outline-none sm:text-base"
                         />

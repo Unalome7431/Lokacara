@@ -1842,7 +1842,7 @@ export default function Home({
                                 )}
 
                                 {/* Catalogue Grid */}
-                                <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
                                     {paginatedCatalogEvents.length === 0 ? (
                                         <div className="col-span-full py-20 text-center font-semibold text-gray-400">
                                             Tidak ada event yang ditemukan untuk
@@ -1852,15 +1852,15 @@ export default function Home({
                                         paginatedCatalogEvents.map((event) => (
                                             <div
                                                 key={event.id}
-                                                className="border-neutral-150 group relative flex h-[160px] w-full flex-row justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:h-[190px] lg:mx-auto lg:h-[400px] lg:w-full lg:max-w-[300px] lg:flex-col"
+                                                className="border-neutral-150 group relative flex h-[160px] w-full flex-row justify-between overflow-hidden rounded-3xl border bg-white shadow-sm transition-all duration-300 hover:shadow-md sm:mx-auto sm:h-[400px] sm:w-full sm:flex-col"
                                             >
-                                                <div className="absolute top-3 left-3 z-10 rounded-md bg-secondary-400 px-3 py-1 text-[0.6275rem] font-extrabold text-secondary-900 shadow-sm sm:top-4 lg:top-4">
+                                                <div className="absolute top-3 left-3 z-10 rounded-md bg-secondary-400 px-3 py-1 text-[0.6275rem] font-extrabold text-secondary-900 shadow-sm sm:top-4">
                                                     {event.price === 0
                                                         ? 'GRATIS'
                                                         : `Rp ${Number(event.price).toLocaleString('id-ID')}`}
                                                 </div>
-
-                                                <div className="lg:aspect-none relative aspect-square h-full w-[160px] shrink-0 overflow-hidden border-r border-gray-100 bg-gray-50 sm:w-[190px] lg:h-[210px] lg:w-full lg:border-r-0 lg:border-b">
+ 
+                                                <div className="sm:aspect-none relative aspect-square h-full w-[160px] shrink-0 overflow-hidden border-r border-gray-100 bg-gray-50 sm:h-[210px] sm:w-full sm:border-r-0 sm:border-b">
                                                     <img
                                                         src={
                                                             event.poster_url ||
@@ -1871,13 +1871,13 @@ export default function Home({
                                                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                                                     />
                                                 </div>
-
-                                                <div className="flex flex-grow flex-col justify-between gap-1 overflow-hidden p-3 sm:gap-2 sm:p-4 lg:h-[190px] lg:flex-none lg:shrink-0 lg:p-4">
+ 
+                                                <div className="flex flex-grow flex-col justify-between gap-1 overflow-hidden p-3 sm:h-[190px] sm:flex-none sm:shrink-0 sm:p-4">
                                                     <div className="flex flex-col gap-1 sm:gap-1.5">
-                                                        <h4 className="line-clamp-2 h-[36px] overflow-hidden text-small leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[40px] lg:h-[48px] lg:text-base">
+                                                        <h4 className="line-clamp-2 h-[36px] overflow-hidden text-small leading-snug font-extrabold text-primary-500 group-hover:text-primary-600 sm:h-[48px] sm:text-base">
                                                             {event.title}
                                                         </h4>
-
+ 
                                                         <div className="flex flex-col gap-0.5 border-t border-gray-100/50 pt-1 text-[10px] font-semibold text-gray-400 sm:gap-1 sm:pt-1.5 sm:text-micro">
                                                             <span className="flex items-center gap-1.5">
                                                                 <Calendar
@@ -1903,7 +1903,7 @@ export default function Home({
                                                             </span>
                                                         </div>
                                                     </div>
-
+ 
                                                     <div className="pt-1">
                                                         <Button
                                                             href={`/events/${event.id}`}
