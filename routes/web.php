@@ -93,6 +93,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard/events/{event}/certificates', [CertificateManagementController::class, 'index'])->name('dashboard.events.certificates.index');
     Route::post('/dashboard/events/{event}/certificates/save', [CertificateManagementController::class, 'saveTemplate'])->name('dashboard.events.certificates.save');
     Route::post('/dashboard/events/{event}/certificates/distribute', [CertificateManagementController::class, 'distribute'])->name('dashboard.events.certificates.distribute');
+    Route::post('/dashboard/events/{event}/certificates/preview', [CertificateManagementController::class, 'preview'])->name('dashboard.events.certificates.preview');
     Route::get('/dashboard/events/{event}/certificates/template', [CertificateManagementController::class, 'showTemplate'])->name('dashboard.events.certificates.template');
 
     // Module 5: Fulfillment (E-Certificates) - Attendee Side

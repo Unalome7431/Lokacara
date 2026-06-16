@@ -328,3 +328,103 @@ test('owner cannot save certificate layout with invalid max_width or max_height 
     $response->assertRedirect();
     $response->assertSessionHasErrors(['max_height']);
 });
+
+test('guest cannot request certificate layout preview', function () {
+    $response = $this->postJson(route('dashboard.events.certificates.preview', $this->event), [
+        'font_family' => 'Roboto',
+        'font_color' => '#000000',
+        'font_size' => 'Medium',
+        'x_pos' => 50,
+        'is_x_center' => true,
+        'y_pos' => 50,
+        'is_y_center' => true,
+        'max_width' => 80,
+        'max_height' => 20,
+    ]);
+    $response->assertStatus(401);
+});
+
+test('non-owner cannot request certificate layout preview', function () {
+    $otherUser = User::factory()->create();
+    $this->actingAs($otherUser);
+
+    $response = $this->postJson(route('dashboard.events.certificates.preview', $this->event), [
+        'font_family' => 'Roboto',
+        'font_color' => '#000000',
+        'font_size' => 'Medium',
+        'x_pos' => 50,
+        'is_x_center' => true,
+        'y_pos' => 50,
+        'is_y_center' => true,
+        'max_width' => 80,
+        'max_height' => 20,
+    ]);
+    $response->assertStatus(403);
+});
+
+test('owner can download certificate preview with new template upload', function () {
+    $this->actingAs($this->user);
+
+    $file = UploadedFile::fake()->image('preview_template.jpg', 800, 600);
+
+    $response = $this->post(route('dashboard.events.certificates.preview', $this->event), [
+        'template' => $file,
+        'font_family' => 'Roboto',
+        'font_color' => '#000000',
+        'font_size' => 'Medium',
+        'x_pos' => 50,
+        'is_x_center' => true,
+        'y_pos' => 50,
+        'is_y_center' => true,
+        'max_width' => 80,
+        'max_height' => 20,
+    ]);
+
+    $response->assertOk();
+    $response->assertHeader('content-disposition', 'attachment; filename=preview_sertifikat.jpg');
+});
+
+test('owner can download certificate preview using saved database template', function () {
+    $this->actingAs($this->user);
+
+    $file = UploadedFile::fake()->image('database_template.png', 800, 600);
+    $path = Storage::disk('local')->putFile('templates', $file);
+    $this->event->update(['certificate_template' => $path]);
+
+    $response = $this->post(route('dashboard.events.certificates.preview', $this->event), [
+        'font_family' => 'Roboto',
+        'font_color' => '#000000',
+        'font_size' => 'Medium',
+        'x_pos' => 50,
+        'is_x_center' => true,
+        'y_pos' => 50,
+        'is_y_center' => true,
+        'max_width' => 80,
+        'max_height' => 20,
+    ]);
+
+    $response->assertOk();
+    $response->assertHeader('content-disposition', 'attachment; filename=preview_sertifikat.png');
+});
+
+test('owner gets validation error if preview has no template and database has no template', function () {
+    $this->actingAs($this->user);
+
+    $response = $this->postJson(route('dashboard.events.certificates.preview', $this->event), [
+        'font_family' => 'Roboto',
+        'font_color' => '#000000',
+        'font_size' => 'Medium',
+        'x_pos' => 50,
+        'is_x_center' => true,
+        'y_pos' => 50,
+        'is_y_center' => true,
+        'max_width' => 80,
+        'max_height' => 20,
+    ]);
+
+    $response->assertStatus(422);
+    $response->assertJson([
+        'error' => 'Template sertifikat wajib diunggah terlebih dahulu.'
+    ]);
+});
+

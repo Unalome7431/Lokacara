@@ -95,11 +95,8 @@ class DistributeCertificatesJob implements ShouldQueue
                 $fontColor = $this->config['font_color'] ?? '#000000';
                 $font->color($fontColor);
                 
-                // Alignment
-                $font->align(
-                    $this->config['is_x_center'] ? 'center' : 'left',
-                    $this->config['is_y_center'] ? 'center' : 'top'
-                );
+                // Always align center/center since position coordinates point to the center of the bounding box
+                $font->align('center', 'center');
             });
 
             // 4. Save individual certificate
