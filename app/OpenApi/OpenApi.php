@@ -41,6 +41,4 @@ use OpenApi\Attributes as OA;
     content: new OA\JsonContent(ref: '#/components/schemas/User')
 )]
 #[OA\Response(response: 401, description: 'Unauthenticated')]
-class OpenApi
-{
-}
+class OpenApi {}

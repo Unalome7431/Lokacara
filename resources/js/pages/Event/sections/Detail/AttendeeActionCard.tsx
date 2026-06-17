@@ -10,6 +10,8 @@ interface Event {
     capacity?: number;
     view_count: number;
     event_registrations_count?: number;
+    status?: string;
+    end_datetime?: string;
 }
 
 interface AttendeeActionCardProps {
@@ -37,6 +39,8 @@ export default function AttendeeActionCard({
         hasCapacityLimit && event.capacity
             ? Math.max(0, event.capacity - registeredCount)
             : null;
+
+    const isEventFinished = event.end_datetime && new Date(event.end_datetime) < new Date();
 
     return (
         <div className="flex flex-col gap-6 lg:sticky lg:top-28">
@@ -88,7 +92,47 @@ export default function AttendeeActionCard({
 
             {/* Standalone Action Buttons Sticky Bottom on Mobile/Tablet */}
             <div className="fixed right-0 bottom-0 left-0 z-40 border-t border-neutral-200 bg-white p-4 shadow-[0_-8px_20px_rgba(0,0,0,0.06)] lg:relative lg:right-auto lg:bottom-auto lg:left-auto lg:z-auto lg:w-full lg:flex-col lg:gap-4 lg:border-t-0 lg:bg-transparent lg:p-0 lg:shadow-none">
-                {isRegistered ? (
+                {event.status === 'cancelled' || event.status === 'banned' ? (
+                    <div className="flex w-full flex-col gap-3">
+                        <div className="flex w-full items-center justify-center gap-2 rounded-2xl border border-red-200 bg-red-50 py-3.5 text-base font-bold text-red-700 lg:py-4">
+                            <AlertTriangle size={18} className="text-red-600" />
+                            <span>
+                                {event.status === 'cancelled'
+                                    ? 'Event Telah Dibatalkan'
+                                    : 'Event Telah Dilarang (Banned)'}
+                            </span>
+                        </div>
+                    </div>
+                ) : isEventFinished ? (
+                    <div className="flex w-full flex-col gap-3">
+                        <div className="flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 py-3.5 text-base font-bold text-amber-700 lg:py-4">
+                            <Award size={18} className="text-amber-600" />
+                            <span>Acara Telah Selesai</span>
+                        </div>
+                        {isRegistered && (
+                            certificateUrl ? (
+                                <a
+                                    href={certificateUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex flex-1 items-center justify-center gap-2 rounded-full bg-secondary-500 py-3 text-center text-base font-bold text-white shadow-md transition-all duration-200 hover:bg-secondary-600 active:scale-[0.99] lg:py-4"
+                                >
+                                    <span>Unduh E-Sertifikat</span>
+                                    <Award size={16} />
+                                </a>
+                            ) : (
+                                <button
+                                    type="button"
+                                    disabled
+                                    className="flex flex-1 items-center justify-center gap-2 rounded-full bg-neutral-200 py-3 text-center text-base font-bold text-neutral-400 cursor-not-allowed lg:py-4"
+                                >
+                                    <span>Unduh E-Sertifikat (Belum Tersedia)</span>
+                                    <Award size={16} />
+                                </button>
+                            )
+                        )}
+                    </div>
+                ) : isRegistered ? (
                     <div className="flex w-full flex-col gap-3 sm:flex-row lg:flex-col">
                         <div className="flex flex-1 items-center justify-center gap-2 rounded-full border border-green-200 bg-green-50 py-3 text-base font-bold text-green-700 lg:py-4">
                             <CheckCircle2 size={18} className="animate-pulse text-green-600" />

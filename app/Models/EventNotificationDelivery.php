@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Fillable([
     'event_id', 'user_id', 'category', 'reminder_offset',
-    'notification_id', 'push_sent_at', 'email_sent_at'
+    'notification_id', 'push_sent_at', 'email_sent_at',
 ])]
 class EventNotificationDelivery extends Model
 {

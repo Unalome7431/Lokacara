@@ -3,10 +3,10 @@
 namespace App\Jobs;
 
 use App\Mail\CertificateAvailableMail;
-use App\Mail\RegistrationSuccessMail;
+use App\Mail\EventCancelledForParticipantMail;
 use App\Mail\EventReminderMail;
 use App\Mail\EventUpdatedMail;
-use App\Mail\EventCancelledForParticipantMail;
+use App\Mail\RegistrationSuccessMail;
 use App\Models\Event;
 use App\Models\User;
 use Illuminate\Contracts\Queue\ShouldQueue;

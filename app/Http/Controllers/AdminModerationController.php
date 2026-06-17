@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Event;
-use App\Models\User;
-use App\Models\EventReport;
 use App\Mail\EventBannedMail;
 use App\Mail\EventCancelledForParticipantMail;
+use App\Models\Event;
+use App\Models\EventReport;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
@@ -21,9 +21,9 @@ class AdminModerationController extends Controller
         $reports = EventReport::with(['user', 'event'])
             ->latest()
             ->paginate(15);
-            
+
         return Inertia::render('Admin/ModerationBase', [
-            'reports' => $reports
+            'reports' => $reports,
         ]);
     }
 
@@ -33,9 +33,9 @@ class AdminModerationController extends Controller
     public function showReport(EventReport $report)
     {
         $report->load(['user', 'event.user']);
-        
+
         return Inertia::render('Admin/ReportDetail', [
-            'report' => $report
+            'report' => $report,
         ]);
     }
 
@@ -82,7 +82,7 @@ class AdminModerationController extends Controller
         $user->tokens()->delete(); // Revoke Sanctum tokens
         // Usually, a status or banned_at column is used to prevent the user from logging in.
         // Assuming we set status to inactive/banned.
-        // $user->update(['status' => 'banned']); 
+        // $user->update(['status' => 'banned']);
         // Here we just delete for the sake of standard flow, or you must have a banned field.
         $user->delete();
 

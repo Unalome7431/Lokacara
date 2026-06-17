@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Mail\ResetPasswordOtpMail;
+use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Http\RedirectResponse;
 
 class PasswordResetController extends Controller
 {
@@ -44,26 +44,26 @@ class PasswordResetController extends Controller
             $user->otp_expires_at = now()->addMinutes(15);
             $user->save();
 
-            \Illuminate\Support\Facades\Log::info("Password reset OTP untuk user {$email}: {$otp}");
+            Log::info("Password reset OTP untuk user {$email}: {$otp}");
 
             try {
                 Mail::to($email)->send(new ResetPasswordOtpMail($user, $otp));
             } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error("Gagal mengirim email reset OTP ke {$email}: " . $e->getMessage());
+                Log::error("Gagal mengirim email reset OTP ke {$email}: ".$e->getMessage());
             }
         } else {
             // For invalid email, generate a dummy user and still send the OTP
             // but the user won't be able to verify it since there is no account.
-            \Illuminate\Support\Facades\Log::info("Password reset OTP untuk INVALID email {$email}: {$otp}");
+            Log::info("Password reset OTP untuk INVALID email {$email}: {$otp}");
 
-            $dummyUser = new User();
+            $dummyUser = new User;
             $dummyUser->name = 'Pengguna';
             $dummyUser->email = $email;
 
             try {
                 Mail::to($email)->send(new ResetPasswordOtpMail($dummyUser, $otp));
             } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error("Gagal mengirim email reset OTP ke invalid email {$email}: " . $e->getMessage());
+                Log::error("Gagal mengirim email reset OTP ke invalid email {$email}: ".$e->getMessage());
             }
         }
 
@@ -80,7 +80,7 @@ class PasswordResetController extends Controller
     {
         $email = session('password_reset_email');
 
-        if (!$email) {
+        if (! $email) {
             return to_route('password.request');
         }
 
@@ -105,19 +105,19 @@ class PasswordResetController extends Controller
 
         $email = session('password_reset_email');
 
-        if (!$email) {
+        if (! $email) {
             return to_route('password.request');
         }
 
         $user = User::where('email', $email)->first();
 
         // If email is invalid, verification fails
-        if (!$user) {
+        if (! $user) {
             return back()->with('error', 'Kode OTP yang Anda masukkan salah.');
         }
 
         // Validate OTP code and expiration
-        if (!$user->otp_code || $user->otp_code !== $request->otp) {
+        if (! $user->otp_code || $user->otp_code !== $request->otp) {
             return back()->with('error', 'Kode OTP yang Anda masukkan salah.');
         }
 
@@ -146,7 +146,7 @@ class PasswordResetController extends Controller
      */
     public function showResetForm(): Response|RedirectResponse
     {
-        if (!session('password_reset_verified')) {
+        if (! session('password_reset_verified')) {
             return to_route('password.request');
         }
 
@@ -158,7 +158,7 @@ class PasswordResetController extends Controller
      */
     public function resetPassword(Request $request): RedirectResponse
     {
-        if (!session('password_reset_verified')) {
+        if (! session('password_reset_verified')) {
             return to_route('password.request');
         }
 

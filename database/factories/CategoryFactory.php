@@ -18,11 +18,11 @@ class CategoryFactory extends Factory
      */
     public function definition(): array
     {
-        $name = $this->faker->unique()->words(rand(1,2), true);
+        $name = $this->faker->unique()->words(rand(1, 2), true);
 
         return [
-            'name'=> ucwords($name),
-            'slug'=> Str::slug($name),
+            'name' => ucwords($name),
+            'slug' => Str::slug($name),
         ];
     }
 }

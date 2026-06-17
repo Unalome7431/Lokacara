@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class RegisterController extends Controller
@@ -17,7 +18,7 @@ class RegisterController extends Controller
 
     public function register(Request $request)
     {
-        \Illuminate\Support\Facades\Log::info('RegisterController@register called with: ' . json_encode($request->except('password', 'password_confirmation')));
+        Log::info('RegisterController@register called with: '.json_encode($request->except('password', 'password_confirmation')));
         $request->validate([
             'email' => ['required', 'email', 'unique:users,email'],
             'password' => ['required', 'confirmed'],
@@ -33,12 +34,13 @@ class RegisterController extends Controller
         ]);
 
         $user = User::create([
-          'email' => $request->email,
-          'password' => $request->password,
+            'email' => $request->email,
+            'password' => $request->password,
         ]);
 
         Auth::login($user);
         $request->session()->regenerate();
+
         return redirect()->route('onboard');
     }
 }

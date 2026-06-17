@@ -3,10 +3,15 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
-use App\Models\Event;
 use App\Jobs\DistributeCertificatesJob;
+use App\Models\Event;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
 
 class CertificateManagementController extends Controller
 {
@@ -17,12 +22,12 @@ class CertificateManagementController extends Controller
         }
 
         $presentCount = $event->eventRegistrations()->where('status', 'present')->count();
-        $isDone = now()->greaterThanOrEqualTo(\Illuminate\Support\Carbon::parse($event->end_datetime));
+        $isDone = now()->greaterThanOrEqualTo(Carbon::parse($event->end_datetime));
 
         return Inertia::render('Event/host/Certificates', [
             'event' => $event,
             'presentCount' => $presentCount,
-            'isDone' => $isDone
+            'isDone' => $isDone,
         ]);
     }
 
@@ -32,7 +37,7 @@ class CertificateManagementController extends Controller
             abort(403);
         }
 
-        if ($request->input('template') === 'null' || $request->input('template') === 'undefined' || !$request->hasFile('template')) {
+        if ($request->input('template') === 'null' || $request->input('template') === 'undefined' || ! $request->hasFile('template')) {
             $request->request->remove('template');
             $request->files->remove('template');
         }
@@ -53,7 +58,7 @@ class CertificateManagementController extends Controller
         if ($request->hasFile('template')) {
             $path = $request->file('template')->store('templates', 'local');
             if ($event->certificate_template) {
-                \Illuminate\Support\Facades\Storage::disk('local')->delete($event->certificate_template);
+                Storage::disk('local')->delete($event->certificate_template);
             }
             $event->certificate_template = $path;
         }
@@ -78,11 +83,11 @@ class CertificateManagementController extends Controller
             abort(403);
         }
 
-        if (now()->lessThan(\Illuminate\Support\Carbon::parse($event->end_datetime))) {
+        if (now()->lessThan(Carbon::parse($event->end_datetime))) {
             return redirect()->back()->with('error', 'Sertifikat tidak dapat didistribusikan sebelum event selesai.');
         }
 
-        if ($request->input('template') === 'null' || $request->input('template') === 'undefined' || !$request->hasFile('template')) {
+        if ($request->input('template') === 'null' || $request->input('template') === 'undefined' || ! $request->hasFile('template')) {
             $request->request->remove('template');
             $request->files->remove('template');
         }
@@ -103,7 +108,7 @@ class CertificateManagementController extends Controller
         if ($request->hasFile('template')) {
             $path = $request->file('template')->store('templates', 'local');
             if ($event->certificate_template) {
-                \Illuminate\Support\Facades\Storage::disk('local')->delete($event->certificate_template);
+                Storage::disk('local')->delete($event->certificate_template);
             }
             $event->certificate_template = $path;
         }
@@ -128,8 +133,8 @@ class CertificateManagementController extends Controller
             return redirect()->back()->with('error', 'Tidak ada peserta yang terdata hadir (checked-in) untuk menerima sertifikat.');
         }
 
-        $tempPath = 'temp/' . \Illuminate\Support\Str::random(40) . '.' . pathinfo($event->certificate_template, PATHINFO_EXTENSION);
-        \Illuminate\Support\Facades\Storage::disk('local')->copy($event->certificate_template, $tempPath);
+        $tempPath = 'temp/'.Str::random(40).'.'.pathinfo($event->certificate_template, PATHINFO_EXTENSION);
+        Storage::disk('local')->copy($event->certificate_template, $tempPath);
 
         $config = [
             'font_family' => $event->certificate_font_family,
@@ -158,11 +163,11 @@ class CertificateManagementController extends Controller
             abort(404);
         }
 
-        if (!\Illuminate\Support\Facades\Storage::disk('local')->exists($event->certificate_template)) {
+        if (! Storage::disk('local')->exists($event->certificate_template)) {
             abort(404);
         }
 
-        $path = \Illuminate\Support\Facades\Storage::disk('local')->path($event->certificate_template);
+        $path = Storage::disk('local')->path($event->certificate_template);
 
         return response()->file($path);
     }
@@ -173,7 +178,7 @@ class CertificateManagementController extends Controller
             abort(403);
         }
 
-        if ($request->input('template') === 'null' || $request->input('template') === 'undefined' || !$request->hasFile('template')) {
+        if ($request->input('template') === 'null' || $request->input('template') === 'undefined' || ! $request->hasFile('template')) {
             $request->request->remove('template');
             $request->files->remove('template');
         }
@@ -198,17 +203,17 @@ class CertificateManagementController extends Controller
             if (empty($event->certificate_template)) {
                 return response()->json(['error' => 'Template sertifikat wajib diunggah terlebih dahulu.'], 422);
             }
-            $tempFile = \Illuminate\Support\Facades\Storage::disk('local')->path($event->certificate_template);
+            $tempFile = Storage::disk('local')->path($event->certificate_template);
             $extension = pathinfo($event->certificate_template, PATHINFO_EXTENSION);
         }
 
-        /** @var \Intervention\Image\ImageManager $manager */
-        $manager = new \Intervention\Image\ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
+        /** @var ImageManager $manager */
+        $manager = new ImageManager(new Driver);
         $image = $manager->decode($tempFile);
-        
+
         $fontFile = storage_path("app/fonts/{$validated['font_family']}.ttf");
-        if (!file_exists($fontFile)) {
-            $fontFile = null; 
+        if (! file_exists($fontFile)) {
+            $fontFile = null;
         }
 
         $name = $request->user()->name; // Use host's own name as preview
@@ -220,7 +225,7 @@ class CertificateManagementController extends Controller
         };
 
         $finalFontSize = $maxFontSize;
-        
+
         $maxWidthPercent = $validated['max_width'];
         $maxHeightPercent = $validated['max_height'];
         $maxWidthBound = $image->width() * ($maxWidthPercent / 100);
@@ -231,10 +236,10 @@ class CertificateManagementController extends Controller
             if ($box) {
                 $textWidth = abs($box[4] - $box[0]);
                 $textHeight = abs($box[5] - $box[1]);
-                
+
                 $widthRatio = $textWidth > 0 ? ($maxWidthBound / $textWidth) : 1.0;
                 $heightRatio = $textHeight > 0 ? ($maxHeightBound / $textHeight) : 1.0;
-                
+
                 $ratio = min($widthRatio, $heightRatio);
                 if ($ratio < 1.0) {
                     $finalFontSize = max(8, (int) floor($maxFontSize * $ratio));
@@ -243,11 +248,11 @@ class CertificateManagementController extends Controller
         }
 
         $x = filter_var($validated['is_x_center'], FILTER_VALIDATE_BOOLEAN)
-            ? (int) ($image->width() / 2) 
+            ? (int) ($image->width() / 2)
             : (int) ($image->width() * ($validated['x_pos'] / 100));
-            
+
         $y = filter_var($validated['is_y_center'], FILTER_VALIDATE_BOOLEAN)
-            ? (int) ($image->height() / 2) 
+            ? (int) ($image->height() / 2)
             : (int) ($image->height() * ($validated['y_pos'] / 100));
 
         $image->text($name, $x, $y, function ($font) use ($fontFile, $finalFontSize, $validated) {
@@ -259,7 +264,7 @@ class CertificateManagementController extends Controller
             $font->align('center', 'center');
         });
 
-        $tempOut = tempnam(sys_get_temp_dir(), 'cert_preview_') . '.' . $extension;
+        $tempOut = tempnam(sys_get_temp_dir(), 'cert_preview_').'.'.$extension;
         $image->save($tempOut, quality: 90);
 
         return response()->download($tempOut, "preview_sertifikat.{$extension}")->deleteFileAfterSend(true);

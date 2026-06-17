@@ -26,13 +26,16 @@ interface Event {
     location_name?: string;
     platform_name?: string;
     start_datetime: string;
+    end_datetime?: string;
     category?: Category;
     price?: number;
+    status?: string;
 }
 
 interface EventRegistration {
     id: number;
     event?: Event;
+    status?: string;
 }
 
 interface Certificate {
@@ -61,7 +64,7 @@ export default function DashboardCatalog({
     certificates = [],
 }: DashboardCatalogProps) {
     const [activeTab, setActiveTab] = useState<'Event Terbuat' | 'Event Tersimpan' | 'Sertifikat'>('Event Terbuat');
-    const [timeFilter, setTimeFilter] = useState<'mendatang' | 'lalu'>('mendatang');
+    const [timeFilter, setTimeFilter] = useState<'mendatang' | 'lalu' | 'dibatalkan'>('mendatang');
     const [searchQuery, setSearchQuery] = useState('');
 
     const now = new Date();
@@ -72,13 +75,26 @@ export default function DashboardCatalog({
             ?.toLowerCase()
             .includes(searchQuery.toLowerCase());
 
-        if (!event.start_datetime) {
-            return matchesSearch;
+        if (timeFilter === 'dibatalkan') {
+            return matchesSearch && event.status === 'cancelled';
         }
 
-        const eventDate = new Date(event.start_datetime);
-        const matchesTime =
-            timeFilter === 'mendatang' ? eventDate >= now : eventDate < now;
+        if (event.status === 'cancelled') {
+            return false;
+        }
+
+        const startDateTime = event.start_datetime ? new Date(event.start_datetime) : null;
+        const endDateTime = event.end_datetime ? new Date(event.end_datetime) : null;
+
+        let isPast = false;
+
+        if (endDateTime) {
+            isPast = endDateTime < now;
+        } else if (startDateTime) {
+            isPast = startDateTime < now;
+        }
+
+        const matchesTime = timeFilter === 'mendatang' ? !isPast : isPast;
 
         return matchesSearch && matchesTime;
     });
@@ -92,13 +108,26 @@ export default function DashboardCatalog({
             ?.toLowerCase()
             .includes(searchQuery.toLowerCase());
 
-        if (!reg.event.start_datetime) {
-            return matchesSearch;
+        if (timeFilter === 'dibatalkan') {
+            return matchesSearch && (reg.event.status === 'cancelled' || reg.status === 'cancelled');
         }
 
-        const eventDate = new Date(reg.event.start_datetime);
-        const matchesTime =
-            timeFilter === 'mendatang' ? eventDate >= now : eventDate < now;
+        if (reg.event.status === 'cancelled' || reg.status === 'cancelled') {
+            return false;
+        }
+
+        const startDateTime = reg.event.start_datetime ? new Date(reg.event.start_datetime) : null;
+        const endDateTime = reg.event.end_datetime ? new Date(reg.event.end_datetime) : null;
+
+        let isPast = false;
+
+        if (endDateTime) {
+            isPast = endDateTime < now;
+        } else if (startDateTime) {
+            isPast = startDateTime < now;
+        }
+
+        const matchesTime = timeFilter === 'mendatang' ? !isPast : isPast;
 
         return matchesSearch && matchesTime;
     });
@@ -227,13 +256,14 @@ export default function DashboardCatalog({
                         options={[
                             { key: 'mendatang', label: 'Mendatang' },
                             { key: 'lalu', label: 'Lalu' },
+                            { key: 'dibatalkan', label: 'Dibatalkan' },
                         ]}
                         value={timeFilter}
                         onChange={(val) => {
                             setTimeFilter(val);
                             setCurrentPage(1);
                         }}
-                        className="md:w-[200px] lg:w-[240px]"
+                        className="md:w-[300px] lg:w-[360px]"
                     />
                 )}
             </div>

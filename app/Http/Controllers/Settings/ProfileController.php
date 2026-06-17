@@ -5,12 +5,13 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\ProfileDeleteRequest;
 use App\Http\Requests\Settings\ProfileUpdateRequest;
+use App\Mail\SendOtpMail;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\SendOtpMail;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -77,15 +78,15 @@ class ProfileController extends Controller
         $user->otp_expires_at = now()->addMinutes(15);
         $user->save();
 
-        \Illuminate\Support\Facades\Log::info("OTP untuk user {$user->email}: {$otp}");
+        Log::info("OTP untuk user {$user->email}: {$otp}");
 
         try {
             Mail::to($user->email)->send(new SendOtpMail($user, $otp));
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error("Gagal mengirim email OTP ke {$user->email}: " . $e->getMessage());
+            Log::error("Gagal mengirim email OTP ke {$user->email}: ".$e->getMessage());
         }
 
-        return to_route('profile.verify-email')->with('success', "Kode OTP telah dikirim. Cek tab Inbox atau Spam pada Email Anda.");
+        return to_route('profile.verify-email')->with('success', 'Kode OTP telah dikirim. Cek tab Inbox atau Spam pada Email Anda.');
     }
 
     /**
@@ -116,7 +117,7 @@ class ProfileController extends Controller
             return to_route('profile.edit')->with('warning', 'Email Anda sudah terverifikasi.');
         }
 
-        if (!$user->otp_code || $user->otp_code !== $request->otp) {
+        if (! $user->otp_code || $user->otp_code !== $request->otp) {
             return back()->with('error', 'Kode OTP yang Anda masukkan salah.');
         }
 

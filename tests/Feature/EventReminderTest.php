@@ -1,14 +1,13 @@
 <?php
 
+use App\Jobs\SendNotificationEmailJob;
+use App\Mail\EventReminderMail;
 use App\Models\Category;
 use App\Models\Event;
 use App\Models\EventRegistration;
 use App\Models\User;
-use App\Mail\EventReminderMail;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Queue;
-use App\Jobs\SendNotificationEmailJob;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Queue;
 
 beforeEach(function () {
     $this->category = Category::factory()->create();
@@ -66,14 +65,14 @@ test('command dispatches reminders at 30 days, 7 days, 3 days, 1 day, 3 hours, 1
 
     // Register user to all events
     $attendee = User::factory()->create();
-    
+
     $events = [$event30, $event7, $event3, $event1, $event3h, $event1h, $eventStart];
     foreach ($events as $event) {
         EventRegistration::create([
             'event_id' => $event->id,
             'user_id' => $attendee->id,
             'status' => 'registered',
-            'qr_token' => 'token_' . $event->id,
+            'qr_token' => 'token_'.$event->id,
         ]);
     }
 
@@ -143,13 +142,13 @@ test('event reminder mail templates display correct subject and content in Bahas
         'location_name' => 'Gedung Serbaguna',
         'address' => 'Jl. Merdeka No. 10',
     ]);
-    
+
     $attendee = User::factory()->create(['name' => 'Budi Utomo']);
 
     // 1. Test H-30 Offset
     $mail30 = new EventReminderMail($event, $attendee, 'H-30');
-    expect($mail30->envelope()->subject)->toBe('Pengingat 30 Hari: Event ' . $event->title . ' akan segera dimulai!');
-    
+    expect($mail30->envelope()->subject)->toBe('Pengingat 30 Hari: Event '.$event->title.' akan segera dimulai!');
+
     $html30 = $mail30->render();
     expect($html30)->toContain('Halo Budi Utomo')
         ->toContain('Ini adalah pengingat bahwa event')
@@ -163,43 +162,43 @@ test('event reminder mail templates display correct subject and content in Bahas
 
     // 2. Test H-7 Offset
     $mail7 = new EventReminderMail($event, $attendee, 'H-7');
-    expect($mail7->envelope()->subject)->toBe('Pengingat 7 Hari: Event ' . $event->title . ' akan segera dimulai!');
+    expect($mail7->envelope()->subject)->toBe('Pengingat 7 Hari: Event '.$event->title.' akan segera dimulai!');
     $html7 = $mail7->render();
     expect($html7)->toContain('akan dimulai dalam 7 hari!');
 
     // 3. Test H-3 Offset
     $mail3 = new EventReminderMail($event, $attendee, 'H-3');
-    expect($mail3->envelope()->subject)->toBe('Pengingat 3 Hari: Event ' . $event->title . ' akan segera dimulai!');
+    expect($mail3->envelope()->subject)->toBe('Pengingat 3 Hari: Event '.$event->title.' akan segera dimulai!');
     $html3 = $mail3->render();
     expect($html3)->toContain('akan dimulai dalam 3 hari!');
 
     // 4. Test H-1 Offset
     $mail1 = new EventReminderMail($event, $attendee, 'H-1');
-    expect($mail1->envelope()->subject)->toBe('Pengingat 1 Hari: Event ' . $event->title . ' akan dimulai besok!');
+    expect($mail1->envelope()->subject)->toBe('Pengingat 1 Hari: Event '.$event->title.' akan dimulai besok!');
     $html1 = $mail1->render();
     expect($html1)->toContain('akan dimulai besok!');
 
     // 5. Test H-DAY Offset
     $mailDay = new EventReminderMail($event, $attendee, 'H-DAY');
-    expect($mailDay->envelope()->subject)->toBe('Pengingat Hari-H: Event ' . $event->title . ' dimulai hari ini!');
+    expect($mailDay->envelope()->subject)->toBe('Pengingat Hari-H: Event '.$event->title.' dimulai hari ini!');
     $htmlDay = $mailDay->render();
     expect($htmlDay)->toContain('dimulai hari ini!');
 
     // 6. Test H-3H Offset
     $mail3h = new EventReminderMail($event, $attendee, 'H-3H');
-    expect($mail3h->envelope()->subject)->toBe('Pengingat 3 Jam: Event ' . $event->title . ' akan dimulai dalam 3 jam!');
+    expect($mail3h->envelope()->subject)->toBe('Pengingat 3 Jam: Event '.$event->title.' akan dimulai dalam 3 jam!');
     $html3h = $mail3h->render();
     expect($html3h)->toContain('akan dimulai dalam 3 jam!');
 
     // 7. Test H-1H Offset
     $mail1h = new EventReminderMail($event, $attendee, 'H-1H');
-    expect($mail1h->envelope()->subject)->toBe('Pengingat 1 Jam: Event ' . $event->title . ' akan dimulai dalam 1 jam!');
+    expect($mail1h->envelope()->subject)->toBe('Pengingat 1 Jam: Event '.$event->title.' akan dimulai dalam 1 jam!');
     $html1h = $mail1h->render();
     expect($html1h)->toContain('akan dimulai dalam 1 jam!');
 
     // 8. Test H-START Offset
     $mailStart = new EventReminderMail($event, $attendee, 'H-START');
-    expect($mailStart->envelope()->subject)->toBe('Event Dimulai: Event ' . $event->title . ' dimulai sekarang!');
+    expect($mailStart->envelope()->subject)->toBe('Event Dimulai: Event '.$event->title.' dimulai sekarang!');
     $htmlStart = $mailStart->render();
     expect($htmlStart)->toContain('dimulai sekarang!');
 });

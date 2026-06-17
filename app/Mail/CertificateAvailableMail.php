@@ -22,7 +22,7 @@ class CertificateAvailableMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Sertifikat tersedia - ' . $this->event->title,
+            subject: 'Sertifikat tersedia - '.$this->event->title,
         );
     }
 

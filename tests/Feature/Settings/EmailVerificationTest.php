@@ -1,10 +1,9 @@
 <?php
 
-use App\Models\User;
-use App\Models\Event;
-use App\Models\Category;
-use Illuminate\Support\Facades\Mail;
 use App\Mail\SendOtpMail;
+use App\Models\Event;
+use App\Models\User;
+use Illuminate\Support\Facades\Mail;
 
 test('unverified user is redirected to profile when attempting to create an event', function () {
     $user = User::factory()->create([
@@ -44,7 +43,7 @@ test('unverified user cannot join paid event', function () {
     $user = User::factory()->create([
         'email_verified_at' => null,
     ]);
-    
+
     $event = Event::factory()->create([
         'price' => 50000,
     ]);
@@ -61,7 +60,7 @@ test('unverified user can join free event', function () {
     $user = User::factory()->create([
         'email_verified_at' => null,
     ]);
-    
+
     $event = Event::factory()->create([
         'price' => 0,
     ]);

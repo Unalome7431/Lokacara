@@ -65,7 +65,7 @@ class NotificationDispatchService
         }
 
         $sendPush = true;
-        if ($respectEnabled && !$recipient->notifications_enabled) {
+        if ($respectEnabled && ! $recipient->notifications_enabled) {
             $sendPush = false;
         }
 

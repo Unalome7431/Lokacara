@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Event;
 use App\Jobs\SendEventRemindersJob;
+use App\Models\Event;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -43,7 +43,7 @@ class CommunicationApiController extends Controller
         SendEventRemindersJob::dispatch($event);
 
         return response()->json([
-            'message' => 'Reminder notifications are being sent in the background.'
+            'message' => 'Reminder notifications are being sent in the background.',
         ]);
     }
 }

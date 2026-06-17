@@ -19,17 +19,17 @@ return new class extends Migration
             $table->string('poster')->nullable();
             $table->string('title');
             $table->text('description');
-            
+
             // Offline fields
             $table->string('location_name')->nullable();
             $table->string('address')->nullable();
             $table->decimal('latitude', 10, 8)->nullable();
             $table->decimal('longitude', 11, 8)->nullable();
-            
+
             // Online fields
             $table->string('platform_name')->nullable();
             $table->string('link')->nullable();
-            
+
             $table->dateTime('start_datetime');
             $table->dateTime('end_datetime');
             $table->integer('capacity')->nullable();

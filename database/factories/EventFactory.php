@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Models\Category;
 use App\Models\Event;
 use App\Models\User;
-use App\Models\Category;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -25,25 +25,25 @@ class EventFactory extends Factory
         $type = $this->faker->randomElement(['online', 'offline']);
 
         return [
-            'user_id'=> User::factory(),
-            'category_id'=> Category::factory(),
-            'type'=> $type,
-            'title'=> "{$eventTypePrefix} Custom Event",
-            'description'=> $this->faker->sentence(),
-            'price'=> $this->faker->randomElement([0, 0, 0, 15000, 25000, 50000, 100000, null]),
-            
-            'location_name'=> $type === 'offline' ? $this->faker->randomElement(['Auditorium Surakarta', 'Gedung Sate', 'Hotel Indonesia']) : null,
-            'address'=> $type === 'offline' ? $this->faker->address() : null,
-            'latitude'=> $type === 'offline' ? $this->faker->latitude() : null,
-            'longitude'=> $type === 'offline' ? $this->faker->longitude() : null,
-            
-            'platform_name'=> $type === 'online' ? $this->faker->randomElement(['Zoom', 'Google Meet', 'Microsoft Teams']) : null,
-            'link'=> $type === 'online' ? $this->faker->url() : null,
+            'user_id' => User::factory(),
+            'category_id' => Category::factory(),
+            'type' => $type,
+            'title' => "{$eventTypePrefix} Custom Event",
+            'description' => $this->faker->sentence(),
+            'price' => $this->faker->randomElement([0, 0, 0, 15000, 25000, 50000, 100000, null]),
 
-            'start_datetime'=> $startDate,
-            'end_datetime'=> $endDate,
-            'capacity'=> $this->faker->randomElement([50, 100, 250, null]),
-            'view_count'=> $this->faker->numberBetween(0, 1000)
+            'location_name' => $type === 'offline' ? $this->faker->randomElement(['Auditorium Surakarta', 'Gedung Sate', 'Hotel Indonesia']) : null,
+            'address' => $type === 'offline' ? $this->faker->address() : null,
+            'latitude' => $type === 'offline' ? $this->faker->latitude() : null,
+            'longitude' => $type === 'offline' ? $this->faker->longitude() : null,
+
+            'platform_name' => $type === 'online' ? $this->faker->randomElement(['Zoom', 'Google Meet', 'Microsoft Teams']) : null,
+            'link' => $type === 'online' ? $this->faker->url() : null,
+
+            'start_datetime' => $startDate,
+            'end_datetime' => $endDate,
+            'capacity' => $this->faker->randomElement([50, 100, 250, null]),
+            'view_count' => $this->faker->numberBetween(0, 1000),
         ];
     }
 }

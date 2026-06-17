@@ -32,6 +32,7 @@ class DiscoveryController extends Controller
     {
         // Upcoming events with minimum view_count of 50, sorted by popularity (view_count / capacity)
         $events = Event::with(['category', 'user'])
+            ->where('status', 'active')
             ->where('start_datetime', '>=', now())
             ->where('view_count', '>=', 50)
             ->orderByRaw('(view_count * 1.0 / COALESCE(NULLIF(capacity, 0), 1)) DESC')
@@ -75,10 +76,12 @@ class DiscoveryController extends Controller
     )]
     public function search(Request $request)
     {
-        $query = Event::with(['category', 'user'])->where('start_datetime', '>=', now());
+        $query = Event::with(['category', 'user'])
+            ->where('status', 'active')
+            ->where('start_datetime', '>=', now());
 
         if ($request->filled('keyword')) {
-            $query->where('title', 'like', '%' . $request->keyword . '%');
+            $query->where('title', 'like', '%'.$request->keyword.'%');
         }
 
         if ($request->filled('category_id')) {
@@ -117,10 +120,10 @@ class DiscoveryController extends Controller
     public function show(Request $request, Event $event)
     {
         // View Count Anti-Spam (tracked by IP or User ID)
-        $identifier = $request->user('sanctum') ? 'user_' . $request->user('sanctum')->id : 'ip_' . $request->ip();
+        $identifier = $request->user('sanctum') ? 'user_'.$request->user('sanctum')->id : 'ip_'.$request->ip();
         $cacheKey = "event_{$event->id}_view_{$identifier}";
 
-        if (!Cache::has($cacheKey)) {
+        if (! Cache::has($cacheKey)) {
             $event->increment('view_count');
             Cache::put($cacheKey, true, now()->addHours(2)); // Block subsequent view count increments for 2 hours
         }
@@ -134,7 +137,7 @@ class DiscoveryController extends Controller
 
         return response()->json([
             'event' => $event,
-            'is_registered' => $isRegistered
+            'is_registered' => $isRegistered,
         ], 200);
     }
 }

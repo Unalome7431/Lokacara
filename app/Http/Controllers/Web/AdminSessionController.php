@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User;
 use Inertia\Inertia;
 
 class AdminSessionController extends Controller
@@ -22,7 +21,7 @@ class AdminSessionController extends Controller
             'password' => 'required',
         ]);
 
-        if (!Auth::attempt($request->only('email', 'password'))) {
+        if (! Auth::attempt($request->only('email', 'password'))) {
             return back()->withErrors([
                 'email' => 'The provided credentials do not match our records.',
             ]);

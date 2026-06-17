@@ -70,6 +70,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/organizer/events', [EventManagementApiController::class, 'store']);
     Route::post('/organizer/events/{event}', [EventManagementApiController::class, 'update']);
     Route::delete('/organizer/events/{event}', [EventManagementApiController::class, 'destroy']);
+    Route::post('/organizer/events/{event}/cancel', [EventManagementApiController::class, 'cancel']);
     Route::get('/organizer/events/{event}/attendees', [EventManagementApiController::class, 'attendees']);
 
     // Module 4: Communications & Attendance

@@ -28,7 +28,7 @@ class PosterController extends Controller
     {
         $path = "posters/{$filename}";
 
-        if (!Storage::disk('local')->exists($path)) {
+        if (! Storage::disk('local')->exists($path)) {
             return redirect()->to(asset('covers/default_cover.jpg'));
         }
 

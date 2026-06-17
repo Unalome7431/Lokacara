@@ -12,13 +12,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
     'user_id', 'category_id', 'type', 'poster', 'title', 'description', 'price',
-    'location_name', 'address', 'latitude', 'longitude', 
+    'location_name', 'address', 'latitude', 'longitude',
     'platform_name', 'link',
     'start_datetime', 'end_datetime', 'capacity', 'view_count',
     'certificate_template', 'certificate_font_family', 'certificate_font_size',
     'certificate_font_color', 'certificate_x_pos', 'certificate_is_x_center',
     'certificate_y_pos', 'certificate_is_y_center',
-    'certificate_max_width', 'certificate_max_height', 'status'
+    'certificate_max_width', 'certificate_max_height', 'status',
 ])]
 class Event extends Model
 {
@@ -26,16 +26,17 @@ class Event extends Model
     use HasFactory, SoftDeletes;
 
     protected $appends = ['poster_url', 'certificate_template_url'];
-    
+
     /**
      * @return array<string, string>
      */
-    protected function casts(): array {
+    protected function casts(): array
+    {
         return [
-            'start_datetime'=> 'datetime',
-            'end_datetime'=> 'datetime',
-            'latitude'=> 'decimal:8',
-            'longitude'=> 'decimal:8',
+            'start_datetime' => 'datetime',
+            'end_datetime' => 'datetime',
+            'latitude' => 'decimal:8',
+            'longitude' => 'decimal:8',
             'certificate_is_x_center' => 'boolean',
             'certificate_is_y_center' => 'boolean',
             'certificate_x_pos' => 'double',
@@ -46,48 +47,58 @@ class Event extends Model
         ];
     }
 
-    protected function posterUrl(): Attribute {
+    protected function posterUrl(): Attribute
+    {
         return Attribute::make(
             get: function ($value, $attributes) {
-                if (!empty($attributes['poster'])) {
+                if (! empty($attributes['poster'])) {
                     $filename = basename($attributes['poster']);
-                    return request()->is('api/*') 
-                        ? url("/api/posters/{$filename}") 
+
+                    return request()->is('api/*')
+                        ? url("/api/posters/{$filename}")
                         : route('poster.show', ['filename' => $filename]);
                 }
+
                 return asset('covers/default_cover.jpg');
             }
         );
     }
 
-    protected function certificateTemplateUrl(): Attribute {
+    protected function certificateTemplateUrl(): Attribute
+    {
         return Attribute::make(
             get: function ($value, $attributes) {
-                if (!empty($attributes['certificate_template'])) {
+                if (! empty($attributes['certificate_template'])) {
                     return route('dashboard.events.certificates.template', ['event' => $attributes['id']]);
                 }
+
                 return null;
             }
         );
     }
 
-    public function eventRegistrations(): HasMany {
+    public function eventRegistrations(): HasMany
+    {
         return $this->hasMany(EventRegistration::class)->chaperone();
     }
 
-    public function eventReports(): HasMany {
+    public function eventReports(): HasMany
+    {
         return $this->hasMany(EventReport::class)->chaperone();
     }
 
-    public function user(): BelongsTo {
+    public function user(): BelongsTo
+    {
         return $this->belongsTo(User::class);
     }
 
-    public function category(): BelongsTo {
+    public function category(): BelongsTo
+    {
         return $this->belongsTo(Category::class);
     }
 
-    public function bookmarks(): HasMany {
+    public function bookmarks(): HasMany
+    {
         return $this->hasMany(Bookmark::class)->chaperone();
     }
 }

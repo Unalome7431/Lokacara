@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Event;
-use App\Models\User;
-use App\Models\EventReport;
 use App\Mail\EventBannedMail;
 use App\Mail\EventCancelledForParticipantMail;
+use App\Models\Event;
+use App\Models\EventReport;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use OpenApi\Attributes as OA;
@@ -39,7 +39,7 @@ class AdminModerationApiController extends Controller
         $reports = EventReport::with(['user', 'event'])
             ->latest()
             ->paginate(15);
-            
+
         return response()->json(['data' => $reports]);
     }
 
@@ -69,7 +69,7 @@ class AdminModerationApiController extends Controller
     public function showReport(EventReport $report)
     {
         $report->load(['user', 'event.user']);
-        
+
         return response()->json(['data' => $report]);
     }
 

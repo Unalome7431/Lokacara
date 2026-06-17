@@ -5,7 +5,6 @@ namespace App\Mail;
 use App\Models\Event;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
@@ -32,18 +31,18 @@ class EventReminderMail extends Mailable
      */
     public function envelope(): Envelope
     {
-        $subject = 'Pengingat Event: ' . $this->event->title;
+        $subject = 'Pengingat Event: '.$this->event->title;
 
         if ($this->reminderOffset) {
             $subject = match ($this->reminderOffset) {
-                'H-30' => 'Pengingat 30 Hari: Event ' . $this->event->title . ' akan segera dimulai!',
-                'H-7' => 'Pengingat 7 Hari: Event ' . $this->event->title . ' akan segera dimulai!',
-                'H-3' => 'Pengingat 3 Hari: Event ' . $this->event->title . ' akan segera dimulai!',
-                'H-1' => 'Pengingat 1 Hari: Event ' . $this->event->title . ' akan dimulai besok!',
-                'H-DAY' => 'Pengingat Hari-H: Event ' . $this->event->title . ' dimulai hari ini!',
-                'H-3H' => 'Pengingat 3 Jam: Event ' . $this->event->title . ' akan dimulai dalam 3 jam!',
-                'H-1H' => 'Pengingat 1 Jam: Event ' . $this->event->title . ' akan dimulai dalam 1 jam!',
-                'H-START' => 'Event Dimulai: Event ' . $this->event->title . ' dimulai sekarang!',
+                'H-30' => 'Pengingat 30 Hari: Event '.$this->event->title.' akan segera dimulai!',
+                'H-7' => 'Pengingat 7 Hari: Event '.$this->event->title.' akan segera dimulai!',
+                'H-3' => 'Pengingat 3 Hari: Event '.$this->event->title.' akan segera dimulai!',
+                'H-1' => 'Pengingat 1 Hari: Event '.$this->event->title.' akan dimulai besok!',
+                'H-DAY' => 'Pengingat Hari-H: Event '.$this->event->title.' dimulai hari ini!',
+                'H-3H' => 'Pengingat 3 Jam: Event '.$this->event->title.' akan dimulai dalam 3 jam!',
+                'H-1H' => 'Pengingat 1 Jam: Event '.$this->event->title.' akan dimulai dalam 1 jam!',
+                'H-START' => 'Event Dimulai: Event '.$this->event->title.' dimulai sekarang!',
                 default => $subject,
             };
         }

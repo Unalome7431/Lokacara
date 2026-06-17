@@ -28,8 +28,16 @@ class AttendanceController extends Controller
             abort(403, 'Unauthorized');
         }
 
+        if ($event->status === 'cancelled' || $event->status === 'banned') {
+            return redirect()->back()->with('error', 'Cannot scan check-in. This event is cancelled or banned.');
+        }
+
+        if ($event->end_datetime->isPast()) {
+            return redirect()->back()->with('error', 'Cannot scan check-in. This event has finished.');
+        }
+
         $request->validate([
-            'qr_token' => 'required|uuid'
+            'qr_token' => 'required|uuid',
         ]);
 
         $registration = EventRegistration::with('user')
@@ -37,26 +45,34 @@ class AttendanceController extends Controller
             ->where('qr_token', $request->qr_token)
             ->first();
 
-        if (!$registration) {
+        if (! $registration) {
             return redirect()->back()->withErrors(['qr_token' => 'Invalid QR Token for this event.']);
         }
 
         if ($registration->checked_in_at) {
-            return redirect()->back()->with('warning', 'User ' . $registration->user->name . ' has already checked in.');
+            return redirect()->back()->with('warning', 'User '.$registration->user->name.' has already checked in.');
         }
 
         $registration->update([
             'checked_in_at' => now(),
-            'status' => 'present'
+            'status' => 'present',
         ]);
 
-        return redirect()->back()->with('success', 'User ' . $registration->user->name . ' successfully checked in.');
+        return redirect()->back()->with('success', 'User '.$registration->user->name.' successfully checked in.');
     }
 
     public function toggle(Request $request, Event $event, EventRegistration $registration)
     {
         if ($event->user_id !== $request->user()->id) {
             abort(403, 'Unauthorized');
+        }
+
+        if ($event->status === 'cancelled' || $event->status === 'banned') {
+            return redirect()->back()->with('error', 'Cannot modify attendance for a cancelled or banned event.');
+        }
+
+        if ($event->end_datetime->isPast()) {
+            return redirect()->back()->with('error', 'Cannot modify attendance for a finished event.');
         }
 
         if ($registration->event_id !== $event->id) {
@@ -67,10 +83,11 @@ class AttendanceController extends Controller
 
         $registration->update([
             'checked_in_at' => $isCheckingIn ? now() : null,
-            'status' => $isCheckingIn ? 'present' : 'registered'
+            'status' => $isCheckingIn ? 'present' : 'registered',
         ]);
 
         $statusMsg = $isCheckingIn ? 'checked in' : 'undone (checking out)';
+
         return redirect()->back()->with('success', "Attendance manually $statusMsg.");
     }
 }

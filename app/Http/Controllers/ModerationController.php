@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Event;
 use App\Models\EventReport;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 
 class ModerationController extends Controller
 {

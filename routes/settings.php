@@ -9,8 +9,6 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('settings', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('settings', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-
-
     Route::put('settings/password', [SecurityController::class, 'update'])
         ->middleware('throttle:6,1')
         ->name('user-password.update');

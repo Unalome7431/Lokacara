@@ -29,7 +29,7 @@ class AvatarController extends Controller
     {
         $path = "avatars/{$filename}";
 
-        if (!Storage::disk('local')->exists($path)) {
+        if (! Storage::disk('local')->exists($path)) {
             abort(404);
         }
 

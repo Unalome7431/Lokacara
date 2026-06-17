@@ -4,7 +4,6 @@ namespace App\Mail;
 
 use App\Models\Event;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
@@ -30,7 +29,7 @@ class EventBannedMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Event Banned - ' . $this->event->title,
+            subject: 'Event Banned - '.$this->event->title,
         );
     }
 

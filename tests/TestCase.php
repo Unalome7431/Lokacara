@@ -3,6 +3,7 @@
 namespace Tests;
 
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Kreait\Firebase\Contract\Messaging;
 use Laravel\Fortify\Features;
 
 abstract class TestCase extends BaseTestCase
@@ -11,7 +12,7 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
-        $this->mock(\Kreait\Firebase\Contract\Messaging::class);
+        $this->mock(Messaging::class);
     }
 
     protected function skipUnlessFortifyHas(string $feature, ?string $message = null): void

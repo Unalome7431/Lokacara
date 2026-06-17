@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Mail\EventRefundedMail;
 use App\Models\Event;
 use App\Services\NotificationDispatchService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use OpenApi\Attributes as OA;
 
@@ -19,23 +21,23 @@ class EventManagementApiController extends Controller
             'description' => 'required|string',
             'price' => 'nullable|integer|min:0',
             'type' => 'required|in:online,offline',
-            
+
             // Rules for offline
             'location_name' => 'required_if:type,offline|nullable|string|max:255',
             'address' => 'required_if:type,offline|nullable|string',
             'latitude' => 'required_if:type,offline|nullable|numeric|between:-90,90',
             'longitude' => 'required_if:type,offline|nullable|numeric|between:-180,180',
-            
+
             // Rules for online
             'platform_name' => 'required_if:type,online|nullable|string|max:255',
             'link' => 'required_if:type,online|nullable|url|max:255',
-            
+
             'start_datetime' => 'required|date',
             'end_datetime' => 'required|date|after_or_equal:start_datetime',
             'capacity' => 'nullable|integer|min:1',
-            
+
             // Poster validation: only required on create; max 5MB
-            'poster' => ($request->isMethod('put') || $request->isMethod('patch') || $request->route('event') ? 'nullable' : 'required') . '|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'poster' => ($request->isMethod('put') || $request->isMethod('patch') || $request->route('event') ? 'nullable' : 'required').'|image|mimes:jpeg,png,jpg,webp|max:5120',
         ]);
     }
 
@@ -64,7 +66,7 @@ class EventManagementApiController extends Controller
             ->where('user_id', $request->user()->id)
             ->latest()
             ->paginate(15);
-            
+
         return response()->json($events);
     }
 
@@ -113,10 +115,10 @@ class EventManagementApiController extends Controller
     public function store(Request $request)
     {
         $validated = $this->validateEvent($request);
-        
+
         $event = new Event($validated);
         $event->user_id = $request->user()->id;
-        
+
         if ($request->hasFile('poster')) {
             $event->poster = $request->file('poster')->store('posters', 'local');
         }
@@ -125,7 +127,7 @@ class EventManagementApiController extends Controller
 
         return response()->json([
             'message' => 'Event created successfully',
-            'event' => $event
+            'event' => $event,
         ], 201);
     }
 
@@ -179,8 +181,12 @@ class EventManagementApiController extends Controller
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
+        if ($event->start_datetime->isPast()) {
+            return response()->json(['message' => 'Cannot update an event that has already started.'], 400);
+        }
+
         $validated = $this->validateEvent($request);
-        
+
         $event->fill($validated);
 
         if ($request->hasFile('poster')) {
@@ -226,7 +232,7 @@ class EventManagementApiController extends Controller
 
         return response()->json([
             'message' => 'Event updated successfully',
-            'event' => $event
+            'event' => $event,
         ]);
     }
 
@@ -259,6 +265,10 @@ class EventManagementApiController extends Controller
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
+        if ($event->start_datetime->isPast()) {
+            return response()->json(['message' => 'Cannot delete an event that has already started.'], 400);
+        }
+
         if ($event->getRawOriginal('poster') && Storage::disk('local')->exists($event->getRawOriginal('poster'))) {
             Storage::disk('local')->delete($event->getRawOriginal('poster'));
         }
@@ -266,7 +276,49 @@ class EventManagementApiController extends Controller
         $event->delete();
 
         return response()->json([
-            'message' => 'Event deleted successfully'
+            'message' => 'Event deleted successfully',
+        ]);
+    }
+
+    public function cancel(Request $request, Event $event)
+    {
+        if ($event->user_id !== $request->user()->id) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        if ($event->start_datetime->isPast()) {
+            return response()->json(['message' => 'Cannot cancel an event that has already started.'], 400);
+        }
+
+        if ($event->status === 'cancelled') {
+            return response()->json(['message' => 'Event is already cancelled.'], 400);
+        }
+
+        $event->update(['status' => 'cancelled']);
+
+        $registrations = $event->eventRegistrations()->with('user')->get();
+        $notifications = app(NotificationDispatchService::class);
+
+        foreach ($registrations as $registration) {
+            if ($registration->user) {
+                $notifications->dispatch(
+                    recipient: $registration->user,
+                    category: 'event_cancelled',
+                    title: 'Event Dibatalkan',
+                    body: "Event {$event->title} telah dibatalkan oleh penyelenggara.",
+                    target: 'event_detail',
+                    event: $event,
+                );
+
+                if ($event->price > 0) {
+                    Mail::to($registration->user->email)->send(new EventRefundedMail($event, $registration->user));
+                }
+            }
+            $registration->update(['status' => 'cancelled']);
+        }
+
+        return response()->json([
+            'message' => 'Event cancelled successfully.',
         ]);
     }
 
@@ -307,7 +359,7 @@ class EventManagementApiController extends Controller
 
         return response()->json([
             'event' => $event,
-            'attendees' => $attendees
+            'attendees' => $attendees,
         ]);
     }
 }

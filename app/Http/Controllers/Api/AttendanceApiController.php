@@ -87,8 +87,16 @@ class AttendanceApiController extends Controller
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
+        if ($event->status === 'cancelled' || $event->status === 'banned') {
+            return response()->json(['message' => 'Cannot scan check-in. This event is cancelled or banned.'], 400);
+        }
+
+        if ($event->end_datetime->isPast()) {
+            return response()->json(['message' => 'Cannot scan check-in. This event has finished.'], 400);
+        }
+
         $request->validate([
-            'qr_token' => 'required|uuid'
+            'qr_token' => 'required|uuid',
         ]);
 
         $registration = EventRegistration::with('user')
@@ -96,17 +104,17 @@ class AttendanceApiController extends Controller
             ->where('qr_token', $request->qr_token)
             ->first();
 
-        if (!$registration) {
+        if (! $registration) {
             return response()->json(['message' => 'Invalid QR Token for this event.'], 404);
         }
 
         if ($registration->checked_in_at) {
-            return response()->json(['message' => 'User ' . $registration->user->name . ' has already checked in.'], 400);
+            return response()->json(['message' => 'User '.$registration->user->name.' has already checked in.'], 400);
         }
 
         $registration->update([
             'checked_in_at' => now(),
-            'status' => 'present'
+            'status' => 'present',
         ]);
 
         app(NotificationDispatchService::class)->dispatch(
@@ -119,8 +127,8 @@ class AttendanceApiController extends Controller
         );
 
         return response()->json([
-            'message' => 'User ' . $registration->user->name . ' successfully checked in.',
-            'registration' => $registration
+            'message' => 'User '.$registration->user->name.' successfully checked in.',
+            'registration' => $registration,
         ]);
     }
 
@@ -162,6 +170,14 @@ class AttendanceApiController extends Controller
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
+        if ($event->status === 'cancelled' || $event->status === 'banned') {
+            return response()->json(['message' => 'Cannot modify attendance for a cancelled or banned event.'], 400);
+        }
+
+        if ($event->end_datetime->isPast()) {
+            return response()->json(['message' => 'Cannot modify attendance for a finished event.'], 400);
+        }
+
         if ($registration->event_id !== $event->id) {
             return response()->json(['message' => 'Registration not found for this event'], 404);
         }
@@ -170,13 +186,14 @@ class AttendanceApiController extends Controller
 
         $registration->update([
             'checked_in_at' => $isCheckingIn ? now() : null,
-            'status' => $isCheckingIn ? 'present' : 'registered'
+            'status' => $isCheckingIn ? 'present' : 'registered',
         ]);
 
         $statusMsg = $isCheckingIn ? 'checked in' : 'undone (checking out)';
+
         return response()->json([
             'message' => "Attendance manually $statusMsg.",
-            'registration' => $registration
+            'registration' => $registration,
         ]);
     }
 }

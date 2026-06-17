@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\User;
 use App\Mail\ResetPasswordOtpMail;
+use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 
 test('forgot password request screen can be rendered', function () {

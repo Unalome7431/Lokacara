@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
-use App\Models\Event;
+use App\Mail\EventRefundedMail;
 use App\Models\Category;
+use App\Models\Event;
 use App\Models\EventRegistration;
+use App\Services\NotificationDispatchService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
@@ -20,51 +23,50 @@ class EventManagementController extends Controller
             'description' => 'required|string',
             'price' => 'nullable|integer|min:0',
             'type' => 'required|in:online,offline',
-            
+
             // Rules for offline
             'location_name' => 'required_if:type,offline|nullable|string|max:255',
             'address' => 'required_if:type,offline|nullable|string',
             'latitude' => 'required_if:type,offline|nullable|numeric|between:-90,90',
             'longitude' => 'required_if:type,offline|nullable|numeric|between:-180,180',
-            
+
             // Rules for online
             'platform_name' => 'required_if:type,online|nullable|string|max:255',
             'link' => 'required_if:type,online|nullable|url|max:255',
-            
+
             'start_datetime' => 'required|date',
             'end_datetime' => 'required|date|after_or_equal:start_datetime',
             'capacity' => 'nullable|integer|min:1',
-            
+
             // Poster validation: only required on create; max 5MB
-            'poster' => ($request->isMethod('put') || $request->isMethod('patch') || $request->route('event') ? 'nullable' : 'required') . '|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'poster' => ($request->isMethod('put') || $request->isMethod('patch') || $request->route('event') ? 'nullable' : 'required').'|image|mimes:jpeg,png,jpg,webp|max:5120',
         ]);
     }
 
-
-
     public function create()
     {
-        if (!auth()->user()->email_verified_at) {
+        if (! auth()->user()->email_verified_at) {
             return redirect()->route('profile.edit')->with('error', 'Anda harus memverifikasi email untuk membuat event.');
         }
 
         $categories = Category::all();
+
         return Inertia::render('Event/Create', [
-            'categories' => $categories
+            'categories' => $categories,
         ]);
     }
 
     public function store(Request $request)
     {
-        if (!$request->user()->email_verified_at) {
+        if (! $request->user()->email_verified_at) {
             return redirect()->route('profile.edit')->with('error', 'Anda harus memverifikasi email untuk membuat event.');
         }
 
         $validated = $this->validateEvent($request);
-        
+
         $event = new Event($validated);
         $event->user_id = $request->user()->id;
-        
+
         if ($request->hasFile('poster')) {
             $event->poster = $request->file('poster')->store('posters', 'local');
         }
@@ -80,10 +82,15 @@ class EventManagementController extends Controller
             abort(403);
         }
 
+        if ($event->start_datetime->isPast()) {
+            return redirect()->back()->with('error', 'Cannot edit an event that has already started.');
+        }
+
         $categories = Category::all();
+
         return Inertia::render('Event/Edit', [
             'event' => $event,
-            'categories' => $categories
+            'categories' => $categories,
         ]);
     }
 
@@ -93,8 +100,12 @@ class EventManagementController extends Controller
             abort(403);
         }
 
+        if ($event->start_datetime->isPast()) {
+            return redirect()->back()->with('error', 'Cannot update an event that has already started.');
+        }
+
         $validated = $this->validateEvent($request);
-        
+
         $event->fill($validated);
 
         if ($request->hasFile('poster')) {
@@ -126,6 +137,10 @@ class EventManagementController extends Controller
             abort(403);
         }
 
+        if ($event->start_datetime->isPast()) {
+            return redirect()->back()->with('error', 'Cannot delete an event that has already started.');
+        }
+
         if ($event->getRawOriginal('poster') && Storage::disk('local')->exists($event->getRawOriginal('poster'))) {
             Storage::disk('local')->delete($event->getRawOriginal('poster'));
         }
@@ -133,6 +148,46 @@ class EventManagementController extends Controller
         $event->delete();
 
         return redirect()->route('dashboard')->with('success', 'Event deleted successfully.');
+    }
+
+    public function cancel(Request $request, Event $event)
+    {
+        if ($event->user_id !== $request->user()->id) {
+            abort(403);
+        }
+
+        if ($event->start_datetime->isPast()) {
+            return redirect()->back()->with('error', 'Cannot cancel an event that has already started.');
+        }
+
+        if ($event->status === 'cancelled') {
+            return redirect()->back()->with('error', 'Event is already cancelled.');
+        }
+
+        $event->update(['status' => 'cancelled']);
+
+        $registrations = $event->eventRegistrations()->with('user')->get();
+        $notifications = app(NotificationDispatchService::class);
+
+        foreach ($registrations as $registration) {
+            if ($registration->user) {
+                $notifications->dispatch(
+                    recipient: $registration->user,
+                    category: 'event_cancelled',
+                    title: 'Event Dibatalkan',
+                    body: "Event {$event->title} telah dibatalkan oleh penyelenggara.",
+                    target: 'event_detail',
+                    event: $event,
+                );
+
+                if ($event->price > 0) {
+                    Mail::to($registration->user->email)->send(new EventRefundedMail($event, $registration->user));
+                }
+            }
+            $registration->update(['status' => 'cancelled']);
+        }
+
+        return redirect()->back()->with('success', 'Event cancelled successfully, and participants have been notified.');
     }
 
     public function show(Request $request, Event $event)
@@ -160,6 +215,10 @@ class EventManagementController extends Controller
             abort(403);
         }
 
+        if ($event->end_datetime->isPast()) {
+            return redirect()->back()->with('error', 'Cannot kick attendees from a finished event.');
+        }
+
         if ($registration->event_id !== $event->id) {
             abort(404);
         }
@@ -179,11 +238,11 @@ class EventManagementController extends Controller
             ->with(['user:id,name,email,avatar_url'])
             ->latest();
 
-        if ($request->has('search') && !empty($request->input('search'))) {
+        if ($request->has('search') && ! empty($request->input('search'))) {
             $search = $request->input('search');
             $query->whereHas('user', function ($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%')
-                  ->orWhere('email', 'like', '%' . $search . '%');
+                $q->where('name', 'like', '%'.$search.'%')
+                    ->orWhere('email', 'like', '%'.$search.'%');
             });
         }
 

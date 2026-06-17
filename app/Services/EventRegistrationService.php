@@ -16,6 +16,11 @@ class EventRegistrationService
     public function joinEvent($eventId)
     {
         $userId = Auth::id();
+        $event = Event::find($eventId);
+
+        if (! $event || $event->status === 'cancelled' || $event->status === 'banned') {
+            return false;
+        }
 
         if (EventRegistration::where('user_id', $userId)->where('event_id', $eventId)->exists()) {
             return false;
@@ -26,10 +31,8 @@ class EventRegistrationService
             'event_id' => $eventId,
             'registered_at' => now(),
             'qr_token' => Str::uuid(),
-            'status' => 'confirmed'
+            'status' => 'confirmed',
         ]);
-
-        $event = Event::find($eventId);
         $user = Auth::user();
 
         if ($event && $user) {
@@ -82,7 +85,7 @@ class EventRegistrationService
             ->where('event_id', $eventId)
             ->first();
 
-        if (!$registration) {
+        if (! $registration) {
             return false;
         }
 
@@ -105,4 +108,3 @@ class EventRegistrationService
         return true;
     }
 }
-
