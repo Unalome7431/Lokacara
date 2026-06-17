@@ -5,11 +5,11 @@ import {
     X,
 } from 'lucide-react';
 import { useState, useEffect, useRef, useMemo } from 'react';
+import EventCard from '@/components/ui/EventCard';
+import FilterPanel from '@/components/ui/FilterPanel';
+import Pagination from '@/components/ui/Pagination';
 import Footer from '@/layouts/Footer';
 import NavBar from '@/layouts/NavBar';
-import EventCard from '@/components/ui/EventCard';
-import Pagination from '@/components/ui/Pagination';
-import FilterPanel from '@/components/ui/FilterPanel';
 
 interface Event {
     id: number;

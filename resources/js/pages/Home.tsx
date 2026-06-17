@@ -13,6 +13,10 @@ import {
 } from 'lucide-react';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import DefaultCover from '@/../../public/covers/default_cover.jpg';
+import EventCard from '@/components/ui/EventCard';
+import EventSlider from '@/components/ui/EventSlider';
+import FilterPanel from '@/components/ui/FilterPanel';
+import Pagination from '@/components/ui/Pagination';
 import Footer from '@/layouts/Footer';
 import NavBar from '@/layouts/NavBar';
 import {
@@ -20,10 +24,6 @@ import {
     geocodeAddress,
     reverseGeocode,
 } from '@/lib/geocoding';
-import EventCard from '@/components/ui/EventCard';
-import EventSlider from '@/components/ui/EventSlider';
-import Pagination from '@/components/ui/Pagination';
-import FilterPanel from '@/components/ui/FilterPanel';
 import { formatIndonesianDate } from '@/lib/utils';
 
 interface Event {

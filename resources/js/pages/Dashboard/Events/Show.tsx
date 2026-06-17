@@ -9,9 +9,9 @@ import {
     Eye,
     Award,
 } from 'lucide-react';
-import TicketScannerModal from '@/components/ui/TicketScannerModal';
 import React, { useState } from 'react';
 import DefaultCover from '@/../../public/covers/default_cover.jpg';
+import TicketScannerModal from '@/components/ui/TicketScannerModal';
 import Footer from '@/layouts/Footer';
 import NavBar from '@/layouts/NavBar';
 import { formatIndonesianDate as formatLongDate, parseDescription, getContactDetails } from '@/lib/utils';

@@ -1,13 +1,13 @@
 import { Head, useForm, router } from '@inertiajs/react';
 import { Plus, Minus, Upload } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
+import ContactsInputList from '@/components/ui/ContactsInputList';
+import EventFormMap from '@/components/ui/EventFormMap';
+import PosterPicker from '@/components/ui/PosterPicker';
+import TagsInputList from '@/components/ui/TagsInputList';
 import Footer from '@/layouts/Footer';
 import NavBar from '@/layouts/NavBar';
-import EventFormMap from '@/components/ui/EventFormMap';
 import { parseDescription } from '@/lib/utils';
-import TagsInputList from '@/components/ui/TagsInputList';
-import ContactsInputList from '@/components/ui/ContactsInputList';
-import PosterPicker from '@/components/ui/PosterPicker';
 
 interface Category {
     id: number;

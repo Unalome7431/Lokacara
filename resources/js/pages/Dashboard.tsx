@@ -10,10 +10,10 @@ import {
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import defaultAvatar from '@/../../public/avatars/default.png';
-import Footer from '@/layouts/Footer';
-import NavBar from '@/layouts/NavBar';
 import EventCard from '@/components/ui/EventCard';
 import Pagination from '@/components/ui/Pagination';
+import Footer from '@/layouts/Footer';
+import NavBar from '@/layouts/NavBar';
 
 interface Category {
     id: number;
