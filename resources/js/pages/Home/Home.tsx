@@ -9,8 +9,8 @@ import {
     geocodeAddress,
     reverseGeocode,
 } from '@/lib/geocoding';
-import HomeHero from './sections/HomeHero';
 import CatalogSection from './sections/CatalogSection';
+import HomeHero from './sections/HomeHero';
 
 interface Event {
     id: number;

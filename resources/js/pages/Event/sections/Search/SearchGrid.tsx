@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
 import { Filter, ChevronDown } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
 import EventCard from '@/components/ui/EventCard';
 import Pagination from '@/components/ui/Pagination';
 import useSlidingUnderline from '@/hooks/useSlidingUnderline';
@@ -95,6 +95,7 @@ export default function SearchGrid({
             }
         }
         document.addEventListener('mousedown', handleClickOutside);
+
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 

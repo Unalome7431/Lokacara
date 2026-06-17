@@ -2,8 +2,8 @@ import { Head, usePage, router } from '@inertiajs/react';
 import { useState } from 'react';
 import Footer from '@/layouts/Footer';
 import NavBar from '@/layouts/NavBar';
-import SearchSidebar from './sections/Search/SearchSidebar';
 import SearchGrid from './sections/Search/SearchGrid';
+import SearchSidebar from './sections/Search/SearchSidebar';
 
 interface Event {
     id: number;

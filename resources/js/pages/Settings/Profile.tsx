@@ -2,7 +2,6 @@ import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { User, Lock, Camera, Info, ShieldAlert } from 'lucide-react';
 import React, { useState } from 'react';
 import defaultAvatar from '@/../../public/avatars/default.png';
-import faviconUrl from '@/../../public/favicon.svg';
 import Footer from '@/layouts/Footer';
 import NavBar from '@/layouts/NavBar';
 import Tentang from './sections/Tentang';

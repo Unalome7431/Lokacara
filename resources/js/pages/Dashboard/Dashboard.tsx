@@ -1,8 +1,8 @@
 import { Head } from '@inertiajs/react';
 import Footer from '@/layouts/Footer';
 import NavBar from '@/layouts/NavBar';
-import ProfileHeader from './sections/ProfileHeader';
 import DashboardCatalog from './sections/DashboardCatalog';
+import ProfileHeader from './sections/ProfileHeader';
 
 interface Category {
     id: number;

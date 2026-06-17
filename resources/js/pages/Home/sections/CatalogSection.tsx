@@ -1,5 +1,5 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
 import { Filter, ChevronDown, X } from 'lucide-react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import EventCard from '@/components/ui/EventCard';
 import FilterPanel from '@/components/ui/FilterPanel';
 import Pagination from '@/components/ui/Pagination';
@@ -86,6 +86,7 @@ export default function CatalogSection({ events = [], categories = [], userCoord
             }
         }
         document.addEventListener('mousedown', handleClickOutside);
+
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
@@ -96,6 +97,7 @@ export default function CatalogSection({ events = [], categories = [], userCoord
         } else {
             document.body.style.overflow = '';
         }
+
         return () => {
             document.body.style.overflow = '';
         };
@@ -116,11 +118,13 @@ export default function CatalogSection({ events = [], categories = [], userCoord
 
             // Date range filter
             let matchesDate = true;
+
             if (appliedStartDate || appliedEndDate) {
                 const eventDate = new Date(e.start_datetime).setHours(0, 0, 0, 0);
 
                 if (appliedStartDate) {
                     const start = new Date(appliedStartDate).setHours(0, 0, 0, 0);
+
                     if (eventDate < start) {
                         matchesDate = false;
                     }
@@ -128,6 +132,7 @@ export default function CatalogSection({ events = [], categories = [], userCoord
 
                 if (appliedEndDate) {
                     const end = new Date(appliedEndDate).setHours(23, 59, 59, 999);
+
                     if (eventDate > end) {
                         matchesDate = false;
                     }
@@ -147,6 +152,7 @@ export default function CatalogSection({ events = [], categories = [], userCoord
             result.sort((a, b) => {
                 const ratioA = (a.view_count || 0) / (a.capacity || 1);
                 const ratioB = (b.view_count || 0) / (b.capacity || 1);
+
                 return ratioB - ratioA;
             });
         } else if (sortBy === 'nearest') {
@@ -175,6 +181,7 @@ export default function CatalogSection({ events = [], categories = [], userCoord
                               Number(b.longitude),
                           )
                         : Infinity;
+
                 return distA - distB;
             });
         } else if (sortBy === 'date_asc') {

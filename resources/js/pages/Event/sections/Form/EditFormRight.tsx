@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
 import { Upload } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
 import ContactsInputList from '@/components/ui/ContactsInputList';
 import EventFormMap from '@/components/ui/EventFormMap';
 
@@ -18,7 +18,6 @@ interface EditFormRightProps {
     contacts: { name: string; info: string }[];
     setContacts: (contacts: any) => void;
     processing: boolean;
-    submit: (e: React.FormEvent) => void;
 }
 
 export default function EditFormRight({
@@ -31,7 +30,6 @@ export default function EditFormRight({
     contacts,
     setContacts,
     processing,
-    submit,
 }: EditFormRightProps) {
     const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
     const categoryDropdownRef = useRef<HTMLDivElement>(null);
@@ -47,6 +45,7 @@ export default function EditFormRight({
         }
 
         document.addEventListener('mousedown', handleClickOutside);
+
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 

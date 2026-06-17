@@ -184,7 +184,6 @@ export default function Edit({ event, categories }: EditProps) {
                             contacts={contacts}
                             setContacts={setContacts}
                             processing={processing}
-                            submit={submit}
                         />
                     </div>
                 </form>

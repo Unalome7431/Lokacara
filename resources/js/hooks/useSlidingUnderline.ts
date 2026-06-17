@@ -14,6 +14,7 @@ export default function useSlidingUnderline<T extends HTMLElement>(
     useEffect(() => {
         const updateUnderline = () => {
             const activeEl = refs.current[String(activeValue)];
+
             if (activeEl) {
                 setUnderlineStyle({
                     left: activeEl.offsetLeft,
@@ -29,6 +30,7 @@ export default function useSlidingUnderline<T extends HTMLElement>(
             clearTimeout(timer);
             window.removeEventListener('resize', updateUnderline);
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeValue, ...deps]);
 
     return { registerRef, underlineStyle };

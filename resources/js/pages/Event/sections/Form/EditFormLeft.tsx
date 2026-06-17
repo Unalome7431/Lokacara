@@ -1,5 +1,5 @@
-import React, { useRef, useEffect } from 'react';
 import { Minus, Plus } from 'lucide-react';
+import React, { useRef, useEffect } from 'react';
 import PosterPicker from '@/components/ui/PosterPicker';
 import TagsInputList from '@/components/ui/TagsInputList';
 
@@ -40,6 +40,7 @@ export default function EditFormLeft({
         if (stepperTimeoutRef.current) {
             clearTimeout(stepperTimeoutRef.current);
         }
+
         if (stepperIntervalRef.current) {
             clearInterval(stepperIntervalRef.current);
         }
@@ -50,6 +51,7 @@ export default function EditFormLeft({
             if (stepperTimeoutRef.current) {
                 clearTimeout(stepperTimeoutRef.current);
             }
+
             if (stepperIntervalRef.current) {
                 clearInterval(stepperIntervalRef.current);
             }
@@ -210,6 +212,7 @@ export default function EditFormLeft({
                             type="button"
                             onClick={() => {
                                 setIsFree(false);
+
                                 if (data.price < 10000) {
                                     setData('price', 10000);
                                 }

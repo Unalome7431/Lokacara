@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
 import { Link } from '@inertiajs/react';
 import { Camera, Edit, Users, Award, Eye } from 'lucide-react';
+import React, { useState } from 'react';
 import TicketScannerModal from '@/components/ui/TicketScannerModal';
 
 interface Event {

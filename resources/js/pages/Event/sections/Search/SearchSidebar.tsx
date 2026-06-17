@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
 import { X } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
 import FilterPanel from '@/components/ui/FilterPanel';
 
 interface Category {
@@ -48,10 +48,12 @@ export default function SearchSidebar({
 
     // Sync input states when url filters change
     useEffect(() => {
+        /* eslint-disable react-hooks/set-state-in-effect */
         setTempMinPrice(filters.min_price || '');
         setTempMaxPrice(filters.max_price || '');
         setTempStartDate(filters.start_date || '');
         setTempEndDate(filters.end_date || '');
+        /* eslint-enable react-hooks/set-state-in-effect */
     }, [filters.min_price, filters.max_price, filters.start_date, filters.end_date]);
 
     // Lock body scroll when mobile filter is open
@@ -61,6 +63,7 @@ export default function SearchSidebar({
         } else {
             document.body.style.overflow = '';
         }
+
         return () => {
             document.body.style.overflow = '';
         };
@@ -72,6 +75,7 @@ export default function SearchSidebar({
             activeCategory={activeCategory}
             onCategorySelect={(id) => {
                 handleFilterChange({ category_id: id });
+
                 if (isMobile) {
                     setIsMobileFilterOpen(false);
                 }
@@ -85,6 +89,7 @@ export default function SearchSidebar({
                     min_price: tempMinPrice || null,
                     max_price: tempMaxPrice || null,
                 });
+
                 if (isMobile) {
                     setIsMobileFilterOpen(false);
                 }
@@ -96,6 +101,7 @@ export default function SearchSidebar({
                     min_price: null,
                     max_price: null,
                 });
+
                 if (isMobile) {
                     setIsMobileFilterOpen(false);
                 }
@@ -110,6 +116,7 @@ export default function SearchSidebar({
                     start_date: tempStartDate || null,
                     end_date: tempEndDate || null,
                 });
+
                 if (isMobile) {
                     setIsMobileFilterOpen(false);
                 }
@@ -121,6 +128,7 @@ export default function SearchSidebar({
                     start_date: null,
                     end_date: null,
                 });
+
                 if (isMobile) {
                     setIsMobileFilterOpen(false);
                 }

@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
 import { Head, usePage, router } from '@inertiajs/react';
-import NavBar from '@/layouts/NavBar';
-import Footer from '@/layouts/Footer';
-import EventDetailHeader from './sections/Detail/EventDetailHeader';
-import EventDetailDescription from './sections/Detail/EventDetailDescription';
+import React, { useState } from 'react';
 import EventInfoDetails from '@/components/ui/EventInfoDetails';
-import HostActionCard from './sections/Detail/HostActionCard';
+import Footer from '@/layouts/Footer';
+import NavBar from '@/layouts/NavBar';
 import AttendeeActionCard from './sections/Detail/AttendeeActionCard';
+import EventDetailDescription from './sections/Detail/EventDetailDescription';
+import EventDetailHeader from './sections/Detail/EventDetailHeader';
+import HostActionCard from './sections/Detail/HostActionCard';
 
 interface Category {
     id: number;
@@ -77,6 +77,7 @@ export default function EventDetail({
 
         if (event.price > 0 && !user?.email_verified_at) {
             setShowVerificationWarning(true);
+
             return;
         }
 

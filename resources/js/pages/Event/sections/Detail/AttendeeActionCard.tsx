@@ -1,6 +1,6 @@
-import React from 'react';
 import { Link } from '@inertiajs/react';
 import { ArrowUpRight, CheckCircle2, Eye, Award, AlertTriangle } from 'lucide-react';
+import React from 'react';
 
 interface Event {
     id: number;

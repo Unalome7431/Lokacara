@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from 'react';
 import { Link } from '@inertiajs/react';
 import {
     Calendar,
@@ -9,6 +8,7 @@ import {
     FileText,
     ExternalLink,
 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 import EventCard from '@/components/ui/EventCard';
 import Pagination from '@/components/ui/Pagination';
 import SegmentedToggle from '@/components/ui/SegmentedToggle';
@@ -105,6 +105,7 @@ export default function DashboardCatalog({
 
     const filteredCertificates = certificates.filter((cert) => {
         const title = cert.event_registration?.event?.title || cert.eventRegistration?.event?.title;
+
         return title?.toLowerCase().includes(searchQuery.toLowerCase());
     });
 

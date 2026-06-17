@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
 import { Inbox, Upload } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
 import ContactsInputList from '@/components/ui/ContactsInputList';
 import EventFormMap from '@/components/ui/EventFormMap';
 
@@ -47,6 +47,7 @@ export default function CreateFormRight({
         }
 
         document.addEventListener('mousedown', handleClickOutside);
+
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
