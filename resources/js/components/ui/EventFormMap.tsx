@@ -152,10 +152,10 @@ export default function EventFormMap({
                             })
                         }
                         required
-                        className="w-full flex-grow rounded-full border-0 bg-white px-5 py-2.5 text-base font-medium text-neutral-800 shadow-xs focus:ring-2 focus:ring-primary-500 focus:outline-none"
+                        className="w-full grow rounded-full border-0 bg-white px-5 py-2.5 text-base font-medium text-neutral-800 shadow-xs focus:ring-2 focus:ring-primary-500 focus:outline-none"
                     />
                 ) : isLoaded ? (
-                    <div className="w-full flex-grow">
+                    <div className="w-full grow">
                         <Autocomplete
                             onLoad={(autocomplete) => {
                                 autocompleteRef.current = autocomplete;
@@ -181,7 +181,7 @@ export default function EventFormMap({
                         type="text"
                         placeholder="Memuat Pencarian Alamat..."
                         disabled
-                        className="w-full flex-grow rounded-full border-0 bg-neutral-100 px-5 py-2.5 text-base font-medium text-neutral-400"
+                        className="w-full grow rounded-full border-0 bg-neutral-100 px-5 py-2.5 text-base font-medium text-neutral-400"
                     />
                 )}
             </div>

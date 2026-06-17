@@ -34,7 +34,7 @@ export default function TagsInputList({ tags, onChange }: TagsInputListProps) {
             <div className="flex flex-col gap-3">
                 {tags.map((tag, index) => (
                     <div key={index} className="flex items-center gap-2">
-                        <div className="flex flex-grow items-center rounded-full border border-neutral-100 bg-white px-5 py-3 shadow-xs">
+                        <div className="flex grow items-center rounded-full border border-neutral-100 bg-white px-5 py-3 shadow-xs">
                             <span className="mr-1.5 font-extrabold text-secondary-500 select-none">
                                 #
                             </span>

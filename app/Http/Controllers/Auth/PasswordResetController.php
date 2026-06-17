@@ -19,7 +19,7 @@ class PasswordResetController extends Controller
      */
     public function showRequestForm(): Response
     {
-        return Inertia::render('auth/ForgotPassword');
+        return Inertia::render('Auth/ForgotPassword');
     }
 
     /**
@@ -84,7 +84,7 @@ class PasswordResetController extends Controller
             return to_route('password.request');
         }
 
-        return Inertia::render('settings/VerifyEmail', [
+        return Inertia::render('Auth/VerifyEmail', [
             'email' => $email,
             'isReset' => true,
             'status' => $request->session()->get('status'),
@@ -150,7 +150,7 @@ class PasswordResetController extends Controller
             return to_route('password.request');
         }
 
-        return Inertia::render('auth/ResetPassword');
+        return Inertia::render('Auth/ResetPassword');
     }
 
     /**

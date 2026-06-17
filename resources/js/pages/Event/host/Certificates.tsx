@@ -10,6 +10,7 @@ import {
 import React, { useState, useEffect } from 'react';
 import Footer from '@/layouts/Footer';
 import NavBar from '@/layouts/NavBar';
+import { getXsrfToken } from '@/lib/utils';
 
 interface Event {
     id: number;
@@ -109,12 +110,7 @@ export default function Certificates() {
             formData.append('max_width', String(data.max_width));
             formData.append('max_height', String(data.max_height));
 
-            const xsrfCookie = document.cookie
-                .split('; ')
-                .find((row) => row.startsWith('XSRF-TOKEN='));
-            const xsrfToken = xsrfCookie
-                ? decodeURIComponent(xsrfCookie.split('=')[1])
-                : '';
+            const xsrfToken = getXsrfToken();
 
             const response = await fetch(
                 `/dashboard/events/${event.id}/certificates/preview`,
@@ -200,7 +196,7 @@ export default function Certificates() {
                 />
             </Head>
 
-            <div className="flex-grow">
+            <div className="grow">
                 <NavBar />
 
                 <div className="mx-auto max-w-7xl px-4 pt-28 pb-16 md:px-8">
@@ -266,7 +262,7 @@ export default function Certificates() {
                                     </div>
                                 ) : (
                                     <div className="relative overflow-hidden rounded-2xl border border-neutral-250 bg-neutral-900 p-2 shadow-xs">
-                                        <div className="relative flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-xl bg-neutral-950">
+                                        <div className="relative flex aspect-4/3 w-full items-center justify-center overflow-hidden rounded-xl bg-neutral-950">
                                             <img
                                                 src={previewUrl}
                                                 alt="Certificate Template"

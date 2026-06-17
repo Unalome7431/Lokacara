@@ -11,6 +11,7 @@ import React, { useState, useEffect } from 'react';
 import defaultAvatar from '@/../../public/avatars/default.png';
 import Footer from '@/layouts/Footer';
 import NavBar from '@/layouts/NavBar';
+import { formatIndonesianDateShort } from '@/lib/utils';
 
 interface User {
     id: number;
@@ -125,19 +126,11 @@ export default function Attendees({
         }
     };
 
-    const formatDate = (dateString: string) => {
-        const dateObj = new Date(dateString);
 
-        return new Intl.DateTimeFormat('id-ID', {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric',
-        }).format(dateObj);
-    };
 
     return (
         <div className="flex min-h-screen flex-col justify-between bg-neutral-50/50">
-            <div className="flex-grow">
+            <div className="grow">
                 <NavBar />
                 <Head title={`Daftar Peserta - ${event.title}`} />
 
@@ -276,7 +269,7 @@ export default function Attendees({
 
                                                     {/* Registration date */}
                                                     <td className="px-6 py-4 text-small font-medium whitespace-nowrap text-neutral-700">
-                                                        {formatDate(
+                                                        {formatIndonesianDateShort(
                                                             reg.created_at,
                                                         )}
                                                     </td>
