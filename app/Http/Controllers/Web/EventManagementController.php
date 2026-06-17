@@ -49,7 +49,7 @@ class EventManagementController extends Controller
         }
 
         $categories = Category::all();
-        return Inertia::render('Dashboard/Events/Create', [
+        return Inertia::render('Event/Create', [
             'categories' => $categories
         ]);
     }
@@ -81,7 +81,7 @@ class EventManagementController extends Controller
         }
 
         $categories = Category::all();
-        return Inertia::render('Dashboard/Events/Edit', [
+        return Inertia::render('Event/Edit', [
             'event' => $event,
             'categories' => $categories
         ]);
@@ -146,7 +146,7 @@ class EventManagementController extends Controller
         $checkedInAttendees = $event->eventRegistrations()->whereNotNull('checked_in_at')->count();
         $remainingCapacity = $event->capacity ? ($event->capacity - $totalAttendees) : null;
 
-        return Inertia::render('Dashboard/Events/Show', [
+        return Inertia::render('Event/EventDetail', [
             'event' => $event,
             'total_attendees' => $totalAttendees,
             'checked_in_attendees' => $checkedInAttendees,
@@ -189,7 +189,7 @@ class EventManagementController extends Controller
 
         $attendees = $query->paginate(15)->withQueryString();
 
-        return Inertia::render('Dashboard/Events/Attendees', [
+        return Inertia::render('Event/host/Attendees', [
             'event' => $event,
             'attendees' => $attendees,
             'filters' => $request->only(['search']),

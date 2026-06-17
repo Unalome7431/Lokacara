@@ -164,3 +164,47 @@ export function getContactDetails(info: string) {
         label: cleanInfo,
     };
 }
+
+export function formatIndonesianTime(dateString: string) {
+    const dateObj = new Date(dateString);
+
+    return (
+        new Intl.DateTimeFormat('id-ID', {
+            hour: '2-digit',
+            minute: '2-digit',
+        }).format(dateObj) + ' WIB'
+    );
+}
+
+export function formatIndonesianDateShort(dateString: string) {
+    const dateObj = new Date(dateString);
+
+    return new Intl.DateTimeFormat('id-ID', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+    }).format(dateObj);
+}
+
+export function formatIndonesianDateTime(dateString: string) {
+    const dateObj = new Date(dateString);
+
+    return (
+        new Intl.DateTimeFormat('id-ID', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+        }).format(dateObj) + ' WIB'
+    );
+}
+
+export function getXsrfToken(): string {
+    const xsrfCookie = document.cookie
+        .split('; ')
+        .find((row) => row.startsWith('XSRF-TOKEN='));
+
+    return xsrfCookie ? decodeURIComponent(xsrfCookie.split('=')[1]) : '';
+}

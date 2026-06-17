@@ -273,7 +273,7 @@ test('attendee event detail page displays certificate download link if certifica
     $response = $this->get(route('events.show', $this->event));
     $response->assertOk();
     $response->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page
-        ->component('Events/Show')
+        ->component('Event/EventDetail')
         ->where('isRegistered', true)
         ->where('certificateUrl', null)
     );
@@ -289,7 +289,7 @@ test('attendee event detail page displays certificate download link if certifica
     $response = $this->get(route('events.show', $this->event));
     $response->assertOk();
     $response->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page
-        ->component('Events/Show')
+        ->component('Event/EventDetail')
         ->where('isRegistered', true)
         ->where('certificateUrl', route('certificates.download', ['certificate' => $certificate->id]))
     );

@@ -16,7 +16,7 @@ class AttendanceController extends Controller
             ->where('user_id', $request->user()->id)
             ->firstOrFail();
 
-        return Inertia::render('Events/Ticket', [
+        return Inertia::render('Event/attendee/Ticket', [
             'event' => $event,
             'registration' => $registration,
         ]);

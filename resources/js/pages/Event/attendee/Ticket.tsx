@@ -10,6 +10,7 @@ import {
 import React from 'react';
 import Footer from '@/layouts/Footer';
 import NavBar from '@/layouts/NavBar';
+import { formatIndonesianDateTime } from '@/lib/utils';
 
 interface Category {
     id: number;
@@ -45,27 +46,14 @@ interface TicketProps {
 export default function Ticket({ event, registration }: TicketProps) {
     const isCheckedIn = !!registration.checked_in_at;
 
-    const formatLongDate = (dateString: string) => {
-        const dateObj = new Date(dateString);
 
-        return (
-            new Intl.DateTimeFormat('id-ID', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-            }).format(dateObj) + ' WIB'
-        );
-    };
 
     // Generate QR Code URL using api.qrserver.com
     const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(registration.qr_token)}`;
 
     return (
         <div className="flex min-h-screen flex-col justify-between bg-neutral-50/50">
-            <div className="flex-grow">
+            <div className="grow">
                 <NavBar />
                 <Head title={`Tiket Event - ${event.title}`} />
 
@@ -98,7 +86,7 @@ export default function Ticket({ event, registration }: TicketProps) {
                                             Waktu Acara
                                         </span>
                                         <span className="mt-0.5 font-bold text-neutral-800">
-                                            {formatLongDate(
+                                            {formatIndonesianDateTime(
                                                 event.start_datetime,
                                             )}
                                         </span>

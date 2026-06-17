@@ -12,9 +12,7 @@ class ProfileController extends Controller
 {
     public function edit(Request $request)
     {
-        return Inertia::render('Profile/Edit', [
-            'user' => $request->user(),
-        ]);
+        return redirect()->route('profile.edit');
     }
 
     public function update(Request $request)

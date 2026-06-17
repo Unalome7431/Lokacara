@@ -42,7 +42,7 @@ class DiscoveryController extends Controller
         // All categories
         $categories = Category::all();
 
-        return Inertia::render('Home', [
+        return Inertia::render('Home/Home', [
             'events' => $allUpcomingEvents,
             'popularEvents' => $popularEvents,
             'joinedEvents' => $joinedEvents,
@@ -112,7 +112,7 @@ class DiscoveryController extends Controller
         $events = $query->paginate(15)->withQueryString();
         $categories = Category::all();
 
-        return Inertia::render('Events/Search', [
+        return Inertia::render('Event/Search', [
             'events' => $events,
             'categories' => $categories,
             'filters' => [
@@ -158,7 +158,7 @@ class DiscoveryController extends Controller
             }
         }
 
-        return Inertia::render('Events/Show', [
+        return Inertia::render('Event/EventDetail', [
             'event' => $event,
             'isRegistered' => $isRegistered,
             'certificateUrl' => $certificateUrl,

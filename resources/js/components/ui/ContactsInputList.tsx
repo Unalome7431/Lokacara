@@ -48,7 +48,7 @@ export default function ContactsInputList({
                 <div className="flex flex-col gap-3">
                     {contacts.map((contact, index) => (
                         <div key={index} className="flex items-center gap-2">
-                            <div className="flex flex-grow overflow-hidden rounded-full border border-neutral-100 bg-white shadow-xs">
+                            <div className="flex grow overflow-hidden rounded-full border border-neutral-100 bg-white shadow-xs">
                                 <input
                                     type="text"
                                     placeholder="Nama"

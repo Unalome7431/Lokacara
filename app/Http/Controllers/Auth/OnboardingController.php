@@ -7,7 +7,7 @@ use Inertia\Inertia;
 
 class OnboardingController {
   public function showOnboardingForm() {
-    return Inertia::render('auth/Onboard');
+    return Inertia::render('Auth/Onboard');
   }
 
   public function onboard(Request $request) {

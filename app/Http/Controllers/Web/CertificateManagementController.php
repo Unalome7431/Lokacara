@@ -19,7 +19,7 @@ class CertificateManagementController extends Controller
         $presentCount = $event->eventRegistrations()->where('status', 'present')->count();
         $isDone = now()->greaterThanOrEqualTo(\Illuminate\Support\Carbon::parse($event->end_datetime));
 
-        return Inertia::render('Dashboard/Events/Certificates', [
+        return Inertia::render('Event/host/Certificates', [
             'event' => $event,
             'presentCount' => $presentCount,
             'isDone' => $isDone

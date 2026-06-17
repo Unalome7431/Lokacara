@@ -15,7 +15,7 @@ test('guests can access the search endpoint and get default results', function (
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
-        ->component('Events/Search')
+        ->component('Event/Search')
         ->has('events')
         ->has('categories')
         ->has('filters')

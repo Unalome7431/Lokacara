@@ -34,10 +34,8 @@ export default function NavBar({
     const isAuthenticated = !!user;
 
     // Page context detection
-    const isHomePage = page.component === 'Home';
-    const isEventDetailsPage =
-        page.component === 'Events/Show' ||
-        page.component === 'Dashboard/Events/Show';
+    const isHomePage = page.component === 'Home/Home';
+    const isEventDetailsPage = page.component === 'Event/EventDetail';
     const showLocationBar = isHomePage || isEventDetailsPage;
 
     // Get event details if on details page
