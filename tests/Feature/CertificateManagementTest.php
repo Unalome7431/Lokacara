@@ -1,20 +1,22 @@
 <?php
 
+use App\Jobs\DistributeCertificatesJob;
 use App\Models\Category;
+use App\Models\Certificate;
 use App\Models\Event;
 use App\Models\EventRegistration;
 use App\Models\User;
-use App\Jobs\DistributeCertificatesJob;
+use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
-use Carbon\Carbon;
+use Inertia\Testing\AssertableInertia;
 
 beforeEach(function () {
     Storage::fake('local');
     $this->user = User::factory()->create();
     $this->category = Category::factory()->create();
-    
+
     // Create an event owned by the user
     $this->event = Event::factory()->create([
         'user_id' => $this->user->id,
@@ -117,7 +119,7 @@ test('owner can upload certificate template file and it is saved', function () {
     ]);
 
     $response->assertRedirect();
-    
+
     $this->event->refresh();
     expect($this->event->certificate_template)->not->toBeNull();
     Storage::disk('local')->assertExists($this->event->certificate_template);
@@ -249,7 +251,7 @@ test('owner can download certificate template if exists', function () {
 
     $response = $this->get(route('dashboard.events.certificates.template', $this->event));
     $response->assertOk();
-    
+
     // Non-owner gets 403
     $otherUser = User::factory()->create();
     $this->actingAs($otherUser);
@@ -272,14 +274,14 @@ test('attendee event detail page displays certificate download link if certifica
     // View detail page before certificate is issued
     $response = $this->get(route('events.show', $this->event));
     $response->assertOk();
-    $response->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page
+    $response->assertInertia(fn (AssertableInertia $page) => $page
         ->component('Event/EventDetail')
         ->where('isRegistered', true)
         ->where('certificateUrl', null)
     );
 
     // Create certificate
-    $certificate = \App\Models\Certificate::create([
+    $certificate = Certificate::create([
         'registration_id' => $registration->id,
         'file_url' => 'certificates/dummy.jpg',
         'issued_at' => now(),
@@ -288,7 +290,7 @@ test('attendee event detail page displays certificate download link if certifica
     // View detail page after certificate is issued
     $response = $this->get(route('events.show', $this->event));
     $response->assertOk();
-    $response->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page
+    $response->assertInertia(fn (AssertableInertia $page) => $page
         ->component('Event/EventDetail')
         ->where('isRegistered', true)
         ->where('certificateUrl', route('certificates.download', ['certificate' => $certificate->id]))
@@ -424,7 +426,6 @@ test('owner gets validation error if preview has no template and database has no
 
     $response->assertStatus(422);
     $response->assertJson([
-        'error' => 'Template sertifikat wajib diunggah terlebih dahulu.'
+        'error' => 'Template sertifikat wajib diunggah terlebih dahulu.',
     ]);
 });
-

@@ -10,6 +10,7 @@ interface Event {
     capacity?: number;
     view_count: number;
     event_registrations_count?: number;
+    status?: string;
 }
 
 interface AttendeeActionCardProps {
@@ -88,7 +89,18 @@ export default function AttendeeActionCard({
 
             {/* Standalone Action Buttons Sticky Bottom on Mobile/Tablet */}
             <div className="fixed right-0 bottom-0 left-0 z-40 border-t border-neutral-200 bg-white p-4 shadow-[0_-8px_20px_rgba(0,0,0,0.06)] lg:relative lg:right-auto lg:bottom-auto lg:left-auto lg:z-auto lg:w-full lg:flex-col lg:gap-4 lg:border-t-0 lg:bg-transparent lg:p-0 lg:shadow-none">
-                {isRegistered ? (
+                {event.status === 'cancelled' || event.status === 'banned' ? (
+                    <div className="flex w-full flex-col gap-3">
+                        <div className="flex w-full items-center justify-center gap-2 rounded-2xl border border-red-200 bg-red-50 py-3.5 text-base font-bold text-red-700 lg:py-4">
+                            <AlertTriangle size={18} className="text-red-600" />
+                            <span>
+                                {event.status === 'cancelled'
+                                    ? 'Event Telah Dibatalkan'
+                                    : 'Event Telah Dilarang (Banned)'}
+                            </span>
+                        </div>
+                    </div>
+                ) : isRegistered ? (
                     <div className="flex w-full flex-col gap-3 sm:flex-row lg:flex-col">
                         <div className="flex flex-1 items-center justify-center gap-2 rounded-full border border-green-200 bg-green-50 py-3 text-base font-bold text-green-700 lg:py-4">
                             <CheckCircle2 size={18} className="animate-pulse text-green-600" />

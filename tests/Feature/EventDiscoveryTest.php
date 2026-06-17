@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\Event;
 use App\Models\Category;
+use App\Models\Event;
 use Carbon\Carbon;
 
 test('guests can access the search endpoint and get default results', function () {
@@ -147,14 +147,14 @@ test('can sort events by nearest proximity coordinate (sqlite fallback)', functi
         'type' => 'offline',
         'latitude' => -7.79600,
         'longitude' => 110.36900,
-        'start_datetime' => Carbon::tomorrow()
+        'start_datetime' => Carbon::tomorrow(),
     ]);
-    
+
     $event2 = Event::factory()->create([
         'type' => 'offline',
         'latitude' => -7.89000,
         'longitude' => 110.45000,
-        'start_datetime' => Carbon::tomorrow()
+        'start_datetime' => Carbon::tomorrow(),
     ]);
 
     $response = $this->get('/events/search?sort_by=nearest&latitude=-7.79558&longitude=110.36949');

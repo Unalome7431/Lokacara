@@ -1,13 +1,16 @@
-import { Link } from '@inertiajs/react';
-import { Camera, Edit, Users, Award, Eye } from 'lucide-react';
+import { Link, useForm } from '@inertiajs/react';
+import { Camera, Edit, Users, Award, Eye, AlertTriangle } from 'lucide-react';
 import React, { useState } from 'react';
+import CancelEventModal from '@/components/ui/CancelEventModal';
 import TicketScannerModal from '@/components/ui/TicketScannerModal';
 
 interface Event {
     id: number;
+    title: string;
     capacity?: number;
     view_count: number;
     price: number;
+    status?: string;
 }
 
 interface HostActionCardProps {
@@ -22,6 +25,19 @@ export default function HostActionCard({
     checked_in_attendees,
 }: HostActionCardProps) {
     const [isScanModalOpen, setIsScanModalOpen] = useState(false);
+    const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+
+    const { post, processing } = useForm();
+
+    const handleConfirmCancel = () => {
+        post(`/dashboard/events/${event.id}/cancel`, {
+            onSuccess: () => {
+                setIsCancelModalOpen(false);
+            },
+        });
+    };
+
+    const isCancelled = event.status === 'cancelled';
 
     return (
         <div className="flex flex-col gap-6 lg:sticky lg:top-28">
@@ -81,41 +97,71 @@ export default function HostActionCard({
 
             {/* Standalone Action Buttons Sticky Bottom on Mobile/Tablet */}
             <div className="fixed bottom-0 left-0 right-0 z-40 flex flex-row items-center gap-3 border-t border-neutral-200 bg-white p-4 shadow-[0_-8px_20px_rgba(0,0,0,0.06)] lg:relative lg:bottom-auto lg:left-auto lg:right-auto lg:z-auto lg:w-full lg:flex-col lg:gap-4 lg:border-t-0 lg:bg-transparent lg:p-0 lg:shadow-none">
-                <button
-                    type="button"
-                    onClick={() => setIsScanModalOpen(true)}
-                    className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full border-0 bg-primary-500 py-3 text-base font-bold text-white shadow-md transition-all duration-200 hover:bg-primary-600 active:scale-[0.99] lg:w-full lg:py-4"
-                >
-                    <Camera size={18} />
-                    <span>Scan QR</span>
-                </button>
+                {isCancelled ? (
+                    <div className="flex w-full flex-col gap-3">
+                        <div className="flex w-full items-center justify-center gap-2 rounded-2xl border border-red-200 bg-red-50 py-3.5 text-base font-bold text-red-700 lg:py-4">
+                            <AlertTriangle size={18} className="text-red-600" />
+                            <span>Acara Telah Dibatalkan</span>
+                        </div>
 
-                <Link
-                    href={`/dashboard/events/${event.id}/edit`}
-                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-secondary-500 text-base font-bold text-neutral-900 shadow-md transition-all duration-200 hover:bg-secondary-600 active:scale-[0.99] lg:h-auto lg:w-full lg:flex-row lg:gap-2 lg:py-4"
-                    title="Edit Detail Acara"
-                >
-                    <Edit size={16} />
-                    <span className="hidden lg:inline">Edit Detail Acara</span>
-                </Link>
+                        <Link
+                            href={`/dashboard/events/${event.id}/attendees`}
+                            className="flex h-12 w-full items-center justify-center rounded-full border border-neutral-300 bg-white text-base font-bold text-neutral-800 shadow-xs transition-all duration-200 hover:bg-neutral-50 active:scale-[0.99] lg:h-auto lg:py-4"
+                            title="Pendaftar"
+                        >
+                            <Users size={16} className="mr-2" />
+                            <span>Pendaftar</span>
+                        </Link>
+                    </div>
+                ) : (
+                    <>
+                        <button
+                            type="button"
+                            onClick={() => setIsScanModalOpen(true)}
+                            className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full border-0 bg-primary-500 py-3 text-base font-bold text-white shadow-md transition-all duration-200 hover:bg-primary-600 active:scale-[0.99] lg:w-full lg:py-4"
+                        >
+                            <Camera size={18} />
+                            <span>Scan QR</span>
+                        </button>
 
-                <Link
-                    href={`/dashboard/events/${event.id}/attendees`}
-                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-neutral-300 bg-white text-base font-bold text-neutral-800 shadow-xs transition-all duration-200 hover:bg-neutral-50 active:scale-[0.99] lg:h-auto lg:w-full lg:flex-row lg:gap-2 lg:py-4"
-                    title="Pendaftar"
-                >
-                    <Users size={16} />
-                    <span className="hidden lg:inline">Pendaftar</span>
-                </Link>
+                        <Link
+                            href={`/dashboard/events/${event.id}/edit`}
+                            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-secondary-500 text-base font-bold text-neutral-900 shadow-md transition-all duration-200 hover:bg-secondary-600 active:scale-[0.99] lg:h-auto lg:w-full lg:flex-row lg:gap-2 lg:py-4"
+                            title="Edit Detail Acara"
+                        >
+                            <Edit size={16} />
+                            <span className="hidden lg:inline">Edit Detail Acara</span>
+                        </Link>
 
-                <Link
-                    href={`/dashboard/events/${event.id}/certificates`}
-                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-neutral-300 bg-white text-base font-bold text-neutral-800 shadow-xs transition-all duration-200 hover:bg-neutral-50 active:scale-[0.99] lg:h-auto lg:w-full lg:flex-row lg:gap-2 lg:py-4"
-                    title="Kelola E-Sertifikat"
-                >
-                    <Award size={16} />
-                    <span className="hidden lg:inline">E-Sertifikat</span>
-                </Link>
+                        <Link
+                            href={`/dashboard/events/${event.id}/attendees`}
+                            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-neutral-300 bg-white text-base font-bold text-neutral-800 shadow-xs transition-all duration-200 hover:bg-neutral-50 active:scale-[0.99] lg:h-auto lg:w-full lg:flex-row lg:gap-2 lg:py-4"
+                            title="Pendaftar"
+                        >
+                            <Users size={16} />
+                            <span className="hidden lg:inline">Pendaftar</span>
+                        </Link>
+
+                        <Link
+                            href={`/dashboard/events/${event.id}/certificates`}
+                            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-neutral-300 bg-white text-base font-bold text-neutral-800 shadow-xs transition-all duration-200 hover:bg-neutral-50 active:scale-[0.99] lg:h-auto lg:w-full lg:flex-row lg:gap-2 lg:py-4"
+                            title="Kelola E-Sertifikat"
+                        >
+                            <Award size={16} />
+                            <span className="hidden lg:inline">E-Sertifikat</span>
+                        </Link>
+
+                        <button
+                            type="button"
+                            onClick={() => setIsCancelModalOpen(true)}
+                            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-red-200 bg-red-50 text-base font-bold text-red-600 shadow-xs transition-all duration-200 hover:bg-red-100 active:scale-[0.99] lg:h-auto lg:w-full lg:flex-row lg:gap-2 lg:py-4 cursor-pointer"
+                            title="Batalkan Acara"
+                        >
+                            <AlertTriangle size={16} />
+                            <span className="hidden lg:inline">Batalkan Acara</span>
+                        </button>
+                    </>
+                )}
             </div>
 
             {/* QR SCAN MODAL */}
@@ -123,6 +169,15 @@ export default function HostActionCard({
                 isOpen={isScanModalOpen}
                 onClose={() => setIsScanModalOpen(false)}
                 eventId={event.id}
+            />
+
+            {/* CANCEL EVENT CONFIRMATION MODAL */}
+            <CancelEventModal
+                isOpen={isCancelModalOpen}
+                onClose={() => setIsCancelModalOpen(false)}
+                onConfirm={handleConfirmCancel}
+                isProcessing={processing}
+                eventName={event.title}
             />
         </div>
     );

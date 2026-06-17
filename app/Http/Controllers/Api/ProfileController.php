@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use App\Models\User;
 use OpenApi\Attributes as OA;
 
 class ProfileController extends Controller
@@ -69,7 +68,7 @@ class ProfileController extends Controller
 
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:255',
-            'email' => 'sometimes|required|email|unique:users,email,' . $user->id,
+            'email' => 'sometimes|required|email|unique:users,email,'.$user->id,
             'phone' => 'nullable|string|max:20',
             'location' => 'nullable|string|max:255',
             'avatar' => 'nullable|image|max:5120', // 5MB max
@@ -78,7 +77,7 @@ class ProfileController extends Controller
         if (isset($validated['name'])) {
             $user->name = $validated['name'];
         }
-        
+
         if (isset($validated['email'])) {
             $user->email = $validated['email'];
         }
@@ -142,7 +141,7 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
-        if (!Hash::check($validated['password'], $user->password)) {
+        if (! Hash::check($validated['password'], $user->password)) {
             return response()->json([
                 'message' => 'Password tidak sesuai',
             ], 422);
@@ -212,4 +211,3 @@ class ProfileController extends Controller
         ], 200);
     }
 }
-

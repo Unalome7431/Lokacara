@@ -22,7 +22,7 @@ class RegistrationSuccessMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Pendaftaran event berhasil - ' . $this->event->title,
+            subject: 'Pendaftaran event berhasil - '.$this->event->title,
         );
     }
 

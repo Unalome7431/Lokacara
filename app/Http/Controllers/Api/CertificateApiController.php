@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Event;
-use App\Models\Certificate;
 use App\Jobs\DistributeCertificatesJob;
+use App\Models\Certificate;
+use App\Models\Event;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use OpenApi\Attributes as OA;
@@ -123,7 +123,7 @@ class CertificateApiController extends Controller
             'is_y_center' => 'required|boolean',
         ]);
 
-        if (!Storage::disk('local')->exists($validated['template_path'])) {
+        if (! Storage::disk('local')->exists($validated['template_path'])) {
             return response()->json(['message' => 'Template file not found.'], 404);
         }
 
@@ -134,7 +134,7 @@ class CertificateApiController extends Controller
         DistributeCertificatesJob::dispatch($event, $config, $validated['template_path']);
 
         return response()->json([
-            'message' => 'Certificates are being generated and distributed.'
+            'message' => 'Certificates are being generated and distributed.',
         ], 200);
     }
 
@@ -162,17 +162,17 @@ class CertificateApiController extends Controller
             ->where('user_id', $request->user()->id)
             ->first();
 
-        if (!$registration) {
+        if (! $registration) {
             return response()->json(['message' => 'You are not registered for this event.'], 404);
         }
 
         $certificate = Certificate::where('registration_id', $registration->id)->first();
 
-        if (!$certificate) {
+        if (! $certificate) {
             return response()->json(['message' => 'Certificate not found or not issued yet.'], 404);
         }
 
-        if (!Storage::disk('local')->exists($certificate->file_url)) {
+        if (! Storage::disk('local')->exists($certificate->file_url)) {
             return response()->json(['message' => 'Certificate file is missing from storage.'], 404);
         }
 

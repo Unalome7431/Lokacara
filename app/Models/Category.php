@@ -12,7 +12,9 @@ class Category extends Model
 {
     /** @use HasFactory<CategoryFactory> */
     use HasFactory;
-    public function event(): HasMany {
+
+    public function event(): HasMany
+    {
         return $this->hasMany(Event::class)->chaperone();
     }
 }

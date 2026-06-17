@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User;
 use OpenApi\Attributes as OA;
 
 class AdminAuthController extends Controller
@@ -45,9 +45,9 @@ class AdminAuthController extends Controller
             'password' => 'required',
         ]);
 
-        if (!Auth::attempt($request->only('email', 'password'))) {
+        if (! Auth::attempt($request->only('email', 'password'))) {
             return response()->json([
-                'message' => 'Invalid login details'
+                'message' => 'Invalid login details',
             ], 401);
         }
 
@@ -56,8 +56,9 @@ class AdminAuthController extends Controller
         if ($user->role !== 'admin') {
             // Revoke current token/session immediately since they aren't authorized
             Auth::guard('web')->logout();
+
             return response()->json([
-                'message' => 'Unauthorized access'
+                'message' => 'Unauthorized access',
             ], 403);
         }
 

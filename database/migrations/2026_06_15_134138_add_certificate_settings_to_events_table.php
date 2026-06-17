@@ -37,7 +37,7 @@ return new class extends Migration
                 'certificate_x_pos',
                 'certificate_is_x_center',
                 'certificate_y_pos',
-                'certificate_is_y_center'
+                'certificate_is_y_center',
             ]);
         });
     }

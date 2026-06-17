@@ -18,27 +18,32 @@ class Certificate extends Model
     /**
      * @return array<string, string>
      */
-    protected function casts(): array {
+    protected function casts(): array
+    {
         return [
-            'issued_at'=> 'datetime'
+            'issued_at' => 'datetime',
         ];
     }
 
-    protected function fileUrlFull(): Attribute {
+    protected function fileUrlFull(): Attribute
+    {
         return Attribute::make(
             get: function ($value, $attributes) {
-                if (!empty($attributes['file_url'])) {
+                if (! empty($attributes['file_url'])) {
                     $filename = basename($attributes['file_url']);
+
                     return request()->is('api/*')
                         ? url("/certificates/{$filename}")
                         : route('certificates.download', ['certificate' => $this->id]);
                 }
+
                 return asset('certificates/default_certificate.png');
             }
         );
     }
 
-    public function eventRegistration(): BelongsTo {
+    public function eventRegistration(): BelongsTo
+    {
         return $this->belongsTo(EventRegistration::class, 'registration_id');
     }
 }

@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
-use App\Models\Event;
 use App\Jobs\SendEventRemindersJob;
+use App\Models\Event;
 use Illuminate\Http\Request;
 
 class CommunicationController extends Controller

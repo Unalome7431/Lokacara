@@ -28,11 +28,13 @@ interface Event {
     start_datetime: string;
     category?: Category;
     price?: number;
+    status?: string;
 }
 
 interface EventRegistration {
     id: number;
     event?: Event;
+    status?: string;
 }
 
 interface Certificate {
@@ -61,7 +63,7 @@ export default function DashboardCatalog({
     certificates = [],
 }: DashboardCatalogProps) {
     const [activeTab, setActiveTab] = useState<'Event Terbuat' | 'Event Tersimpan' | 'Sertifikat'>('Event Terbuat');
-    const [timeFilter, setTimeFilter] = useState<'mendatang' | 'lalu'>('mendatang');
+    const [timeFilter, setTimeFilter] = useState<'mendatang' | 'lalu' | 'dibatalkan'>('mendatang');
     const [searchQuery, setSearchQuery] = useState('');
 
     const now = new Date();
@@ -71,6 +73,14 @@ export default function DashboardCatalog({
         const matchesSearch = event.title
             ?.toLowerCase()
             .includes(searchQuery.toLowerCase());
+
+        if (timeFilter === 'dibatalkan') {
+            return matchesSearch && event.status === 'cancelled';
+        }
+
+        if (event.status === 'cancelled') {
+            return false;
+        }
 
         if (!event.start_datetime) {
             return matchesSearch;
@@ -91,6 +101,14 @@ export default function DashboardCatalog({
         const matchesSearch = reg.event.title
             ?.toLowerCase()
             .includes(searchQuery.toLowerCase());
+
+        if (timeFilter === 'dibatalkan') {
+            return matchesSearch && (reg.event.status === 'cancelled' || reg.status === 'cancelled');
+        }
+
+        if (reg.event.status === 'cancelled' || reg.status === 'cancelled') {
+            return false;
+        }
 
         if (!reg.event.start_datetime) {
             return matchesSearch;
@@ -227,13 +245,14 @@ export default function DashboardCatalog({
                         options={[
                             { key: 'mendatang', label: 'Mendatang' },
                             { key: 'lalu', label: 'Lalu' },
+                            { key: 'dibatalkan', label: 'Dibatalkan' },
                         ]}
                         value={timeFilter}
                         onChange={(val) => {
                             setTimeFilter(val);
                             setCurrentPage(1);
                         }}
-                        className="md:w-[200px] lg:w-[240px]"
+                        className="md:w-[300px] lg:w-[360px]"
                     />
                 )}
             </div>

@@ -4,12 +4,12 @@ namespace App\Console\Commands;
 
 use App\Models\Event;
 use App\Services\NotificationDispatchService;
-use Carbon\Carbon;
 use Illuminate\Console\Command;
 
 class SendEventRemindersCommand extends Command
 {
     protected $signature = 'events:send-reminders';
+
     protected $description = 'Send event reminders (H-30, H-7, H-3, H-1, H-DAY, H-3H, H-1H, H-START) and bookmark reminders';
 
     public function handle(NotificationDispatchService $notifications): void
@@ -37,7 +37,9 @@ class SendEventRemindersCommand extends Command
             foreach ($events as $event) {
                 $event->eventRegistrations()->with('user')->chunk(100, function ($registrations) use ($event, $label, $notifications) {
                     foreach ($registrations as $registration) {
-                        if (!$registration->user) continue;
+                        if (! $registration->user) {
+                            continue;
+                        }
 
                         $body = match ($label) {
                             'H-3H' => "Event {$event->title} akan dimulai dalam 3 jam.",
@@ -73,7 +75,9 @@ class SendEventRemindersCommand extends Command
             foreach ($eventsToday as $event) {
                 $event->eventRegistrations()->with('user')->chunk(100, function ($registrations) use ($event, $notifications) {
                     foreach ($registrations as $registration) {
-                        if (!$registration->user) continue;
+                        if (! $registration->user) {
+                            continue;
+                        }
 
                         $notifications->dispatch(
                             recipient: $registration->user,
@@ -105,13 +109,17 @@ class SendEventRemindersCommand extends Command
             $bookmarks = $event->bookmarks()->with('user')->get();
 
             foreach ($bookmarks as $bookmark) {
-                if (!$bookmark->user) continue;
+                if (! $bookmark->user) {
+                    continue;
+                }
 
                 $isRegistered = $event->eventRegistrations()
                     ->where('user_id', $bookmark->user_id)
                     ->exists();
 
-                if ($isRegistered) continue;
+                if ($isRegistered) {
+                    continue;
+                }
 
                 $notifications->dispatch(
                     recipient: $bookmark->user,

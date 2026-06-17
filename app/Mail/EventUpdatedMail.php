@@ -22,7 +22,7 @@ class EventUpdatedMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Event diupdate - ' . $this->event->title,
+            subject: 'Event diupdate - '.$this->event->title,
         );
     }
 

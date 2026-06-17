@@ -6,6 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\URL;
 
 class VerifyAccountNotification extends Notification implements ShouldQueue
 {
@@ -16,10 +17,10 @@ class VerifyAccountNotification extends Notification implements ShouldQueue
     /**
      * Create a new notification instance.
      */
-    public function __construct($otpCode = null) {
+    public function __construct($otpCode = null)
+    {
         $this->otpCode = $otpCode;
     }
-    
 
     /**
      * Get the notification's delivery channels.
@@ -40,17 +41,17 @@ class VerifyAccountNotification extends Notification implements ShouldQueue
 
         $message = (new MailMessage)
             ->subject('Lokacara - Verify Your Email')
-            ->greeting('Hello ' . $name . '!');
+            ->greeting('Hello '.$name.'!');
 
         if ($this->otpCode) {
             return $message
                 ->line('Please enter the following 6-digit code in Lokacara App.')
-                ->line('**' . $this->otpCode . '**')
+                ->line('**'.$this->otpCode.'**')
                 ->line('This code will expire in 5 minutes.');
         }
 
         // For Web: Generate a signed URL
-        $verificationUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+        $verificationUrl = URL::temporarySignedRoute(
             'verification.verify',
             now()->addMinutes(60),
             ['id' => $notifiable->getKey(), 'hash' => sha1($notifiable->getEmailForVerification())]
