@@ -11,6 +11,8 @@ interface Event {
     view_count: number;
     price: number;
     status?: string;
+    start_datetime: string;
+    end_datetime: string;
 }
 
 interface HostActionCardProps {
@@ -38,6 +40,8 @@ export default function HostActionCard({
     };
 
     const isCancelled = event.status === 'cancelled';
+    const isEventFinished = new Date(event.end_datetime) < new Date();
+    const isOngoing = new Date(event.start_datetime) <= new Date() && new Date(event.end_datetime) >= new Date();
 
     return (
         <div className="flex flex-col gap-6 lg:sticky lg:top-28">
@@ -113,6 +117,31 @@ export default function HostActionCard({
                             <span>Pendaftar</span>
                         </Link>
                     </div>
+                ) : isEventFinished ? (
+                    <div className="flex w-full flex-col gap-3 lg:gap-4">
+                        <div className="flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 py-3.5 text-base font-bold text-amber-700 lg:py-4">
+                            <Award size={18} className="text-amber-600" />
+                            <span>Acara Telah Selesai</span>
+                        </div>
+
+                        <Link
+                            href={`/dashboard/events/${event.id}/attendees`}
+                            className="flex h-12 w-full items-center justify-center rounded-full border border-neutral-300 bg-white text-base font-bold text-neutral-800 shadow-xs transition-all duration-200 hover:bg-neutral-50 active:scale-[0.99] lg:h-auto lg:py-4"
+                            title="Pendaftar"
+                        >
+                            <Users size={16} className="mr-2" />
+                            <span>Pendaftar</span>
+                        </Link>
+
+                        <Link
+                            href={`/dashboard/events/${event.id}/certificates`}
+                            className="flex h-12 w-full items-center justify-center rounded-full border border-neutral-300 bg-white text-base font-bold text-neutral-800 shadow-xs transition-all duration-200 hover:bg-neutral-50 active:scale-[0.99] lg:h-auto lg:py-4"
+                            title="Kelola E-Sertifikat"
+                        >
+                            <Award size={16} className="mr-2" />
+                            <span>E-Sertifikat</span>
+                        </Link>
+                    </div>
                 ) : (
                     <>
                         <button
@@ -124,14 +153,16 @@ export default function HostActionCard({
                             <span>Scan QR</span>
                         </button>
 
-                        <Link
-                            href={`/dashboard/events/${event.id}/edit`}
-                            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-secondary-500 text-base font-bold text-neutral-900 shadow-md transition-all duration-200 hover:bg-secondary-600 active:scale-[0.99] lg:h-auto lg:w-full lg:flex-row lg:gap-2 lg:py-4"
-                            title="Edit Detail Acara"
-                        >
-                            <Edit size={16} />
-                            <span className="hidden lg:inline">Edit Detail Acara</span>
-                        </Link>
+                        {!isOngoing && (
+                            <Link
+                                href={`/dashboard/events/${event.id}/edit`}
+                                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-secondary-500 text-base font-bold text-neutral-900 shadow-md transition-all duration-200 hover:bg-secondary-600 active:scale-[0.99] lg:h-auto lg:w-full lg:flex-row lg:gap-2 lg:py-4"
+                                title="Edit Detail Acara"
+                            >
+                                <Edit size={16} />
+                                <span className="hidden lg:inline">Edit Detail Acara</span>
+                            </Link>
+                        )}
 
                         <Link
                             href={`/dashboard/events/${event.id}/attendees`}
@@ -151,15 +182,22 @@ export default function HostActionCard({
                             <span className="hidden lg:inline">E-Sertifikat</span>
                         </Link>
 
-                        <button
-                            type="button"
-                            onClick={() => setIsCancelModalOpen(true)}
-                            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-red-200 bg-red-50 text-base font-bold text-red-600 shadow-xs transition-all duration-200 hover:bg-red-100 active:scale-[0.99] lg:h-auto lg:w-full lg:flex-row lg:gap-2 lg:py-4 cursor-pointer"
-                            title="Batalkan Acara"
-                        >
-                            <AlertTriangle size={16} />
-                            <span className="hidden lg:inline">Batalkan Acara</span>
-                        </button>
+                        {isOngoing ? (
+                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-blue-200 bg-blue-50 text-base font-bold text-blue-600 shadow-xs lg:h-auto lg:w-full lg:flex-row lg:gap-2 lg:py-4 select-none" title="Event Sedang Berlangsung">
+                                <AlertTriangle size={16} />
+                                <span className="hidden lg:inline">Event Sedang Berlangsung</span>
+                            </div>
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={() => setIsCancelModalOpen(true)}
+                                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-red-200 bg-red-50 text-base font-bold text-red-600 shadow-xs transition-all duration-200 hover:bg-red-100 active:scale-[0.99] lg:h-auto lg:w-full lg:flex-row lg:gap-2 lg:py-4 cursor-pointer"
+                                title="Batalkan Acara"
+                            >
+                                <AlertTriangle size={16} />
+                                <span className="hidden lg:inline">Batalkan Acara</span>
+                            </button>
+                        )}
                     </>
                 )}
             </div>

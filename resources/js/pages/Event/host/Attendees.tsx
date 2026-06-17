@@ -1,6 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
 import {
-    ChevronLeft,
     Search,
     UserMinus,
     Users,
@@ -45,6 +44,7 @@ interface Paginator<T> {
 interface Event {
     id: number;
     title: string;
+    end_datetime: string;
 }
 
 interface AttendeesProps {
@@ -64,6 +64,8 @@ export default function Attendees({
     const [optimisticAttendance, setOptimisticAttendance] = useState<
         Record<number, boolean>
     >({});
+
+    const isEventFinished = new Date(event.end_datetime) < new Date();
 
     // Perform search queries using Inertia reload
     useEffect(() => {
@@ -135,17 +137,6 @@ export default function Attendees({
                 <Head title={`Daftar Peserta - ${event.title}`} />
 
                 <div className="mx-auto max-w-7xl px-4 pt-28 pb-16 md:px-8">
-                    {/* Navigation Breadcrumbs */}
-                    <div className="mb-6">
-                        <Link
-                            href={`/dashboard/events/${event.id}`}
-                            className="inline-flex items-center gap-1.5 text-small font-bold text-gray-500 transition-colors duration-150 hover:text-primary-500"
-                        >
-                            <ChevronLeft size={16} />
-                            <span>Kembali ke Detail Event</span>
-                        </Link>
-                    </div>
-
                     {/* Content Card Container */}
                     <div className="flex flex-col gap-6 rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm md:p-8">
                         {/* Header section */}
@@ -214,9 +205,11 @@ export default function Attendees({
                                             <th className="px-6 py-4">
                                                 Kehadiran
                                             </th>
-                                            <th className="px-6 py-4 text-right">
-                                                Aksi
-                                            </th>
+                                            {!isEventFinished && (
+                                                <th className="px-6 py-4 text-right">
+                                                    Aksi
+                                                </th>
+                                            )}
                                         </tr>
                                     </thead>
                                     <tbody className="divide-neutral-150 divide-y">
@@ -297,58 +290,60 @@ export default function Attendees({
                                                     </td>
 
                                                     {/* Action Switches */}
-                                                    <td className="px-6 py-4 text-right whitespace-nowrap">
-                                                        <div className="flex items-center justify-end gap-4">
-                                                            {/* Toggle Switch */}
-                                                            <div className="flex items-center gap-2">
-                                                                <span className="text-micro font-semibold text-gray-400">
-                                                                    {isAttended
-                                                                        ? 'Check-in'
-                                                                        : 'Belum'}
-                                                                </span>
+                                                    {!isEventFinished && (
+                                                        <td className="px-6 py-4 text-right whitespace-nowrap">
+                                                            <div className="flex items-center justify-end gap-4">
+                                                                {/* Toggle Switch */}
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-micro font-semibold text-gray-400">
+                                                                        {isAttended
+                                                                            ? 'Check-in'
+                                                                            : 'Belum'}
+                                                                    </span>
 
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() =>
+                                                                            handleToggleAttendance(
+                                                                                reg.id,
+                                                                                reg.checked_in_at,
+                                                                            )
+                                                                        }
+                                                                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                                                                            isAttended
+                                                                                ? 'bg-primary-500'
+                                                                                : 'bg-gray-200'
+                                                                        }`}
+                                                                    >
+                                                                        <span
+                                                                            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
+                                                                                isAttended
+                                                                                    ? 'translate-x-5'
+                                                                                    : 'translate-x-0'
+                                                                            }`}
+                                                                        />
+                                                                    </button>
+                                                                </div>
+
+                                                                {/* Kick Out Button */}
                                                                 <button
                                                                     type="button"
                                                                     onClick={() =>
-                                                                        handleToggleAttendance(
+                                                                        handleKickAttendee(
                                                                             reg.id,
-                                                                            reg.checked_in_at,
+                                                                            attendeeUser.name,
                                                                         )
                                                                     }
-                                                                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                                                                        isAttended
-                                                                            ? 'bg-primary-500'
-                                                                            : 'bg-gray-200'
-                                                                    }`}
+                                                                    className="flex cursor-pointer items-center justify-center rounded-full border-0 bg-red-50 p-2 text-red-500 transition-colors hover:bg-red-100"
+                                                                    title="Keluarkan Peserta"
                                                                 >
-                                                                    <span
-                                                                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
-                                                                            isAttended
-                                                                                ? 'translate-x-5'
-                                                                                : 'translate-x-0'
-                                                                        }`}
+                                                                    <UserMinus
+                                                                        size={14}
                                                                     />
                                                                 </button>
                                                             </div>
-
-                                                            {/* Kick Out Button */}
-                                                            <button
-                                                                type="button"
-                                                                onClick={() =>
-                                                                    handleKickAttendee(
-                                                                        reg.id,
-                                                                        attendeeUser.name,
-                                                                    )
-                                                                }
-                                                                className="flex cursor-pointer items-center justify-center rounded-full border-0 bg-red-50 p-2 text-red-500 transition-colors hover:bg-red-100"
-                                                                title="Keluarkan Peserta"
-                                                            >
-                                                                <UserMinus
-                                                                    size={14}
-                                                                />
-                                                            </button>
-                                                        </div>
-                                                    </td>
+                                                        </td>
+                                                    )}
                                                 </tr>
                                             );
                                         })}

@@ -82,6 +82,10 @@ class EventManagementController extends Controller
             abort(403);
         }
 
+        if ($event->start_datetime->isPast()) {
+            return redirect()->back()->with('error', 'Cannot edit an event that has already started.');
+        }
+
         $categories = Category::all();
 
         return Inertia::render('Event/Edit', [
@@ -94,6 +98,10 @@ class EventManagementController extends Controller
     {
         if ($event->user_id !== $request->user()->id) {
             abort(403);
+        }
+
+        if ($event->start_datetime->isPast()) {
+            return redirect()->back()->with('error', 'Cannot update an event that has already started.');
         }
 
         $validated = $this->validateEvent($request);
@@ -129,6 +137,10 @@ class EventManagementController extends Controller
             abort(403);
         }
 
+        if ($event->start_datetime->isPast()) {
+            return redirect()->back()->with('error', 'Cannot delete an event that has already started.');
+        }
+
         if ($event->getRawOriginal('poster') && Storage::disk('local')->exists($event->getRawOriginal('poster'))) {
             Storage::disk('local')->delete($event->getRawOriginal('poster'));
         }
@@ -142,6 +154,10 @@ class EventManagementController extends Controller
     {
         if ($event->user_id !== $request->user()->id) {
             abort(403);
+        }
+
+        if ($event->start_datetime->isPast()) {
+            return redirect()->back()->with('error', 'Cannot cancel an event that has already started.');
         }
 
         if ($event->status === 'cancelled') {
@@ -197,6 +213,10 @@ class EventManagementController extends Controller
     {
         if ($event->user_id !== $request->user()->id) {
             abort(403);
+        }
+
+        if ($event->end_datetime->isPast()) {
+            return redirect()->back()->with('error', 'Cannot kick attendees from a finished event.');
         }
 
         if ($registration->event_id !== $event->id) {

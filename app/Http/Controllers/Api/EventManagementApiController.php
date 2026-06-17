@@ -181,6 +181,10 @@ class EventManagementApiController extends Controller
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
+        if ($event->start_datetime->isPast()) {
+            return response()->json(['message' => 'Cannot update an event that has already started.'], 400);
+        }
+
         $validated = $this->validateEvent($request);
 
         $event->fill($validated);
@@ -261,6 +265,10 @@ class EventManagementApiController extends Controller
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
+        if ($event->start_datetime->isPast()) {
+            return response()->json(['message' => 'Cannot delete an event that has already started.'], 400);
+        }
+
         if ($event->getRawOriginal('poster') && Storage::disk('local')->exists($event->getRawOriginal('poster'))) {
             Storage::disk('local')->delete($event->getRawOriginal('poster'));
         }
@@ -276,6 +284,10 @@ class EventManagementApiController extends Controller
     {
         if ($event->user_id !== $request->user()->id) {
             return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        if ($event->start_datetime->isPast()) {
+            return response()->json(['message' => 'Cannot cancel an event that has already started.'], 400);
         }
 
         if ($event->status === 'cancelled') {

@@ -166,3 +166,120 @@ test('cancelled events are hidden from discovery home and search', function () {
     $eventsApiSearchIds = collect($eventsApiSearch)->pluck('id');
     expect($eventsApiSearchIds)->not->toContain($this->event->id);
 });
+
+test('hosts cannot modify finished events or attendance', function () {
+    $this->event->update([
+        'start_datetime' => now()->subHours(4),
+        'end_datetime' => now()->subHours(2),
+    ]);
+
+    $registration = EventRegistration::create([
+        'event_id' => $this->event->id,
+        'user_id' => $this->attendee->id,
+        'status' => 'confirmed',
+        'qr_token' => 'qr_token_finished',
+    ]);
+
+    // 1. Edit form redirect
+    $responseEdit = $this->actingAs($this->host)->get(route('dashboard.events.edit', $this->event));
+    $responseEdit->assertRedirect();
+    $responseEdit->assertSessionHas('error', 'Cannot edit an event that has already started.');
+
+    // 2. Update block
+    $responseUpdate = $this->actingAs($this->host)->post(route('dashboard.events.update', $this->event), [
+        'title' => 'Updated Finished Event',
+        'type' => 'online',
+        'start_datetime' => now()->subHours(4)->toDateTimeString(),
+        'end_datetime' => now()->subHours(2)->toDateTimeString(),
+        'description' => 'Some description',
+    ]);
+    $responseUpdate->assertRedirect();
+    $responseUpdate->assertSessionHas('error', 'Cannot update an event that has already started.');
+
+    // 3. Destroy block
+    $responseDestroy = $this->actingAs($this->host)->delete(route('dashboard.events.destroy', $this->event));
+    $responseDestroy->assertRedirect();
+    $responseDestroy->assertSessionHas('error', 'Cannot delete an event that has already started.');
+
+    // 4. Cancel block
+    $responseCancel = $this->actingAs($this->host)->post(route('dashboard.events.cancel', $this->event));
+    $responseCancel->assertRedirect();
+    $responseCancel->assertSessionHas('error', 'Cannot cancel an event that has already started.');
+
+    // 5. Kick block
+    $responseKick = $this->actingAs($this->host)->delete(route('dashboard.events.attendees.kick', [$this->event, $registration]));
+    $responseKick->assertRedirect();
+    $responseKick->assertSessionHas('error', 'Cannot kick attendees from a finished event.');
+
+    // 6. Scan check-in block
+    $responseScan = $this->actingAs($this->host)->post(route('dashboard.events.attendance.scan', $this->event), [
+        'qr_token' => 'qr_token_finished',
+    ]);
+    $responseScan->assertRedirect();
+    $responseScan->assertSessionHas('error', 'Cannot scan check-in. This event has finished.');
+
+    // 7. Toggle check-in block
+    $responseToggle = $this->actingAs($this->host)->post(route('dashboard.events.attendance.toggle', [$this->event, $registration]));
+    $responseToggle->assertRedirect();
+    $responseToggle->assertSessionHas('error', 'Cannot modify attendance for a finished event.');
+});
+
+test('hosts cannot delete, cancel, edit, or update an event that has started but not finished', function () {
+    $this->event->update([
+        'start_datetime' => now()->subHour(),
+        'end_datetime' => now()->addHour(),
+    ]);
+
+    // 1. Web delete request
+    $responseDestroy = $this->actingAs($this->host)->delete(route('dashboard.events.destroy', $this->event));
+    $responseDestroy->assertRedirect();
+    $responseDestroy->assertSessionHas('error', 'Cannot delete an event that has already started.');
+
+    // 2. API delete request
+    $responseApiDestroy = $this->actingAs($this->host)->deleteJson("/api/organizer/events/{$this->event->id}");
+    $responseApiDestroy->assertStatus(400);
+    $responseApiDestroy->assertJsonFragment([
+        'message' => 'Cannot delete an event that has already started.',
+    ]);
+
+    // 3. Web cancel request
+    $responseCancel = $this->actingAs($this->host)->post(route('dashboard.events.cancel', $this->event));
+    $responseCancel->assertRedirect();
+    $responseCancel->assertSessionHas('error', 'Cannot cancel an event that has already started.');
+
+    // 4. API cancel request
+    $responseApiCancel = $this->actingAs($this->host)->postJson("/api/organizer/events/{$this->event->id}/cancel");
+    $responseApiCancel->assertStatus(400);
+    $responseApiCancel->assertJsonFragment([
+        'message' => 'Cannot cancel an event that has already started.',
+    ]);
+
+    // 5. Web edit request
+    $responseEdit = $this->actingAs($this->host)->get(route('dashboard.events.edit', $this->event));
+    $responseEdit->assertRedirect();
+    $responseEdit->assertSessionHas('error', 'Cannot edit an event that has already started.');
+
+    // 6. Web update request
+    $responseUpdate = $this->actingAs($this->host)->post(route('dashboard.events.update', $this->event), [
+        'title' => 'Updated Started Event',
+        'type' => 'online',
+        'start_datetime' => now()->subHour()->toDateTimeString(),
+        'end_datetime' => now()->addHour()->toDateTimeString(),
+        'description' => 'Some description',
+    ]);
+    $responseUpdate->assertRedirect();
+    $responseUpdate->assertSessionHas('error', 'Cannot update an event that has already started.');
+
+    // 7. API update request
+    $responseApiUpdate = $this->actingAs($this->host)->postJson("/api/organizer/events/{$this->event->id}", [
+        'title' => 'Updated Started Event API',
+        'type' => 'online',
+        'start_datetime' => now()->subHour()->toDateTimeString(),
+        'end_datetime' => now()->addHour()->toDateTimeString(),
+        'description' => 'Some description',
+    ]);
+    $responseApiUpdate->assertStatus(400);
+    $responseApiUpdate->assertJsonFragment([
+        'message' => 'Cannot update an event that has already started.',
+    ]);
+});

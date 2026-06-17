@@ -32,6 +32,10 @@ class AttendanceController extends Controller
             return redirect()->back()->with('error', 'Cannot scan check-in. This event is cancelled or banned.');
         }
 
+        if ($event->end_datetime->isPast()) {
+            return redirect()->back()->with('error', 'Cannot scan check-in. This event has finished.');
+        }
+
         $request->validate([
             'qr_token' => 'required|uuid',
         ]);
@@ -65,6 +69,10 @@ class AttendanceController extends Controller
 
         if ($event->status === 'cancelled' || $event->status === 'banned') {
             return redirect()->back()->with('error', 'Cannot modify attendance for a cancelled or banned event.');
+        }
+
+        if ($event->end_datetime->isPast()) {
+            return redirect()->back()->with('error', 'Cannot modify attendance for a finished event.');
         }
 
         if ($registration->event_id !== $event->id) {

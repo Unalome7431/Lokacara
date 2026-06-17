@@ -10,6 +10,7 @@ interface Category {
 interface User {
     id: number;
     name: string;
+    avatar_url?: string;
 }
 
 interface Event {
@@ -18,6 +19,8 @@ interface Event {
     poster_url?: string;
     category?: Category;
     user?: User;
+    end_datetime?: string;
+    status?: string;
 }
 
 interface EventDetailHeaderProps {
@@ -42,24 +45,32 @@ export default function EventDetailHeader({ event, organizer }: EventDetailHeade
                 <h1 className="font-brand text-h1-mobile leading-tight font-black text-neutral-900 lg:text-h1-web">
                     {event.title}
                 </h1>
-                {event.category && (
-                    <div className="flex">
+                <div className="flex flex-wrap gap-2">
+                    {event.category && (
                         <span className="rounded-full bg-secondary-500 px-3 py-1 font-brand text-xs font-black tracking-wider text-neutral-900 uppercase select-none">
                             {event.category.name}
                         </span>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
 
             {/* Horizontal Info Row */}
             <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-neutral-100 pb-5 text-sm font-semibold text-neutral-500">
                 {/* Organizer */}
                 <div className="flex items-center gap-2">
-                    <div className="flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded-full bg-neutral-200">
-                        <Users
-                            size={12}
-                            className="text-neutral-500"
-                        />
+                    <div className="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full bg-neutral-200 border border-neutral-150">
+                        {event.user?.avatar_url ? (
+                            <img
+                                src={event.user.avatar_url}
+                                alt={event.user.name}
+                                className="h-full w-full object-cover"
+                            />
+                        ) : (
+                            <Users
+                                size={12}
+                                className="text-neutral-500"
+                            />
+                        )}
                     </div>
                     <span>
                         oleh{' '}

@@ -91,6 +91,10 @@ class AttendanceApiController extends Controller
             return response()->json(['message' => 'Cannot scan check-in. This event is cancelled or banned.'], 400);
         }
 
+        if ($event->end_datetime->isPast()) {
+            return response()->json(['message' => 'Cannot scan check-in. This event has finished.'], 400);
+        }
+
         $request->validate([
             'qr_token' => 'required|uuid',
         ]);
@@ -168,6 +172,10 @@ class AttendanceApiController extends Controller
 
         if ($event->status === 'cancelled' || $event->status === 'banned') {
             return response()->json(['message' => 'Cannot modify attendance for a cancelled or banned event.'], 400);
+        }
+
+        if ($event->end_datetime->isPast()) {
+            return response()->json(['message' => 'Cannot modify attendance for a finished event.'], 400);
         }
 
         if ($registration->event_id !== $event->id) {
