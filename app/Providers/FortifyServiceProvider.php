@@ -31,6 +31,20 @@ class FortifyServiceProvider extends ServiceProvider
         $this->configureActions();
         $this->configureViews();
         $this->configureRateLimiting();
+
+        Fortify::authenticateUsing(function (Request $request) {
+            $user = \App\Models\User::where('email', $request->email)->first();
+
+            if ($user && \Illuminate\Support\Facades\Hash::check($request->password, $user->password)) {
+                if ($user->suspended_at) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        Fortify::username() => __('Akun Anda telah ditangguhkan. Silakan hubungi dukungan.'),
+                    ]);
+                }
+                return $user;
+            }
+            return null;
+        });
     }
 
     /**

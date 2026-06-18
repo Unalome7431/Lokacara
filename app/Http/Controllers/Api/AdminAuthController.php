@@ -53,12 +53,20 @@ class AdminAuthController extends Controller
 
         $user = User::where('email', $request->email)->firstOrFail();
 
-        if ($user->role !== 'admin') {
+        if (! in_array($user->role, ['admin', 'super_admin'])) {
             // Revoke current token/session immediately since they aren't authorized
             Auth::guard('web')->logout();
 
             return response()->json([
                 'message' => 'Unauthorized access',
+            ], 403);
+        }
+
+        if ($user->suspended_at) {
+            Auth::guard('web')->logout();
+
+            return response()->json([
+                'message' => 'Your account is suspended.',
             ], 403);
         }
 

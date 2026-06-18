@@ -11,6 +11,8 @@ export default function LenisScroll() {
             smoothWheel: true,
         });
 
+        (window as any).lenis = lenis;
+
         function raf(time: number) {
             lenis.raf(time);
             requestAnimationFrame(raf);
@@ -20,6 +22,7 @@ export default function LenisScroll() {
 
         return () => {
             lenis.destroy();
+            delete (window as any).lenis;
         };
     }, []);
 

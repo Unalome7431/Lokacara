@@ -261,7 +261,7 @@ class EventManagementApiController extends Controller
     #[OA\Response(response: 403, description: 'Forbidden')]
     public function destroy(Request $request, Event $event)
     {
-        if ($event->user_id !== $request->user()->id && $request->user()->role !== 'admin') {
+        if ($event->user_id !== $request->user()->id && ! in_array($request->user()->role, ['admin', 'super_admin'])) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 

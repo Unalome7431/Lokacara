@@ -27,7 +27,7 @@ class AppServiceProvider extends ServiceProvider
         $this->configureDefaults();
 
         Gate::define('admin-panels', function ($user) {
-            return $user->role === 'admin';
+            return in_array($user->role, ['admin', 'super_admin']);
         });
     }
 

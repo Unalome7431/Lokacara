@@ -1,6 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import { AlertTriangle, X } from 'lucide-react';
-import React from 'react';
+import React, { useEffect } from 'react';
 
 interface ReportEventModalProps {
     isOpen: boolean;
@@ -15,6 +15,31 @@ export default function ReportEventModal({
     eventId,
     eventName,
 }: ReportEventModalProps) {
+    useEffect(() => {
+        const lenis = (window as any).lenis;
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+            if (lenis) {
+                lenis.stop();
+            }
+        } else {
+            document.body.style.overflow = 'unset';
+            document.documentElement.style.overflow = 'unset';
+            if (lenis) {
+                lenis.start();
+            }
+        }
+
+        return () => {
+            document.body.style.overflow = 'unset';
+            document.documentElement.style.overflow = 'unset';
+            if (lenis) {
+                lenis.start();
+            }
+        };
+    }, [isOpen]);
+
     if (!isOpen) {
         return null;
     }
@@ -38,11 +63,11 @@ export default function ReportEventModal({
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/60 p-4 backdrop-blur-xs select-none">
             {/* Modal Box */}
-            <div className="animate-in fade-in zoom-in-95 relative w-full max-w-lg overflow-hidden rounded-3xl bg-white shadow-2xl duration-200">
+            <div className="animate-in fade-in zoom-in-95 relative w-full max-w-lg overflow-hidden rounded-3xl bg-white shadow-2xl duration-200" data-lenis-prevent>
                 {/* Header */}
                 <div className="flex items-center justify-between border-b border-neutral-100 px-6 py-5">
                     <div className="flex items-center gap-2">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-50 text-red-500">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary-50 text-secondary-600">
                             <AlertTriangle size={20} />
                         </div>
                         <div>
@@ -120,7 +145,7 @@ export default function ReportEventModal({
                         <button
                             type="submit"
                             disabled={processing}
-                            className="flex-1 rounded-full bg-red-500 py-3 text-center text-sm font-bold text-white shadow-md transition-all hover:bg-red-600 active:scale-[0.99] disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
+                            className="flex-1 rounded-full bg-primary-500 py-3 text-center text-sm font-bold text-white shadow-md transition-all hover:bg-primary-600 active:scale-[0.99] disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
                         >
                             {processing ? 'Mengirim...' : 'Kirim Laporan'}
                         </button>

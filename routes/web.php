@@ -110,7 +110,14 @@ Route::middleware(['auth', 'can:admin-panels'])->group(function () {
     Route::get('/admin/reports/{report}', [AdminModerationController::class, 'showReport'])->name('admin.reports.show');
     Route::post('/admin/reports/{report}/dismiss', [AdminModerationController::class, 'dismissReport'])->name('admin.reports.dismiss');
     Route::post('/admin/events/{event}/ban', [AdminModerationController::class, 'banEvent'])->name('admin.events.ban');
-    Route::post('/admin/users/{user}/ban', [AdminModerationController::class, 'banUser'])->name('admin.users.ban');
+    Route::post('/admin/users/{user}/suspend', [AdminModerationController::class, 'suspendUser'])->name('admin.users.suspend');
+    Route::post('/admin/users/{user}/unsuspend', [AdminModerationController::class, 'unsuspendUser'])->name('admin.users.unsuspend');
+    Route::post('/admin/users/{user}/change-role', [AdminModerationController::class, 'changeRole'])->name('admin.users.change-role');
+
+    // Category CRUD
+    Route::post('/admin/categories', [AdminModerationController::class, 'storeCategory'])->name('admin.categories.store');
+    Route::put('/admin/categories/{category}', [AdminModerationController::class, 'updateCategory'])->name('admin.categories.update');
+    Route::delete('/admin/categories/{category}', [AdminModerationController::class, 'destroyCategory'])->name('admin.categories.destroy');
 });
 
 // Secure Poster Stream
