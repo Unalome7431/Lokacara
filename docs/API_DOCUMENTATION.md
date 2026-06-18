@@ -227,6 +227,47 @@ Reset user password using the token received in email.
 
 ---
 
+### Google Login
+Authenticate or register a user using a Google OAuth token.
+- **Method**: `POST`
+- **Path**: `/auth/google`
+- **Authentication**: Public (Guest)
+- **Request Body**:
+  | Field | Type | Rules | Description |
+  |---|---|---|---|
+  | `token` | String | Required | Google OAuth ID Token |
+
+**Success Response (200 OK)**:
+```json
+{
+  "message": "Login successful",
+  "user": {
+    "id": 12,
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "role": "user"
+  },
+  "token": "5|googleTokenPlaintext..."
+}
+```
+
+---
+
+### Refresh Token
+Refresh the current access token.
+- **Method**: `POST`
+- **Path**: `/auth/refresh`
+- **Authentication**: Public (takes token in Authorization header)
+
+**Success Response (200 OK)**:
+```json
+{
+  "token": "6|newSanctumTokenPlaintext..."
+}
+```
+
+---
+
 ### Logout User
 Revoke the token that authenticated the current request.
 - **Method**: `POST`
@@ -243,6 +284,65 @@ Revoke the token that authenticated the current request.
 ---
 
 ## Module 2: Discovery (Public)
+
+### Get Categories
+List all event categories.
+- **Method**: `GET`
+- **Path**: `/categories`
+- **Authentication**: Public
+
+**Success Response (200 OK)**:
+```json
+[
+  {
+    "id": 1,
+    "name": "Technology",
+    "created_at": "2026-05-23T12:00:00.000000Z",
+    "updated_at": "2026-05-23T12:00:00.000000Z"
+  }
+]
+```
+
+---
+
+### Get Locations
+List all unique event locations.
+- **Method**: `GET`
+- **Path**: `/locations`
+- **Authentication**: Public
+
+**Success Response (200 OK)**:
+```json
+[
+  "Jakarta",
+  "Yogyakarta",
+  "Bandung"
+]
+```
+
+---
+
+### Get Config Tabs
+Retrieve discovery config tabs configuration.
+- **Method**: `GET`
+- **Path**: `/config/tabs`
+- **Authentication**: Public
+
+**Success Response (200 OK)**:
+```json
+[
+  {
+    "id": "all",
+    "name": "Semua"
+  },
+  {
+    "id": "tech",
+    "name": "Teknologi"
+  }
+]
+```
+
+---
 
 ### Feed Events
 Get a list of popular, upcoming events (minimum view count of 50), sorted by popularity.
@@ -465,6 +565,68 @@ Streams/renders the user avatar stored on disk.
 
 ---
 
+### Update User Settings
+Update notification and privacy settings for the authenticated user.
+- **Method**: `PATCH`
+- **Path**: `/user/settings`
+- **Authentication**: Bearer Token (Sanctum)
+- **Request Body**:
+  | Field | Type | Rules | Description |
+  |---|---|---|---|
+  | `push_notifications` | Boolean | Optional | Enable/disable push notifications |
+  | `email_notifications` | Boolean | Optional | Enable/disable email notifications |
+
+**Success Response (200 OK)**:
+```json
+{
+  "message": "Settings updated successfully",
+  "settings": {
+    "push_notifications": true,
+    "email_notifications": false
+  }
+}
+```
+
+---
+
+### Register Push Token
+Save Firebase Cloud Messaging push token for user devices.
+- **Method**: `POST`
+- **Path**: `/user/push-tokens`
+- **Authentication**: Bearer Token (Sanctum)
+- **Request Body**:
+  | Field | Type | Rules | Description |
+  |---|---|---|---|
+  | `token` | String | Required | FCM Push Token |
+
+**Success Response (200 OK)**:
+```json
+{
+  "message": "Push token registered successfully"
+}
+```
+
+---
+
+### Remove Push Token
+De-register push token when user logs out or disables notifications.
+- **Method**: `DELETE`
+- **Path**: `/user/push-tokens`
+- **Authentication**: Bearer Token (Sanctum)
+- **Request Body**:
+  | Field | Type | Rules | Description |
+  |---|---|---|---|
+  | `token` | String | Required | FCM Push Token to remove |
+
+**Success Response (200 OK)**:
+```json
+{
+  "message": "Push token removed successfully"
+}
+```
+
+---
+
 ## Module 4: Participant Flow
 
 ### Get Dashboard
@@ -601,6 +763,84 @@ Submit a report flags inappropriate event details.
 {
   "message": "Event reported successfully"
 }
+```
+
+---
+
+### Get Bookmarks
+Get a list of events bookmarked by the user.
+- **Method**: `GET`
+- **Path**: `/bookmarks`
+- **Authentication**: Bearer Token (Sanctum)
+
+**Success Response (200 OK)**:
+```json
+[
+  {
+    "id": 1,
+    "title": "Lokacara Hackathon 2026",
+    "description": "A weekend full of coding...",
+    "type": "offline"
+  }
+]
+```
+
+---
+
+### Bookmark Event
+Add an event to the user's bookmarks list.
+- **Method**: `POST`
+- **Path**: `/bookmarks/{event}`
+- **Authentication**: Bearer Token (Sanctum)
+- **URL Parameters**:
+  - `{event}`: Event ID (Integer)
+
+**Success Response (200 OK)**:
+```json
+{
+  "message": "Event bookmarked successfully"
+}
+```
+
+---
+
+### Remove Bookmark
+Remove an event from the user's bookmarks list.
+- **Method**: `DELETE`
+- **Path**: `/bookmarks/{event}`
+- **Authentication**: Bearer Token (Sanctum)
+- **URL Parameters**:
+  - `{event}`: Event ID (Integer)
+
+**Success Response (200 OK)**:
+```json
+{
+  "message": "Bookmark removed successfully"
+}
+```
+
+---
+
+### Get Notifications
+Retrieve user notifications.
+- **Method**: `GET`
+- **Path**: `/notifications`
+- **Authentication**: Bearer Token (Sanctum)
+
+**Success Response (200 OK)**:
+```json
+[
+  {
+    "id": "notification-uuid-1",
+    "type": "App\\Notifications\\EventUpdated",
+    "data": {
+      "title": "Event diupdate",
+      "body": "Event Lokacara Hackathon 2026 telah mengalami perubahan."
+    },
+    "read_at": null,
+    "created_at": "2026-06-19T00:00:00.000000Z"
+  }
+]
 ```
 **Error Responses (400 Bad Request)**:
 - Already reported: `{"message": "You already have a pending report for this event."}`
@@ -817,6 +1057,25 @@ Triggers email notifications to remind all confirmed/registered attendees about 
   "message": "Email reminders are being sent in the background."
 }
 ```
+
+---
+
+### Cancel Event
+Cancel a scheduled event, sending notifications and processing potential refunds.
+- **Method**: `POST`
+- **Path**: `/organizer/events/{event}/cancel`
+- **Authentication**: Bearer Token (Sanctum - Must be organizer of this event)
+
+**Success Response (200 OK)**:
+```json
+{
+  "message": "Event cancelled successfully."
+}
+```
+**Error Responses**:
+- **400 Bad Request** (Already started): `{"message": "Cannot cancel an event that has already started."}`
+- **400 Bad Request** (Already cancelled): `{"message": "Event is already cancelled."}`
+- **403 Forbidden**: `{"message": "Forbidden"}`
 
 ---
 
