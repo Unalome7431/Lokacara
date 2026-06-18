@@ -105,8 +105,10 @@ Route::middleware(['auth'])->group(function () {
 
 // Module 6: Moderation (Admin)
 Route::middleware(['auth', 'can:admin-panels'])->group(function () {
+    Route::get('/admin/dashboard', [AdminModerationController::class, 'index'])->name('admin.dashboard');
     Route::get('/admin/moderation', [AdminModerationController::class, 'index'])->name('admin.moderation.index');
     Route::get('/admin/reports/{report}', [AdminModerationController::class, 'showReport'])->name('admin.reports.show');
+    Route::post('/admin/reports/{report}/dismiss', [AdminModerationController::class, 'dismissReport'])->name('admin.reports.dismiss');
     Route::post('/admin/events/{event}/ban', [AdminModerationController::class, 'banEvent'])->name('admin.events.ban');
     Route::post('/admin/users/{user}/ban', [AdminModerationController::class, 'banUser'])->name('admin.users.ban');
 });
