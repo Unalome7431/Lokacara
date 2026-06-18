@@ -18,12 +18,18 @@ class AdminModerationController extends Controller
      */
     public function index(Request $request)
     {
-        $reports = EventReport::with(['user', 'event'])
+        $reports = EventReport::with(['user', 'event.user', 'resolvedBy'])
             ->latest()
-            ->paginate(15);
+            ->get();
+
+        $events = Event::with(['user', 'category'])
+            ->withCount('eventRegistrations')
+            ->latest()
+            ->get();
 
         return Inertia::render('Admin/ModerationBase', [
             'reports' => $reports,
+            'events' => $events,
         ]);
     }
 
@@ -40,6 +46,21 @@ class AdminModerationController extends Controller
     }
 
     /**
+     * Resolve/dismiss a single report.
+     */
+    public function dismissReport(Request $request, EventReport $report)
+    {
+        if ($report->status === 'pending') {
+            $report->update([
+                'status' => 'resolved',
+                'resolved_by' => $request->user()->id,
+            ]);
+        }
+
+        return back()->with('success', 'Report has been dismissed.');
+    }
+
+    /**
      * Ban an event.
      */
     public function banEvent(Request $request, Event $event)
@@ -51,7 +72,10 @@ class AdminModerationController extends Controller
         $event->update(['status' => 'banned']);
 
         // Update active reports
-        EventReport::where('event_id', $event->id)->where('status', 'pending')->update(['status' => 'resolved']);
+        EventReport::where('event_id', $event->id)->where('status', 'pending')->update([
+            'status' => 'resolved',
+            'resolved_by' => $request->user()->id,
+        ]);
 
         // Notify event organizer
         if ($event->user) {

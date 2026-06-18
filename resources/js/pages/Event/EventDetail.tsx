@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import EventInfoDetails from '@/components/ui/EventInfoDetails';
 import Footer from '@/layouts/Footer';
 import NavBar from '@/layouts/NavBar';
+import AdminActionCard from './sections/Detail/AdminActionCard';
 import AttendeeActionCard from './sections/Detail/AttendeeActionCard';
 import EventDetailDescription from './sections/Detail/EventDetailDescription';
 import EventDetailHeader from './sections/Detail/EventDetailHeader';
@@ -50,6 +51,7 @@ interface EventDetailProps {
     // Attendee-specific props
     isRegistered?: boolean;
     certificateUrl?: string | null;
+    reports?: any[];
 }
 
 export default function EventDetail({
@@ -59,11 +61,13 @@ export default function EventDetail({
     checked_in_attendees = 0,
     isRegistered = false,
     certificateUrl = null,
+    reports = [],
 }: EventDetailProps) {
     const page = usePage();
     const { auth } = page.props as any;
     const user = auth?.user;
     const isAuthenticated = !!user;
+    const isAdmin = isAuthenticated && user?.role === 'admin';
 
     const [isJoining, setIsJoining] = useState(false);
     const [showVerificationWarning, setShowVerificationWarning] = useState(false);
@@ -115,7 +119,12 @@ export default function EventDetail({
                         </div>
 
                         {/* Right Panel: Role specific control panels */}
-                        {isHostView ? (
+                        {isAdmin ? (
+                            <AdminActionCard
+                                event={event}
+                                reports={reports}
+                            />
+                        ) : isHostView ? (
                             <HostActionCard
                                 event={event}
                                 total_attendees={total_attendees}

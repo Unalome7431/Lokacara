@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['event_id', 'reporter_id', 'reason', 'description', 'status'])]
+#[Fillable(['event_id', 'reporter_id', 'reason', 'description', 'status', 'resolved_by'])]
 class EventReport extends Model
 {
     use HasFactory;
@@ -20,5 +20,10 @@ class EventReport extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reporter_id');
+    }
+
+    public function resolvedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'resolved_by');
     }
 }

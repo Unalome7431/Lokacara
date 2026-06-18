@@ -151,8 +151,16 @@ class DiscoveryController extends Controller
 
         $isRegistered = false;
         $certificateUrl = null;
+        $reports = [];
 
         if (Auth::check()) {
+            if (Auth::user()->role === 'admin') {
+                $reports = \App\Models\EventReport::where('event_id', $event->id)
+                    ->with('user')
+                    ->latest()
+                    ->get();
+            }
+
             $registration = $event->eventRegistrations()->where('user_id', Auth::id())->first();
             $isRegistered = (bool) $registration;
 
@@ -168,6 +176,7 @@ class DiscoveryController extends Controller
             'event' => $event,
             'isRegistered' => $isRegistered,
             'certificateUrl' => $certificateUrl,
+            'reports' => $reports,
         ]);
     }
 }

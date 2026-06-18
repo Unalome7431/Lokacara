@@ -14,7 +14,8 @@ class ModerationController extends Controller
     public function reportEvent(Request $request, Event $event)
     {
         $validated = $request->validate([
-            'reason' => 'required|string|max:500',
+            'reason' => 'required|string|max:100',
+            'description' => 'required|string|max:2000',
         ]);
 
         if ($event->status === 'banned' || $event->status === 'cancelled') {
@@ -34,6 +35,7 @@ class ModerationController extends Controller
             'event_id' => $event->id,
             'reporter_id' => $request->user()->id,
             'reason' => $validated['reason'],
+            'description' => $validated['description'],
             'status' => 'pending',
         ]);
 

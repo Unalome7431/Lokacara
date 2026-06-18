@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { ArrowUpRight, CheckCircle2, Eye, Award, AlertTriangle } from 'lucide-react';
-import React from 'react';
+import React, { useState } from 'react';
+import ReportEventModal from '@/components/ui/ReportEventModal';
 
 interface Event {
     id: number;
@@ -33,6 +34,7 @@ export default function AttendeeActionCard({
     handleJoinEvent,
     showVerificationWarning,
 }: AttendeeActionCardProps) {
+    const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const registeredCount = event.event_registrations_count ?? 0;
     const hasCapacityLimit = !!event.capacity;
     const remainingCapacity =
@@ -213,6 +215,30 @@ export default function AttendeeActionCard({
                     </div>
                 )}
             </div>
+
+            {/* Report Event button (non-sticky on mobile) */}
+            {isAuthenticated && (
+                <div className="flex flex-col gap-2 rounded-3xl border border-neutral-300 bg-white p-5 shadow-sm">
+                    <p className="text-xs font-medium text-neutral-500 text-center leading-relaxed">
+                        Menemukan kejanggalan atau pelanggaran pada event ini?
+                    </p>
+                    <button
+                        type="button"
+                        onClick={() => setIsReportModalOpen(true)}
+                        className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border border-red-200 bg-red-50/50 py-2.5 text-sm font-bold text-red-600 shadow-xs transition-all duration-200 hover:bg-red-100/60 hover:text-red-700 active:scale-[0.99]"
+                    >
+                        <AlertTriangle size={15} />
+                        <span>Laporkan Event</span>
+                    </button>
+                </div>
+            )}
+
+            <ReportEventModal
+                isOpen={isReportModalOpen}
+                onClose={() => setIsReportModalOpen(false)}
+                eventId={event.id}
+                eventName={event.title}
+            />
         </div>
     );
 }
