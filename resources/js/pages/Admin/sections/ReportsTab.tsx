@@ -1,12 +1,12 @@
-import React, { useState, useMemo } from 'react';
 import {
     AlertTriangle,
     CheckCircle,
     Filter,
 } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
 import Pagination from '@/components/ui/Pagination';
 import { formatIndonesianDateShort } from '@/lib/utils';
-import { Report } from '../types';
+import type { Report } from '../types';
 
 interface ReportsTabProps {
     reports: Report[];

@@ -1,7 +1,7 @@
+import { AlertTriangle, X, Eye } from 'lucide-react';
 import React from 'react';
-import { AlertTriangle, X, Eye, CheckCircle } from 'lucide-react';
 import { formatIndonesianDateShort } from '@/lib/utils';
-import { Report } from '../types';
+import type { Report } from '../types';
 
 interface ReportDetailModalProps {
     isOpen: boolean;
@@ -22,7 +22,9 @@ export default function ReportDetailModal({
     onOpenEvent,
     processing,
 }: ReportDetailModalProps) {
-    if (!isOpen || !report) return null;
+    if (!isOpen || !report) {
+return null;
+}
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/60 p-4 backdrop-blur-xs select-none">

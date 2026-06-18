@@ -1,6 +1,6 @@
 import { Head, useForm, router } from '@inertiajs/react';
-import { useState } from 'react';
 import { AlertCircle } from 'lucide-react';
+import { useState } from 'react';
 import Footer from '@/layouts/Footer';
 import NavBar from '@/layouts/NavBar';
 import CreateFormLeft from './sections/Form/CreateFormLeft';
@@ -128,7 +128,6 @@ export default function Create({ categories }: CreateProps) {
                             contacts={contacts}
                             setContacts={setContacts}
                             processing={processing}
-                            submit={submit}
                         />
                     </div>
                 </form>

@@ -1,4 +1,3 @@
-import React from 'react';
 import {
     Calendar,
     X,
@@ -8,9 +7,10 @@ import {
     MapPin,
     Monitor,
 } from 'lucide-react';
-import { formatIndonesianDateShort } from '@/lib/utils';
+import React from 'react';
 import DefaultCover from '@/../../public/covers/default_cover.jpg';
-import { Event } from '../types';
+import { formatIndonesianDateShort } from '@/lib/utils';
+import type { Event } from '../types';
 
 interface EventDetailModalProps {
     isOpen: boolean;
@@ -27,7 +27,9 @@ export default function EventDetailModal({
     onBanEvent,
     processing,
 }: EventDetailModalProps) {
-    if (!isOpen || !event) return null;
+    if (!isOpen || !event) {
+return null;
+}
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/60 p-4 backdrop-blur-xs select-none">

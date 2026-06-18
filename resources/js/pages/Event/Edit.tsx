@@ -1,6 +1,6 @@
 import { Head, useForm, router } from '@inertiajs/react';
-import { useState } from 'react';
 import { AlertCircle } from 'lucide-react';
+import { useState } from 'react';
 import Footer from '@/layouts/Footer';
 import NavBar from '@/layouts/NavBar';
 import { parseDescription } from '@/lib/utils';
@@ -38,13 +38,6 @@ interface EditProps {
 
 export default function Edit({ event, categories }: EditProps) {
     const parsedMeta = parseDescription(event.description);
-
-    const initialTags = parsedMeta.tg
-        ? parsedMeta.tg
-              .split(',')
-              .map((t) => t.replace('#', '').trim())
-              .filter(Boolean)
-        : [''];
 
     // Helper to format ISO dates to datetime-local values (YYYY-MM-DDTHH:mm)
     const formatDatetimeForInput = (dateString: string) => {

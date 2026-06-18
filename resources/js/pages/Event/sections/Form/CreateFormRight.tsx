@@ -16,7 +16,6 @@ interface CreateFormRightProps {
     contacts: { name: string; info: string }[];
     setContacts: (contacts: any) => void;
     processing: boolean;
-    submit: (e: React.FormEvent) => void;
 }
 
 export default function CreateFormRight({
@@ -27,7 +26,6 @@ export default function CreateFormRight({
     contacts,
     setContacts,
     processing,
-    submit,
 }: CreateFormRightProps) {
     const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
     const categoryDropdownRef = useRef<HTMLDivElement>(null);

@@ -1,8 +1,8 @@
-import React, { useState, useMemo } from 'react';
 import { History } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
 import Pagination from '@/components/ui/Pagination';
 import { formatIndonesianDateShort } from '@/lib/utils';
-import { AuditLog } from '../types';
+import type { AuditLog } from '../types';
 
 interface AuditLogsTabProps {
     auditLogs: AuditLog[];
@@ -81,6 +81,7 @@ export default function AuditLogsTab({ auditLogs }: AuditLogsTabProps) {
 
                                 // Format details display helper
                                 let detailsString = '';
+
                                 if (log.details) {
                                     if (log.action === 'ban_event') {
                                         detailsString = `Event: "${log.details.title}" (Host: ${log.details.organizer_name || 'Anonim'})`;

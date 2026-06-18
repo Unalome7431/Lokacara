@@ -1,6 +1,6 @@
-import React from 'react';
 import { X } from 'lucide-react';
-import { Category } from '../types';
+import React from 'react';
+import type { Category } from '../types';
 
 interface CategoryModalProps {
     isOpen: boolean;
@@ -21,7 +21,9 @@ export default function CategoryModal({
     onSubmit,
     processing,
 }: CategoryModalProps) {
-    if (!isOpen) return null;
+    if (!isOpen) {
+return null;
+}
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/60 p-4 backdrop-blur-xs select-none">

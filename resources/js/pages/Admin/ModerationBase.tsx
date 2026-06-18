@@ -1,17 +1,17 @@
 import { Head, useForm, router } from '@inertiajs/react';
 import React, { useEffect, useState } from 'react';
-import { ModerationBaseProps, Category, Event, Report, User } from './types';
 import AdminSidebar from './sections/AdminSidebar';
 import AdminTopBar from './sections/AdminTopBar';
 import AnalyticsTab from './sections/AnalyticsTab';
-import ReportsTab from './sections/ReportsTab';
-import EventsTab from './sections/EventsTab';
-import UsersTab from './sections/UsersTab';
-import CategoriesTab from './sections/CategoriesTab';
 import AuditLogsTab from './sections/AuditLogsTab';
+import CategoriesTab from './sections/CategoriesTab';
 import CategoryModal from './sections/CategoryModal';
-import ReportDetailModal from './sections/ReportDetailModal';
 import EventDetailModal from './sections/EventDetailModal';
+import EventsTab from './sections/EventsTab';
+import ReportDetailModal from './sections/ReportDetailModal';
+import ReportsTab from './sections/ReportsTab';
+import UsersTab from './sections/UsersTab';
+import type { ModerationBaseProps, Category, Event, Report, User } from './types';
 
 export default function ModerationBase({
     reports = [],
@@ -52,12 +52,14 @@ export default function ModerationBase({
         if (selectedReport || selectedEvent || isCategoryModalOpen) {
             document.body.style.overflow = 'hidden';
             document.documentElement.style.overflow = 'hidden';
+
             if (lenis) {
                 lenis.stop();
             }
         } else {
             document.body.style.overflow = 'unset';
             document.documentElement.style.overflow = 'unset';
+
             if (lenis) {
                 lenis.start();
             }
@@ -66,6 +68,7 @@ export default function ModerationBase({
         return () => {
             document.body.style.overflow = 'unset';
             document.documentElement.style.overflow = 'unset';
+
             if (lenis) {
                 lenis.start();
             }
@@ -118,6 +121,7 @@ export default function ModerationBase({
 
     const handleSaveCategory = (e: React.FormEvent) => {
         e.preventDefault();
+
         if (editingCategory) {
             router.put(`/admin/categories/${editingCategory.id}`, { name: categoryFormName }, {
                 onSuccess: () => {
@@ -144,6 +148,7 @@ export default function ModerationBase({
 
     const handleOpenEventFromReport = (report: Report) => {
         setSelectedReport(null);
+
         if (report.event) {
             setSelectedEvent(report.event);
         }

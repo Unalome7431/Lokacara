@@ -1,4 +1,3 @@
-import React from 'react';
 import {
     Activity,
     AlertTriangle,
@@ -6,7 +5,8 @@ import {
     Eye,
     Users,
 } from 'lucide-react';
-import { ModerationBaseProps } from '../types';
+import React from 'react';
+import type { ModerationBaseProps } from '../types';
 
 interface AnalyticsTabProps {
     stats: NonNullable<ModerationBaseProps['stats']>;
@@ -90,6 +90,7 @@ export default function AnalyticsTab({ stats, setActiveTab }: AnalyticsTabProps)
                                 const percentage = stats.total_events > 0 
                                     ? Math.round((cat.events_count / stats.total_events) * 100) 
                                     : 0;
+
                                 return (
                                     <div key={cat.id} className="flex flex-col gap-1.5">
                                         <div className="flex justify-between items-center text-xs font-bold text-neutral-700">

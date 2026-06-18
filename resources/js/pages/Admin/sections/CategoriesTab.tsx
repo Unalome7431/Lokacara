@@ -1,12 +1,12 @@
-import React, { useState, useMemo } from 'react';
 import {
     Pencil,
     Plus,
     Tag,
     Trash2,
 } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
 import Pagination from '@/components/ui/Pagination';
-import { Category } from '../types';
+import type { Category } from '../types';
 
 interface CategoriesTabProps {
     categories: Category[];
