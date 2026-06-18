@@ -58,10 +58,10 @@ export default function HostActionCard({
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                    {/* Pendaftar Card */}
+                    {/* Peserta Card */}
                     <div className="flex flex-col gap-1.5 rounded-2xl border border-neutral-200/60 bg-white p-4">
                         <span className="text-[0.65rem] font-bold tracking-wider text-gray-400 uppercase">
-                            Pendaftar
+                            Peserta
                         </span>
                         <div className="mt-0.5 flex items-baseline">
                             <span className="text-2xl font-black text-primary-500">
@@ -111,10 +111,10 @@ export default function HostActionCard({
                         <Link
                             href={`/dashboard/events/${event.id}/attendees`}
                             className="flex h-12 w-full items-center justify-center rounded-full border border-neutral-300 bg-white text-base font-bold text-neutral-800 shadow-xs transition-all duration-200 hover:bg-neutral-50 active:scale-[0.99] lg:h-auto lg:py-4"
-                            title="Pendaftar"
+                            title="Peserta"
                         >
                             <Users size={16} className="mr-2" />
-                            <span>Pendaftar</span>
+                            <span>Daftar Peserta</span>
                         </Link>
                     </div>
                 ) : isEventFinished ? (
@@ -127,10 +127,10 @@ export default function HostActionCard({
                         <Link
                             href={`/dashboard/events/${event.id}/attendees`}
                             className="flex h-12 w-full items-center justify-center rounded-full border border-neutral-300 bg-white text-base font-bold text-neutral-800 shadow-xs transition-all duration-200 hover:bg-neutral-50 active:scale-[0.99] lg:h-auto lg:py-4"
-                            title="Pendaftar"
+                            title="Peserta"
                         >
                             <Users size={16} className="mr-2" />
-                            <span>Pendaftar</span>
+                            <span>Daftar Peserta</span>
                         </Link>
 
                         <Link
@@ -167,10 +167,10 @@ export default function HostActionCard({
                         <Link
                             href={`/dashboard/events/${event.id}/attendees`}
                             className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-neutral-300 bg-white text-base font-bold text-neutral-800 shadow-xs transition-all duration-200 hover:bg-neutral-50 active:scale-[0.99] lg:h-auto lg:w-full lg:flex-row lg:gap-2 lg:py-4"
-                            title="Pendaftar"
+                            title="Peserta"
                         >
                             <Users size={16} />
-                            <span className="hidden lg:inline">Pendaftar</span>
+                            <span className="hidden lg:inline">Daftar Peserta</span>
                         </Link>
 
                         <Link

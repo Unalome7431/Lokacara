@@ -230,9 +230,6 @@ export default function HomeHero({ popularEvents = [], events = [] }: HomeHeroPr
                                           'Lokasi Offline'}
                                 </span>
                             </div>
-                            <p className="mt-2 line-clamp-2 text-small leading-relaxed font-medium text-neutral-400 md:text-base">
-                                {event.description}
-                            </p>
                         </div>
                     </Link>
                 ))}

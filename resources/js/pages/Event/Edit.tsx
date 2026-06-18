@@ -79,7 +79,7 @@ export default function Edit({ event, categories }: EditProps) {
         link: event.link || '',
         start_datetime: formatDatetimeForInput(event.start_datetime),
         end_datetime: formatDatetimeForInput(event.end_datetime),
-        capacity: event.capacity || 50,
+        capacity: event.capacity === null || event.capacity === undefined ? '' : event.capacity,
         poster: null as File | null,
         price: event.price || 0,
         _method: 'PUT', // Spoofing PUT request
@@ -87,9 +87,6 @@ export default function Edit({ event, categories }: EditProps) {
 
     const [isFree, setIsFree] = useState(event.price === 0);
 
-    // Local Mockup Fields
-    const [organizer, setOrganizer] = useState(parsedMeta.org);
-    const [tags, setTags] = useState<string[]>(initialTags);
     const [contacts, setContacts] = useState(parsedMeta.cts);
 
     // Submit Event Handler
@@ -102,20 +99,9 @@ export default function Edit({ event, categories }: EditProps) {
             .map((c) => `- ${c.name}: ${c.info}`)
             .join('\n');
 
-        const finalDescription = [
-            data.description,
-            '---',
-            organizer ? `**Penyelenggara:** ${organizer}` : '',
-            tags.filter((t) => t.trim() !== '').length > 0
-                ? `**Tags:** ${tags
-                      .filter((t) => t.trim() !== '')
-                      .map((t) => `#${t.trim()}`)
-                      .join(', ')}`
-                : '',
-            contactLines ? `**Kontak:**\n${contactLines}` : '',
-        ]
-            .filter(Boolean)
-            .join('\n\n');
+        const finalDescription = contactLines
+            ? `${data.description}\n\n---\n\n**Kontak:**\n${contactLines}`
+            : data.description;
 
         // Submit using multipart POST (required for file uploads with method spoofing)
         const submissionData = {
@@ -168,8 +154,6 @@ export default function Edit({ event, categories }: EditProps) {
                             errors={errors}
                             isFree={isFree}
                             setIsFree={setIsFree}
-                            tags={tags}
-                            setTags={setTags}
                             initialPosterUrl={event.poster_url}
                         />
 
@@ -179,8 +163,6 @@ export default function Edit({ event, categories }: EditProps) {
                             setData={setData}
                             errors={errors}
                             categories={categories}
-                            organizer={organizer}
-                            setOrganizer={setOrganizer}
                             contacts={contacts}
                             setContacts={setContacts}
                             processing={processing}
