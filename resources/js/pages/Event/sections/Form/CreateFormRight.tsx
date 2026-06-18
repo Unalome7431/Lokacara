@@ -1,4 +1,4 @@
-import { Inbox, Upload } from 'lucide-react';
+import { Upload } from 'lucide-react';
 import React, { useState, useRef, useEffect } from 'react';
 import ContactsInputList from '@/components/ui/ContactsInputList';
 import EventFormMap from '@/components/ui/EventFormMap';
@@ -16,7 +16,6 @@ interface CreateFormRightProps {
     contacts: { name: string; info: string }[];
     setContacts: (contacts: any) => void;
     processing: boolean;
-    submit: (e: React.FormEvent) => void;
 }
 
 export default function CreateFormRight({
@@ -27,7 +26,6 @@ export default function CreateFormRight({
     contacts,
     setContacts,
     processing,
-    submit,
 }: CreateFormRightProps) {
     const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
     const categoryDropdownRef = useRef<HTMLDivElement>(null);
@@ -187,15 +185,6 @@ export default function CreateFormRight({
 
             {/* Bottom Actions Buttons */}
             <div className="mt-6 flex w-full flex-col gap-4">
-                <button
-                    type="button"
-                    onClick={submit}
-                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border-0 bg-secondary-500 py-4 text-lg font-bold text-neutral-900 shadow-md transition-all duration-200 hover:bg-secondary-600 active:scale-[0.99]"
-                >
-                    <Inbox size={20} className="text-neutral-900" />
-                    <span>Simpan Draf</span>
-                </button>
-
                 <button
                     type="submit"
                     disabled={processing}

@@ -1,4 +1,3 @@
-import React, { useState, useMemo } from 'react';
 import {
     Calendar,
     Filter,
@@ -6,9 +5,10 @@ import {
     Tag,
     Eye,
 } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
 import Pagination from '@/components/ui/Pagination';
 import { formatIndonesianDateShort } from '@/lib/utils';
-import { Event } from '../types';
+import type { Event } from '../types';
 
 interface EventsTabProps {
     events: Event[];
@@ -27,6 +27,7 @@ export default function EventsTab({ events, onSelectEvent }: EventsTabProps) {
         return events.filter((event) => {
             const matchesSearch = event.title?.toLowerCase().includes(searchQuery.toLowerCase());
             const matchesStatus = statusFilter === 'all' || event.status === statusFilter;
+
             return matchesSearch && matchesStatus;
         });
     }, [events, searchQuery, statusFilter]);

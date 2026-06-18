@@ -1,12 +1,12 @@
-import React, { useState, useMemo } from 'react';
 import {
     Filter,
     Search,
     Lock,
     Unlock,
 } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
 import Pagination from '@/components/ui/Pagination';
-import { User } from '../types';
+import type { User } from '../types';
 
 interface UsersTabProps {
     users: User[];
@@ -38,6 +38,7 @@ export default function UsersTab({
             const matchesRole = roleFilter === 'all' || u.role === roleFilter;
             const matchesStatus = statusFilter === 'all' || 
                 (statusFilter === 'suspended' ? u.suspended_at !== null : u.suspended_at === null);
+
             return matchesSearch && matchesRole && matchesStatus;
         });
     }, [users, searchQuery, roleFilter, statusFilter]);

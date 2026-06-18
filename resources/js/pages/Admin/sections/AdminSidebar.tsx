@@ -1,4 +1,3 @@
-import React from 'react';
 import {
     BarChart2,
     AlertTriangle,
@@ -9,8 +8,8 @@ import {
     History,
     LogOut,
 } from 'lucide-react';
+import React from 'react';
 import faviconUrl from '@/../../public/favicon.svg';
-import { User, Event, Report, Category, AuditLog } from '../types';
 
 interface AdminSidebarProps {
     activeTab: 'dashboard' | 'laporan' | 'semua_laporan' | 'events' | 'users' | 'categories' | 'audit_logs';
