@@ -1,6 +1,6 @@
-import { Head, useForm, router } from '@inertiajs/react';
-import { AlertCircle } from 'lucide-react';
+import { Head, useForm, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+
 import Footer from '@/layouts/Footer';
 import NavBar from '@/layouts/NavBar';
 import CreateFormLeft from './sections/Form/CreateFormLeft';
@@ -17,7 +17,7 @@ interface CreateProps {
 
 export default function Create({ categories }: CreateProps) {
     // 1. Inertia Form State
-    const { data, setData, processing, errors } = useForm({
+    const { data, setData, processing } = useForm({
         title: '',
         category_id: '',
         description: '',
@@ -34,6 +34,10 @@ export default function Create({ categories }: CreateProps) {
         poster: null as File | null,
         price: 0,
     });
+
+    const { props } = usePage();
+    const pageErrors = props.errors as any;
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const [isFree, setIsFree] = useState(true);
 
@@ -81,8 +85,11 @@ export default function Create({ categories }: CreateProps) {
             }
         });
 
+        setIsSubmitting(true);
         // Inertia post action
-        router.post('/create', formData);
+        router.post('/create', formData, {
+            onFinish: () => setIsSubmitting(false),
+        });
     };
 
     return (
@@ -95,26 +102,14 @@ export default function Create({ categories }: CreateProps) {
                     onSubmit={submit}
                     className="mx-auto flex max-w-[1080px] flex-col gap-10 px-4 py-10 pt-28 pb-16 md:px-8"
                 >
-                    {Object.keys(errors).length > 0 && (
-                        <div className="animate-in fade-in flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700 duration-200">
-                            <AlertCircle className="h-5 w-5 shrink-0 text-red-600" />
-                            <div className="flex flex-col gap-1">
-                                <span className="font-bold">Gagal menyimpan event. Silakan periksa kembali kolom berikut:</span>
-                                <ul className="list-disc pl-5 text-xs font-semibold">
-                                    {Object.entries(errors).map(([key, err]) => (
-                                        <li key={key}>{err as string}</li>
-                                    ))}
-                                </ul>
-                            </div>
-                        </div>
-                    )}
+
 
                     <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-12">
                         {/* LEFT COLUMN: Poster, Tags, Capacity, Dates, Access */}
                         <CreateFormLeft
                             data={data}
                             setData={setData}
-                            errors={errors}
+                            errors={pageErrors}
                             isFree={isFree}
                             setIsFree={setIsFree}
                         />
@@ -123,11 +118,11 @@ export default function Create({ categories }: CreateProps) {
                         <CreateFormRight
                             data={data}
                             setData={setData}
-                            errors={errors}
+                            errors={pageErrors}
                             categories={categories}
                             contacts={contacts}
                             setContacts={setContacts}
-                            processing={processing}
+                            processing={isSubmitting || processing}
                         />
                     </div>
                 </form>

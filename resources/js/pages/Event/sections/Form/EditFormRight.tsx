@@ -1,3 +1,4 @@
+import { router } from '@inertiajs/react';
 import { Upload } from 'lucide-react';
 import React, { useState, useRef, useEffect } from 'react';
 import ContactsInputList from '@/components/ui/ContactsInputList';
@@ -184,13 +185,26 @@ export default function EditFormRight({
             </div>
 
             {/* Bottom Actions Buttons */}
-            <div className="mt-6 flex w-full flex-col gap-4">
+            <div className="mt-6 flex w-full flex-row gap-4">
+                <button
+                    type="button"
+                    onClick={() => {
+                        if (window.history.length > 1) {
+                            window.history.back();
+                        } else {
+                            router.visit('/dashboard');
+                        }
+                    }}
+                    className="flex-1 cursor-pointer items-center justify-center rounded-full border border-neutral-300 bg-white py-4 text-lg font-bold text-neutral-700 hover:bg-neutral-50 transition-all duration-200 active:scale-[0.99]"
+                >
+                    Batal
+                </button>
                 <button
                     type="submit"
                     disabled={processing}
-                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border-0 bg-primary-500 py-4 text-lg font-bold text-white shadow-md transition-all duration-200 hover:bg-primary-600 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-75"
+                    className="flex-1 cursor-pointer items-center justify-center gap-2 rounded-full border-0 bg-primary-500 py-4 text-lg font-bold text-white shadow-md transition-all duration-200 hover:bg-primary-600 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-75"
                 >
-                    <Upload size={20} className="text-white" />
+                    <Upload size={20} className="text-white inline-block mr-1" />
                     <span>Simpan Perubahan</span>
                 </button>
             </div>
