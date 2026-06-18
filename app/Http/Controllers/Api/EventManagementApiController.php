@@ -38,6 +38,33 @@ class EventManagementApiController extends Controller
 
             // Poster validation: only required on create; max 5MB
             'poster' => ($request->isMethod('put') || $request->isMethod('patch') || $request->route('event') ? 'nullable' : 'required').'|image|mimes:jpeg,png,jpg,webp|max:5120',
+        ], [
+            'title.required' => 'Judul event wajib diisi.',
+            'title.max' => 'Judul event tidak boleh lebih dari 255 karakter.',
+            'category_id.exists' => 'Kategori yang dipilih tidak valid.',
+            'description.required' => 'Deskripsi event wajib diisi.',
+            'price.integer' => 'Harga tiket harus berupa angka.',
+            'price.min' => 'Harga tiket minimal Rp 0.',
+            'type.required' => 'Tipe event wajib dipilih.',
+            'type.in' => 'Tipe event harus online atau offline.',
+            'location_name.required_if' => 'Nama lokasi wajib diisi untuk event offline.',
+            'address.required_if' => 'Alamat lengkap wajib diisi untuk event offline.',
+            'latitude.required_if' => 'Titik koordinat latitude wajib diisi untuk event offline.',
+            'longitude.required_if' => 'Titik koordinat longitude wajib diisi untuk event offline.',
+            'platform_name.required_if' => 'Platform webinar wajib diisi untuk event online.',
+            'link.required_if' => 'Link webinar wajib diisi untuk event online.',
+            'link.url' => 'Format link webinar tidak valid (harus diawali dengan http:// atau https://).',
+            'start_datetime.required' => 'Waktu mulai event wajib diisi.',
+            'start_datetime.date' => 'Format waktu mulai tidak valid.',
+            'end_datetime.required' => 'Waktu selesai event wajib diisi.',
+            'end_datetime.date' => 'Format waktu selesai tidak valid.',
+            'end_datetime.after_or_equal' => 'Waktu selesai harus sama atau setelah waktu mulai.',
+            'capacity.integer' => 'Kuota peserta harus berupa angka.',
+            'capacity.min' => 'Kuota peserta minimal 1.',
+            'poster.required' => 'Poster event wajib diunggah.',
+            'poster.image' => 'Poster harus berupa file gambar.',
+            'poster.mimes' => 'Format gambar poster harus jpeg, png, jpg, atau webp.',
+            'poster.max' => 'Ukuran file poster tidak boleh lebih dari 5MB.',
         ]);
     }
 

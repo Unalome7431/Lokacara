@@ -15,6 +15,11 @@ export default function ReportEventModal({
     eventId,
     eventName,
 }: ReportEventModalProps) {
+    const { data, setData, post, processing, errors, reset } = useForm({
+        reason: 'Spam',
+        description: '',
+    });
+
     useEffect(() => {
         const lenis = (window as any).lenis;
         if (isOpen) {
@@ -43,11 +48,6 @@ export default function ReportEventModal({
     if (!isOpen) {
         return null;
     }
-
-    const { data, setData, post, processing, errors, reset } = useForm({
-        reason: 'Spam',
-        description: '',
-    });
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();

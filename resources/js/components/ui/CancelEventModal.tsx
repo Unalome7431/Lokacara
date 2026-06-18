@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { AlertTriangle, X } from 'lucide-react';
 
 interface CancelEventModalProps {
@@ -16,13 +16,38 @@ export default function CancelEventModal({
     isProcessing,
     eventName,
 }: CancelEventModalProps) {
+    useEffect(() => {
+        const lenis = (window as any).lenis;
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+            if (lenis) {
+                lenis.stop();
+            }
+        } else {
+            document.body.style.overflow = 'unset';
+            document.documentElement.style.overflow = 'unset';
+            if (lenis) {
+                lenis.start();
+            }
+        }
+
+        return () => {
+            document.body.style.overflow = 'unset';
+            document.documentElement.style.overflow = 'unset';
+            if (lenis) {
+                lenis.start();
+            }
+        };
+    }, [isOpen]);
+
     if (!isOpen) {
         return null;
     }
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-900/60 backdrop-blur-xs animate-in fade-in duration-200">
-            <div className="relative w-full max-w-md overflow-hidden rounded-3xl border border-neutral-200 bg-white p-6 shadow-xl animate-in zoom-in-95 duration-200">
+            <div className="relative w-full max-w-md overflow-hidden rounded-3xl border border-neutral-200 bg-white p-6 shadow-xl animate-in zoom-in-95 duration-200" data-lenis-prevent>
                 <button
                     type="button"
                     onClick={onClose}

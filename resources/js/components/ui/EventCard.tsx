@@ -31,7 +31,7 @@ export default function EventCard({
     className = '',
 }: EventCardProps) {
     const isFree = !event.price || event.price === 0;
-    const badgeText = isFree ? (variant === 'dashboard' ? 'FREE' : 'GRATIS') : `Rp ${Number(event.price).toLocaleString('id-ID')}`;
+    const badgeText = isFree ? 'GRATIS' : `Rp ${Number(event.price).toLocaleString('id-ID')}`;
 
     // Layout configuration depending on variant
     let containerClass = '';
