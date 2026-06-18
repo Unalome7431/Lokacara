@@ -931,6 +931,126 @@
                 ]
             }
         },
+        "/api/bookmarks/{eventId}": {
+            "post": {
+                "tags": [
+                    "Bookmarks"
+                ],
+                "summary": "Bookmark an event",
+                "operationId": "2b97fe2aed64410226689e666de6f667",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Event bookmarked successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Event bookmarked successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Event already bookmarked",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Event already bookmarked"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Bookmarks"
+                ],
+                "summary": "Remove event bookmark",
+                "operationId": "923285f722b07b435293fc7b578b2f65",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Bookmark removed successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Bookmark removed successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bookmark not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Bookmark not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/categories": {
             "get": {
                 "tags": [
@@ -1178,7 +1298,7 @@
                 "tags": [
                     "Organizer"
                 ],
-                "summary": "Send email reminders to all participants",
+                "summary": "Send reminder notifications to all participants",
                 "operationId": "74fc555c99c9821ca4d2bce70407ac38",
                 "parameters": [
                     {
@@ -1200,7 +1320,7 @@
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Email reminders are being sent in the background."
+                                            "example": "Reminder notifications are being sent in the background."
                                         }
                                     },
                                     "type": "object"
@@ -2302,6 +2422,72 @@
                     }
                 ]
             }
+        },
+        "/api/user/settings": {
+            "patch": {
+                "tags": [
+                    "User Settings"
+                ],
+                "summary": "Update user notification settings",
+                "operationId": "eea35790fbfe0f5f8e052332a395d56f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "notifications_enabled"
+                                ],
+                                "properties": {
+                                    "notifications_enabled": {
+                                        "type": "boolean",
+                                        "example": false
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Settings updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Settings updated successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "notifications_enabled": {
+                                                    "type": "boolean",
+                                                    "example": false
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
         }
     },
     "components": {
@@ -2593,7 +2779,7 @@
                     },
                     "message": {
                         "type": "string",
-                        "example": "Event \"Seminar AI\" akan dimulai besok"
+                        "example": "Kamu berhasil terdaftar di Seminar AI."
                     },
                     "type": {
                         "type": "string",
@@ -2602,6 +2788,21 @@
                             "system",
                             "social"
                         ]
+                    },
+                    "category": {
+                        "type": "string",
+                        "example": "registration_success",
+                        "nullable": true
+                    },
+                    "target": {
+                        "type": "string",
+                        "example": "tickets",
+                        "nullable": true
+                    },
+                    "event_id": {
+                        "type": "integer",
+                        "example": 123,
+                        "nullable": true
                     },
                     "is_read": {
                         "type": "boolean",
@@ -2737,6 +2938,10 @@
         {
             "name": "Notifications",
             "description": "Notifications"
+        },
+        {
+            "name": "User Settings",
+            "description": "User Settings"
         }
     ],
     "security": [
