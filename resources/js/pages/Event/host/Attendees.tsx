@@ -186,7 +186,7 @@ export default function Attendees({
                                         Tidak Ada Peserta ditemukan
                                     </h5>
                                     <p className="text-small text-gray-400">
-                                        Tidak ada pendaftar yang cocok dengan
+                                        Tidak ada peserta yang cocok dengan
                                         pencarian Anda.
                                     </p>
                                 </div>

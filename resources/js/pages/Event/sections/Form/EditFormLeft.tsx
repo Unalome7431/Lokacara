@@ -1,16 +1,12 @@
 import { Minus, Plus } from 'lucide-react';
 import React, { useRef, useEffect } from 'react';
 import PosterPicker from '@/components/ui/PosterPicker';
-import TagsInputList from '@/components/ui/TagsInputList';
-
 interface EditFormLeftProps {
     data: any;
     setData: (name: string | ((prev: any) => any), value?: any) => void;
     errors: any;
     isFree: boolean;
     setIsFree: (isFree: boolean) => void;
-    tags: string[];
-    setTags: (tags: string[]) => void;
     initialPosterUrl?: string;
 }
 
@@ -20,8 +16,6 @@ export default function EditFormLeft({
     errors,
     isFree,
     setIsFree,
-    tags,
-    setTags,
     initialPosterUrl,
 }: EditFormLeftProps) {
     const stepperIntervalRef = useRef<any>(null);
@@ -81,9 +75,6 @@ export default function EditFormLeft({
                 onChange={(file) => setData('poster', file)}
             />
 
-            {/* Tags Pencarian */}
-            <TagsInputList tags={tags} onChange={setTags} />
-
             {/* Kuota Peserta */}
             <div className="flex flex-col gap-4 rounded-3xl bg-primary-100/30 p-6">
                 <div className="flex items-center justify-between">
@@ -98,35 +89,61 @@ export default function EditFormLeft({
                     <div className="flex items-center gap-3 rounded-full border border-neutral-100 bg-white p-1 px-1.5 shadow-xs">
                         <button
                             type="button"
+                            disabled={data.capacity === null || data.capacity === ''}
                             onMouseDown={() => startStepper(decrementCapacity)}
                             onMouseUp={stopStepper}
                             onMouseLeave={stopStepper}
                             onTouchStart={() => startStepper(decrementCapacity)}
                             onTouchEnd={stopStepper}
-                            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-0 bg-secondary-500 text-white transition-colors select-none hover:bg-secondary-600 active:scale-95"
+                            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-0 bg-secondary-500 text-white transition-colors select-none hover:bg-secondary-600 active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
                         >
                             <Minus size={16} strokeWidth={3} />
                         </button>
-                        <input
-                            type="number"
-                            value={data.capacity}
-                            onChange={(e) =>
-                                setData('capacity', Number(e.target.value))
-                            }
-                            className="w-12 [appearance:textfield] border-0 p-0 text-center text-lg font-bold text-neutral-800 outline-none focus:ring-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                        />
+                        {data.capacity === null || data.capacity === '' ? (
+                            <span className="w-12 text-center text-lg font-bold text-neutral-400 select-none">
+                                ∞
+                            </span>
+                        ) : (
+                            <input
+                                type="number"
+                                value={data.capacity}
+                                onChange={(e) =>
+                                    setData('capacity', e.target.value === '' ? '' : Number(e.target.value))
+                                }
+                                className="w-12 [appearance:textfield] border-0 p-0 text-center text-lg font-bold text-neutral-800 outline-none focus:ring-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                            />
+                        )}
                         <button
                             type="button"
+                            disabled={data.capacity === null || data.capacity === ''}
                             onMouseDown={() => startStepper(incrementCapacity)}
                             onMouseUp={stopStepper}
                             onMouseLeave={stopStepper}
                             onTouchStart={() => startStepper(incrementCapacity)}
                             onTouchEnd={stopStepper}
-                            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-0 bg-primary-500 text-white transition-colors select-none hover:bg-primary-600 active:scale-95"
+                            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-0 bg-primary-500 text-white transition-colors select-none hover:bg-primary-600 active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
                         >
                             <Plus size={16} strokeWidth={3} />
                         </button>
                     </div>
+                </div>
+                <div className="flex items-center gap-2 mt-2">
+                    <input
+                        type="checkbox"
+                        id="unlimited-quota"
+                        checked={data.capacity === null || data.capacity === ''}
+                        onChange={(e) => {
+                            if (e.target.checked) {
+                                setData('capacity', '');
+                            } else {
+                                setData('capacity', 50);
+                            }
+                        }}
+                        className="rounded border-neutral-300 text-primary-500 focus:ring-primary-500"
+                    />
+                    <label htmlFor="unlimited-quota" className="text-xs font-bold text-neutral-700 cursor-pointer select-none">
+                        Kuota Tak Terbatas (Infinite)
+                    </label>
                 </div>
                 {errors.capacity && (
                     <span className="mt-1 pl-1 text-xs font-bold text-red-500">

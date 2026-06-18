@@ -231,7 +231,7 @@ export default function CatalogSection({ events = [], categories = [], userCoord
             </h3>
             <div className="flex flex-col gap-10 lg:flex-row">
                 {/* Left Column: Sidebar Category Filter */}
-                <div className="hidden flex-col gap-6 border-b border-neutral-150 pb-8 lg:flex lg:w-1/4 lg:border-r lg:border-b-0 lg:pr-10 lg:pb-0">
+                <div className="hidden flex-col gap-6 border-b border-neutral-150 pb-8 lg:flex lg:w-80 lg:shrink-0 lg:border-r lg:border-b-0 lg:pr-10 lg:pb-0">
                     <h4 className="font-brand text-h4-mobile font-black text-primary-500 lg:text-h4-web">
                         Preferensi
                     </h4>
@@ -389,7 +389,10 @@ export default function CatalogSection({ events = [], categories = [], userCoord
                             />
 
                             {/* Drawer Panel */}
-                            <div className="animate-in slide-in-from-right relative z-50 flex h-full w-full max-w-xs flex-col gap-6 overflow-y-auto bg-white p-6 shadow-2xl duration-200">
+                            <div
+                                data-lenis-prevent
+                                className="animate-in slide-in-from-right relative z-50 flex h-full w-full max-w-xs flex-col gap-6 overflow-y-auto custom-scrollbar bg-white p-6 shadow-2xl duration-200"
+                            >
                                 {/* Drawer Header */}
                                 <div className="flex items-center justify-between border-b border-neutral-100 pb-4">
                                     <h4 className="font-brand text-h4-mobile font-black text-primary-500 lg:text-h4-web">

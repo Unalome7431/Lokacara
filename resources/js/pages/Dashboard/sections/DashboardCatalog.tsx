@@ -63,7 +63,7 @@ export default function DashboardCatalog({
     joined_events = [],
     certificates = [],
 }: DashboardCatalogProps) {
-    const [activeTab, setActiveTab] = useState<'Event Terbuat' | 'Event Tersimpan' | 'Sertifikat'>('Event Terbuat');
+    const [activeTab, setActiveTab] = useState<'Event Saya' | 'Event Diikuti' | 'Sertifikat'>('Event Saya');
     const [timeFilter, setTimeFilter] = useState<'mendatang' | 'lalu' | 'dibatalkan'>('mendatang');
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -165,9 +165,9 @@ export default function DashboardCatalog({
 
             let listLength = 0;
 
-            if (activeTab === 'Event Terbuat') {
+            if (activeTab === 'Event Saya') {
                 listLength = filteredHostedEvents.length;
-            } else if (activeTab === 'Event Tersimpan') {
+            } else if (activeTab === 'Event Diikuti') {
                 listLength = filteredJoinedEvents.length;
             } else {
                 listLength = filteredCertificates.length;
@@ -193,9 +193,9 @@ export default function DashboardCatalog({
 
     // Total pages calculation
     const getActiveTabTotalPages = () => {
-        if (activeTab === 'Event Terbuat') {
+        if (activeTab === 'Event Saya') {
             return Math.ceil(filteredHostedEvents.length / itemsPerPage);
-        } else if (activeTab === 'Event Tersimpan') {
+        } else if (activeTab === 'Event Diikuti') {
             return Math.ceil(filteredJoinedEvents.length / itemsPerPage);
         } else {
             return Math.ceil(filteredCertificates.length / itemsPerPage);
@@ -237,8 +237,8 @@ export default function DashboardCatalog({
                 {/* Tab Toggles */}
                 <SegmentedToggle
                     options={[
-                        { key: 'Event Terbuat', label: 'Event Terbuat', badge: hosted_events.length },
-                        { key: 'Event Tersimpan', label: 'Event Tersimpan', badge: joined_events.length },
+                        { key: 'Event Saya', label: 'Event Saya', badge: hosted_events.length },
+                        { key: 'Event Diikuti', label: 'Event Diikuti', badge: joined_events.length },
                         { key: 'Sertifikat', label: 'Sertifikat', badge: certificates.length },
                     ]}
                     value={activeTab}
@@ -294,8 +294,8 @@ export default function DashboardCatalog({
 
             {/* Content Tab Bodies */}
             <div className="min-h-[300px]">
-                {/* Event Terbuat Tab */}
-                {activeTab === 'Event Terbuat' &&
+                {/* Event Saya Tab */}
+                {activeTab === 'Event Saya' &&
                     (hosted_events.length === 0 ? (
                         <div className="animate-in fade-in flex flex-col items-center justify-center gap-4 rounded-3xl border border-neutral-200 bg-white px-4 py-20 text-center shadow-sm duration-200">
                             <div className="bg-primary-50 flex h-16 w-16 items-center justify-center rounded-full text-primary-500">
@@ -352,8 +352,8 @@ export default function DashboardCatalog({
                         </div>
                     ))}
 
-                {/* Event Tersimpan Tab */}
-                {activeTab === 'Event Tersimpan' &&
+                {/* Event Diikuti Tab */}
+                {activeTab === 'Event Diikuti' &&
                     (joined_events.length === 0 ? (
                         <div className="animate-in fade-in flex flex-col items-center justify-center gap-4 rounded-3xl border border-neutral-200 bg-white px-4 py-20 text-center shadow-sm duration-200">
                             <div className="bg-primary-50 flex h-16 w-16 items-center justify-center rounded-full text-primary-500">
@@ -371,7 +371,7 @@ export default function DashboardCatalog({
                                 href="/"
                                 className="rounded-full bg-primary-500 px-6 py-2.5 text-small font-bold text-white shadow-md transition-all hover:bg-primary-600"
                             >
-                                / Cari Event Menarik
+                                Cari Event Menarik
                             </Link>
                         </div>
                     ) : filteredJoinedEvents.length === 0 ? (

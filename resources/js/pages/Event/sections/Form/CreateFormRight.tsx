@@ -13,8 +13,6 @@ interface CreateFormRightProps {
     setData: (name: string | ((prev: any) => any), value?: any) => void;
     errors: any;
     categories: Category[];
-    organizer: string;
-    setOrganizer: (organizer: string) => void;
     contacts: { name: string; info: string }[];
     setContacts: (contacts: any) => void;
     processing: boolean;
@@ -26,8 +24,6 @@ export default function CreateFormRight({
     setData,
     errors,
     categories = [],
-    organizer,
-    setOrganizer,
     contacts,
     setContacts,
     processing,
@@ -105,7 +101,10 @@ export default function CreateFormRight({
                         </span>
                     </div>
                     {isCategoryDropdownOpen && (
-                        <div className="animate-in fade-in slide-in-from-top-2 absolute z-50 mt-2 max-h-60 w-full overflow-y-auto rounded-2xl border border-neutral-100 bg-white py-1.5 shadow-lg duration-150">
+                        <div
+                            data-lenis-prevent
+                            className="animate-in fade-in slide-in-from-top-2 absolute z-50 mt-2 max-h-60 w-full overflow-y-auto custom-scrollbar rounded-2xl border border-neutral-100 bg-white py-1.5 shadow-lg duration-150"
+                        >
                             {categories.map((cat) => (
                                 <div
                                     key={cat.id}
@@ -138,19 +137,7 @@ export default function CreateFormRight({
                 )}
             </div>
 
-            {/* Penyelenggara */}
-            <div className="flex flex-col gap-2">
-                <h3 className="font-brand text-h5-mobile font-black text-neutral-900 lg:text-h5-web">
-                    Penyelenggara
-                </h3>
-                <input
-                    type="text"
-                    placeholder="Nama penyelenggara/EO"
-                    value={organizer}
-                    onChange={(e) => setOrganizer(e.target.value)}
-                    className="placeholder-neutral-450 w-full rounded-full border-0 bg-primary-100/30 px-6 py-4 font-brand text-base font-semibold text-neutral-800 transition-all duration-200 focus:bg-white focus:ring-2 focus:ring-primary-500 focus:outline-none"
-                />
-            </div>
+
 
             {/* Kontak */}
             <ContactsInputList contacts={contacts} onChange={setContacts} />

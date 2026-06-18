@@ -161,6 +161,32 @@ html.lenis body {
     display: none; /* Chrome, Safari, Opera */
 }
 
+/* Custom scrollbar utility to restore visible scrollbars for dropdowns/drawers */
+.custom-scrollbar {
+    scrollbar-width: thin !important;
+    -ms-overflow-style: auto !important;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    display: block !important;
+    width: 6px !important;
+    height: 6px !important;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f5f9 !important;
+    border-radius: 9999px !important;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1 !important;
+    border-radius: 9999px !important;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8 !important;
+}
+
 /* Disable default browser password reveal eye icon and clear buttons */
 input::-ms-reveal,
 input::-ms-clear {

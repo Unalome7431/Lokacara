@@ -36,9 +36,6 @@ export default function Create({ categories }: CreateProps) {
 
     const [isFree, setIsFree] = useState(true);
 
-    // Mockup-only fields (local state)
-    const [organizer, setOrganizer] = useState('');
-    const [tags, setTags] = useState<string[]>(['']);
     const [contacts, setContacts] = useState([{ name: '', info: '' }]);
 
     // Submit Event Handler
@@ -51,20 +48,9 @@ export default function Create({ categories }: CreateProps) {
             .map((c) => `- ${c.name}: ${c.info}`)
             .join('\n');
 
-        const finalDescription = [
-            data.description,
-            '---',
-            organizer ? `**Penyelenggara:** ${organizer}` : '',
-            tags.filter((t) => t.trim() !== '').length > 0
-                ? `**Tags:** ${tags
-                      .filter((t) => t.trim() !== '')
-                      .map((t) => `#${t.trim()}`)
-                      .join(', ')}`
-                : '',
-            contactLines ? `**Kontak:**\n${contactLines}` : '',
-        ]
-            .filter(Boolean)
-            .join('\n\n');
+        const finalDescription = contactLines
+            ? `${data.description}\n\n---\n\n**Kontak:**\n${contactLines}`
+            : data.description;
 
         // Submit using multipart POST (required for file uploads)
         const submissionData = {
@@ -116,8 +102,6 @@ export default function Create({ categories }: CreateProps) {
                             errors={errors}
                             isFree={isFree}
                             setIsFree={setIsFree}
-                            tags={tags}
-                            setTags={setTags}
                         />
 
                         {/* RIGHT COLUMN: Form inputs, Contacts, Detail Event, Submit */}
@@ -126,8 +110,6 @@ export default function Create({ categories }: CreateProps) {
                             setData={setData}
                             errors={errors}
                             categories={categories}
-                            organizer={organizer}
-                            setOrganizer={setOrganizer}
                             contacts={contacts}
                             setContacts={setContacts}
                             processing={processing}
