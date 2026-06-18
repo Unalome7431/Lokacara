@@ -154,7 +154,7 @@ class DiscoveryController extends Controller
         $reports = [];
 
         if (Auth::check()) {
-            if (Auth::user()->role === 'admin') {
+            if (in_array(Auth::user()->role, ['admin', 'super_admin'])) {
                 $reports = \App\Models\EventReport::where('event_id', $event->id)
                     ->with('user')
                     ->latest()

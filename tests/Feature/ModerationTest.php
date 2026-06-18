@@ -11,8 +11,8 @@ use Illuminate\Support\Facades\Mail;
 
 beforeEach(function () {
     $this->category = Category::factory()->create();
-    $this->host = User::factory()->create();
-    $this->attendee = User::factory()->create();
+    $this->host = User::factory()->create(['role' => 'user']);
+    $this->attendee = User::factory()->create(['role' => 'user']);
     $this->event = Event::factory()->create([
         'user_id' => $this->host->id,
         'category_id' => $this->category->id,

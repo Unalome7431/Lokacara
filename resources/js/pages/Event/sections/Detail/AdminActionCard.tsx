@@ -1,6 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import { AlertTriangle, Eye, ShieldAlert, X } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface Report {
     id: number;
@@ -30,6 +30,35 @@ export default function AdminActionCard({ event, reports = [] }: AdminActionCard
     const [isReportsModalOpen, setIsReportsModalOpen] = useState(false);
     const { post, processing } = useForm();
 
+    useEffect(() => {
+        const lenis = (window as any).lenis;
+
+        if (isReportsModalOpen) {
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+
+            if (lenis) {
+                lenis.stop();
+            }
+        } else {
+            document.body.style.overflow = 'unset';
+            document.documentElement.style.overflow = 'unset';
+
+            if (lenis) {
+                lenis.start();
+            }
+        }
+
+        return () => {
+            document.body.style.overflow = 'unset';
+            document.documentElement.style.overflow = 'unset';
+
+            if (lenis) {
+                lenis.start();
+            }
+        };
+    }, [isReportsModalOpen]);
+
     const handleBanEvent = () => {
         if (confirm(`Apakah Anda yakin ingin melakukan BANNED terhadap event "${event.title}"? Tindakan ini akan membatalkan pendaftaran semua peserta.`)) {
             post(`/admin/events/${event.id}/ban`);
@@ -57,13 +86,13 @@ export default function AdminActionCard({ event, reports = [] }: AdminActionCard
                 <div className="flex flex-col gap-3">
                     <div className="flex justify-between text-sm">
                         <span className="font-semibold text-neutral-500">Status Acara:</span>
-                        <span className={`font-bold uppercase ${isBanned ? 'text-red-600' : isCancelled ? 'text-gray-500' : 'text-green-600'}`}>
+                        <span className={`font-bold uppercase ${isBanned ? 'text-secondary-600' : isCancelled ? 'text-gray-500' : 'text-green-600'}`}>
                             {isBanned ? 'BANNED' : isCancelled ? 'Dibatalkan' : 'Aktif'}
                         </span>
                     </div>
                     <div className="flex justify-between text-sm border-t border-neutral-100 pt-3">
                         <span className="font-semibold text-neutral-500">Total Laporan:</span>
-                        <span className={`font-bold ${reports.length > 0 ? 'text-red-500' : 'text-neutral-700'}`}>
+                        <span className={`font-bold ${reports.length > 0 ? 'text-secondary-600' : 'text-neutral-700'}`}>
                             {reports.length} laporan ({pendingReportsCount} pending)
                         </span>
                     </div>
@@ -73,8 +102,8 @@ export default function AdminActionCard({ event, reports = [] }: AdminActionCard
             {/* Actions Panel */}
             <div className="flex flex-col gap-3">
                 {isBanned ? (
-                    <div className="flex w-full items-center justify-center gap-2 rounded-2xl border border-red-200 bg-red-50 py-3.5 text-base font-bold text-red-700 lg:py-4">
-                        <ShieldAlert size={18} className="text-red-600" />
+                    <div className="flex w-full items-center justify-center gap-2 rounded-2xl border border-secondary-200 bg-secondary-50 py-3.5 text-base font-bold text-secondary-800 lg:py-4">
+                        <ShieldAlert size={18} className="text-secondary-600" />
                         <span>Event Telah Diblokir</span>
                     </div>
                 ) : (
@@ -82,7 +111,7 @@ export default function AdminActionCard({ event, reports = [] }: AdminActionCard
                         type="button"
                         onClick={handleBanEvent}
                         disabled={processing || isCancelled}
-                        className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border-0 bg-red-600 py-3 text-base font-bold text-white shadow-md transition-all duration-200 hover:bg-red-700 active:scale-[0.99] disabled:bg-neutral-300 disabled:cursor-not-allowed lg:py-4"
+                        className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border-0 bg-secondary-500 py-3 text-base font-bold text-white shadow-md transition-all duration-200 hover:bg-secondary-600 active:scale-[0.99] disabled:bg-neutral-300 disabled:cursor-not-allowed lg:py-4"
                     >
                         <ShieldAlert size={18} />
                         <span>Blokir (Ban) Event</span>
@@ -104,11 +133,11 @@ export default function AdminActionCard({ event, reports = [] }: AdminActionCard
             {/* Reports List Modal Overlay */}
             {isReportsModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/60 p-4 backdrop-blur-xs select-none">
-                    <div className="animate-in fade-in zoom-in-95 relative flex h-full max-h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl duration-200">
+                    <div className="animate-in fade-in zoom-in-95 relative flex max-h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl duration-200">
                         {/* Modal Header */}
                         <div className="flex items-center justify-between border-b border-neutral-100 px-6 py-5 shrink-0">
                             <div className="flex items-center gap-2">
-                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-50 text-red-500">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary-50 text-secondary-600">
                                     <AlertTriangle size={20} />
                                 </div>
                                 <div>
@@ -129,7 +158,7 @@ export default function AdminActionCard({ event, reports = [] }: AdminActionCard
                         </div>
 
                         {/* Modal Body */}
-                        <div className="grow overflow-y-auto p-6 flex flex-col gap-4">
+                        <div className="grow overflow-y-auto p-6 flex flex-col gap-4" data-lenis-prevent>
                             {reports.map((report) => (
                                 <div
                                     key={report.id}

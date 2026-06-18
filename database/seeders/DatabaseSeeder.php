@@ -42,16 +42,24 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // 3. Seed Users
-        $admin = User::factory()->create([
+        $superAdmin = User::factory()->create([
             'name' => 'Velengio Deriksen Charles',
             'email' => 'velengio@gmail.com',
+            'password' => 'tes1234567',
+            'role' => 'super_admin',
+            'suspended_at' => null,
+        ]);
+
+        $admin = User::factory()->create([
+            'name' => 'Admin Lokacara',
+            'email' => 'admin@gmail.com',
             'password' => 'tes1234567',
             'role' => 'admin',
             'suspended_at' => null,
         ]);
 
         $dummyUsers = User::factory(10)->create();
-        $allUsers = $dummyUsers->concat([$admin]);
+        $allUsers = $dummyUsers->concat([$superAdmin, $admin]);
 
         // 4. Pool of 120 Real-World Venues in Indonesia with Precise GPS Coordinates
         $venues = [

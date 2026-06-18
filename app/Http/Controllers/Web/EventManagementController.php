@@ -133,7 +133,7 @@ class EventManagementController extends Controller
 
     public function destroy(Request $request, Event $event)
     {
-        if ($event->user_id !== $request->user()->id && $request->user()->role !== 'admin') {
+        if ($event->user_id !== $request->user()->id && ! in_array($request->user()->role, ['admin', 'super_admin'])) {
             abort(403);
         }
 

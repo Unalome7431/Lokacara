@@ -26,6 +26,15 @@ class LoginController extends Controller
         ]);
 
         if (Auth::attempt($credentials)) {
+            if (Auth::user()->suspended_at) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+                return back()->withErrors([
+                    'email' => 'Akun Anda telah ditangguhkan. Silakan hubungi dukungan.',
+                ])->onlyInput('email');
+            }
+
             $request->session()->regenerate();
 
             return redirect('/');

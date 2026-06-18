@@ -30,7 +30,7 @@ export default function Login() {
                     </h2>
                     
                     <p className="mb-6 text-center text-xs font-semibold text-gray-400">
-                        Lokacara Moderation Panel
+                        Lokacara Admin Dashboard
                     </p>
 
                     {/* Manual Login Form */}
@@ -95,7 +95,7 @@ export default function Login() {
                             disabled={processing}
                             className={`mt-4 w-full py-3.5 text-large ${processing ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`}
                         >
-                            Masuk Ke Moderasi
+                            Masuk ke Admin Dashboard
                         </Button>
                     </form>
 

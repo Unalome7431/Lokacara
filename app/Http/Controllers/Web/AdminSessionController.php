@@ -29,13 +29,23 @@ class AdminSessionController extends Controller
 
         $user = Auth::user();
 
-        if ($user->role !== 'admin') {
+        if (! in_array($user->role, ['admin', 'super_admin'])) {
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
             return back()->withErrors([
                 'email' => 'Unauthorized access.',
+            ]);
+        }
+
+        if ($user->suspended_at) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return back()->withErrors([
+                'email' => 'Akun Anda telah ditangguhkan. Silakan hubungi dukungan.',
             ]);
         }
 
