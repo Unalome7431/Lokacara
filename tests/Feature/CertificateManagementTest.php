@@ -10,7 +10,71 @@ use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
+
+if (! function_exists('makeWhiteCertificateImageContents')) {
+    function makeWhiteCertificateImageContents(int $width = 800, int $height = 600): string
+    {
+        $image = imagecreatetruecolor($width, $height);
+        $white = imagecolorallocate($image, 255, 255, 255);
+        imagefill($image, 0, 0, $white);
+
+        ob_start();
+        imagejpeg($image, null, 100);
+        $contents = ob_get_clean();
+        imagedestroy($image);
+
+        return $contents;
+    }
+}
+
+if (! function_exists('makeWhiteCertificateUpload')) {
+    function makeWhiteCertificateUpload(string $filename = 'template.jpg'): UploadedFile
+    {
+        $path = tempnam(sys_get_temp_dir(), 'cert_template_').'.jpg';
+        file_put_contents($path, makeWhiteCertificateImageContents());
+
+        return new UploadedFile($path, $filename, 'image/jpeg', null, true);
+    }
+}
+
+if (! function_exists('nonWhitePixelCount')) {
+    function nonWhitePixelCount(string $contents): int
+    {
+        $image = imagecreatefromstring($contents);
+        $width = imagesx($image);
+        $height = imagesy($image);
+        $count = 0;
+
+        for ($y = 0; $y < $height; $y++) {
+            for ($x = 0; $x < $width; $x++) {
+                $rgb = imagecolorat($image, $x, $y);
+                $red = ($rgb >> 16) & 0xFF;
+                $green = ($rgb >> 8) & 0xFF;
+                $blue = $rgb & 0xFF;
+
+                if ($red < 250 || $green < 250 || $blue < 250) {
+                    $count++;
+                }
+            }
+        }
+
+        imagedestroy($image);
+
+        return $count;
+    }
+}
+
+if (! function_exists('binaryResponseContent')) {
+    function binaryResponseContent(TestResponse $response): string
+    {
+        ob_start();
+        $response->baseResponse->sendContent();
+
+        return ob_get_clean();
+    }
+}
 
 beforeEach(function () {
     Storage::fake('local');
@@ -242,6 +306,68 @@ test('owner can distribute certificates when event is done and attendees checked
     });
 });
 
+test('owner cannot distribute certificates if a present attendee has no profile name', function () {
+    $this->actingAs($this->user);
+
+    $path = 'templates/template.jpg';
+    Storage::disk('local')->put($path, makeWhiteCertificateImageContents());
+    $this->event->update(['certificate_template' => $path]);
+
+    $attendee = User::factory()->create(['name' => null]);
+    EventRegistration::create([
+        'event_id' => $this->event->id,
+        'user_id' => $attendee->id,
+        'status' => 'present',
+        'qr_token' => 'dummy',
+    ]);
+
+    $response = $this->post(route('dashboard.events.certificates.distribute', $this->event), [
+        'font_family' => 'Roboto',
+        'font_color' => '#000000',
+        'font_size' => 'Medium',
+        'x_pos' => 50,
+        'is_x_center' => true,
+        'y_pos' => 50,
+        'is_y_center' => true,
+        'max_width' => 80,
+        'max_height' => 20,
+    ]);
+
+    $response->assertRedirect();
+    $response->assertSessionHas('error', 'Ada peserta hadir yang belum melengkapi nama profil. Lengkapi nama peserta sebelum mengirim sertifikat.');
+    expect(Certificate::count())->toBe(0);
+});
+
+test('certificate distribution job writes attendee name onto generated certificate', function () {
+    $path = 'templates/template.jpg';
+    Storage::disk('local')->put($path, makeWhiteCertificateImageContents());
+    $attendee = User::factory()->create(['name' => 'Jane Doe']);
+    $registration = EventRegistration::create([
+        'event_id' => $this->event->id,
+        'user_id' => $attendee->id,
+        'status' => 'present',
+        'qr_token' => 'dummy',
+    ]);
+
+    (new DistributeCertificatesJob($this->event, [
+        'font_family' => 'Roboto',
+        'font_color' => '#000000',
+        'font_size' => 'Medium',
+        'x_pos' => 50,
+        'is_x_center' => true,
+        'y_pos' => 50,
+        'is_y_center' => true,
+        'max_width' => 80,
+        'max_height' => 20,
+    ], $path))->handle();
+
+    $certificate = Certificate::where('registration_id', $registration->id)->first();
+
+    expect($certificate)->not->toBeNull();
+    Storage::disk('local')->assertExists($certificate->file_url);
+    expect(nonWhitePixelCount(Storage::disk('local')->get($certificate->file_url)))->toBeGreaterThan(0);
+});
+
 test('owner can download certificate template if exists', function () {
     $this->actingAs($this->user);
 
@@ -384,6 +510,26 @@ test('owner can download certificate preview with new template upload', function
 
     $response->assertOk();
     $response->assertHeader('content-disposition', 'attachment; filename=preview_sertifikat.jpg');
+});
+
+test('owner certificate preview writes preview name onto the downloaded image', function () {
+    $this->actingAs($this->user);
+
+    $response = $this->post(route('dashboard.events.certificates.preview', $this->event), [
+        'template' => makeWhiteCertificateUpload('preview_template.jpg'),
+        'font_family' => 'Roboto',
+        'font_color' => '#000000',
+        'font_size' => 'Medium',
+        'x_pos' => 50,
+        'is_x_center' => true,
+        'y_pos' => 50,
+        'is_y_center' => true,
+        'max_width' => 80,
+        'max_height' => 20,
+    ]);
+
+    $response->assertOk();
+    expect(nonWhitePixelCount(binaryResponseContent($response)))->toBeGreaterThan(0);
 });
 
 test('owner can download certificate preview using saved database template', function () {

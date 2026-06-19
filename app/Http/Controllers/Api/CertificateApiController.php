@@ -127,6 +127,19 @@ class CertificateApiController extends Controller
             return response()->json(['message' => 'Template file not found.'], 404);
         }
 
+        $hasBlankParticipantName = $event->eventRegistrations()
+            ->where('status', 'present')
+            ->whereHas('user', function ($query) {
+                $query->whereRaw("TRIM(COALESCE(name, '')) = ''");
+            })
+            ->exists();
+
+        if ($hasBlankParticipantName) {
+            return response()->json([
+                'message' => 'Ada peserta hadir yang belum melengkapi nama profil. Lengkapi nama peserta sebelum mengirim sertifikat.',
+            ], 422);
+        }
+
         $config = collect($validated)->except('template_path')->toArray();
         $config['is_x_center'] = filter_var($config['is_x_center'], FILTER_VALIDATE_BOOLEAN);
         $config['is_y_center'] = filter_var($config['is_y_center'], FILTER_VALIDATE_BOOLEAN);
