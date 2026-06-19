@@ -15,7 +15,7 @@ class EventManagementApiController extends Controller
 {
     private function validateEvent(Request $request)
     {
-        return $request->validate([
+        $validated = $request->validate([
             'title' => 'required|string|max:255',
             'category_id' => 'nullable|exists:categories,id',
             'description' => 'required|string',
@@ -32,8 +32,9 @@ class EventManagementApiController extends Controller
             'platform_name' => 'required_if:type,online|nullable|string|max:255',
             'link' => 'required_if:type,online|nullable|url|max:255',
 
-            'start_datetime' => 'required|date',
-            'end_datetime' => 'required|date|after_or_equal:start_datetime',
+            'start_date' => 'required|date',
+            'start_time' => 'required|date_format:H:i',
+            'end_time' => 'required|date_format:H:i',
             'capacity' => 'nullable|integer|min:1',
 
             // Poster validation: only required on create; max 5MB
@@ -54,11 +55,12 @@ class EventManagementApiController extends Controller
             'platform_name.required_if' => 'Platform webinar wajib diisi untuk event online.',
             'link.required_if' => 'Link webinar wajib diisi untuk event online.',
             'link.url' => 'Format link webinar tidak valid (harus diawali dengan http:// atau https://).',
-            'start_datetime.required' => 'Waktu mulai event wajib diisi.',
-            'start_datetime.date' => 'Format waktu mulai tidak valid.',
-            'end_datetime.required' => 'Waktu selesai event wajib diisi.',
-            'end_datetime.date' => 'Format waktu selesai tidak valid.',
-            'end_datetime.after_or_equal' => 'Waktu selesai harus sama atau setelah waktu mulai.',
+            'start_date.required' => 'Tanggal event wajib diisi.',
+            'start_date.date' => 'Format tanggal tidak valid.',
+            'start_time.required' => 'Waktu mulai event wajib diisi.',
+            'start_time.date_format' => 'Format waktu mulai tidak valid.',
+            'end_time.required' => 'Waktu selesai event wajib diisi.',
+            'end_time.date_format' => 'Format waktu selesai tidak valid.',
             'capacity.integer' => 'Kuota peserta harus berupa angka.',
             'capacity.min' => 'Kuota peserta minimal 1.',
             'poster.required' => 'Poster event wajib diunggah.',
@@ -66,6 +68,27 @@ class EventManagementApiController extends Controller
             'poster.mimes' => 'Format gambar poster harus jpeg, png, jpg, atau webp.',
             'poster.max' => 'Ukuran file poster tidak boleh lebih dari 5MB.',
         ]);
+
+        $start_datetime_str = $validated['start_date'] . ' ' . $validated['start_time'];
+        $end_datetime_str = $validated['start_date'] . ' ' . $validated['end_time'];
+
+        $start_datetime = \Illuminate\Support\Carbon::parse($start_datetime_str);
+        $end_datetime = \Illuminate\Support\Carbon::parse($end_datetime_str);
+
+        if ($end_datetime->lte($start_datetime)) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'end_time' => ['Waktu selesai harus setelah waktu mulai.'],
+            ]);
+        }
+
+        unset($validated['start_date']);
+        unset($validated['start_time']);
+        unset($validated['end_time']);
+
+        $validated['start_datetime'] = $start_datetime->toDateTimeString();
+        $validated['end_datetime'] = $end_datetime->toDateTimeString();
+
+        return $validated;
     }
 
     #[OA\Get(
@@ -108,7 +131,7 @@ class EventManagementApiController extends Controller
         content: new OA\MediaType(
             mediaType: 'multipart/form-data',
             schema: new OA\Schema(
-                required: ['title', 'description', 'type', 'start_datetime', 'end_datetime', 'poster'],
+                required: ['title', 'description', 'type', 'start_date', 'start_time', 'end_time', 'poster'],
                 properties: [
                     new OA\Property(property: 'title', type: 'string', maxLength: 255, example: 'Summer Music Festival'),
                     new OA\Property(property: 'category_id', type: 'integer', nullable: true, example: 1),
@@ -120,8 +143,9 @@ class EventManagementApiController extends Controller
                     new OA\Property(property: 'longitude', type: 'number', format: 'float', example: 106.8456),
                     new OA\Property(property: 'platform_name', type: 'string', example: 'Zoom'),
                     new OA\Property(property: 'link', type: 'string', format: 'uri', example: 'https://zoom.us/j/123456'),
-                    new OA\Property(property: 'start_datetime', type: 'string', format: 'date-time', example: '2026-07-15T09:00:00'),
-                    new OA\Property(property: 'end_datetime', type: 'string', format: 'date-time', example: '2026-07-15T17:00:00'),
+                    new OA\Property(property: 'start_date', type: 'string', format: 'date', example: '2026-07-15'),
+                    new OA\Property(property: 'start_time', type: 'string', format: 'time', example: '09:00'),
+                    new OA\Property(property: 'end_time', type: 'string', format: 'time', example: '17:00'),
                     new OA\Property(property: 'capacity', type: 'integer', example: 100),
                     new OA\Property(property: 'poster', type: 'string', format: 'binary', description: 'Event poster image (max 5MB, jpeg/png/webp)'),
                 ]
@@ -183,8 +207,9 @@ class EventManagementApiController extends Controller
                     new OA\Property(property: 'type', type: 'string', enum: ['online', 'offline'], example: 'online'),
                     new OA\Property(property: 'platform_name', type: 'string', example: 'Google Meet'),
                     new OA\Property(property: 'link', type: 'string', format: 'uri', example: 'https://meet.google.com/abc-defg-hij'),
-                    new OA\Property(property: 'start_datetime', type: 'string', format: 'date-time', example: '2026-08-01T10:00:00'),
-                    new OA\Property(property: 'end_datetime', type: 'string', format: 'date-time', example: '2026-08-01T18:00:00'),
+                    new OA\Property(property: 'start_date', type: 'string', format: 'date', example: '2026-08-01'),
+                    new OA\Property(property: 'start_time', type: 'string', format: 'time', example: '10:00'),
+                    new OA\Property(property: 'end_time', type: 'string', format: 'time', example: '18:00'),
                     new OA\Property(property: 'capacity', type: 'integer', example: 150),
                     new OA\Property(property: 'poster', type: 'string', format: 'binary', description: 'New poster image (optional)'),
                 ]

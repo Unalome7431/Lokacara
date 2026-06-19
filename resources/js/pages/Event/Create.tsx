@@ -28,14 +28,16 @@ export default function Create({ categories }: CreateProps) {
         longitude: 110.36949, // default Yogyakarta
         platform_name: '',
         link: '',
-        start_datetime: '',
-        end_datetime: '',
+        start_date: '',
+        start_time: '',
+        end_time: '',
         capacity: 50,
         poster: null as File | null,
         price: 0,
     });
 
     const { props } = usePage();
+    const { flash } = props as any;
     const pageErrors = props.errors as any;
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -102,6 +104,22 @@ export default function Create({ categories }: CreateProps) {
                     onSubmit={submit}
                     className="mx-auto flex max-w-[1080px] flex-col gap-10 px-4 py-10 pt-28 pb-16 md:px-8"
                 >
+                    {/* Flash messages */}
+                    {flash?.error && (
+                        <div className="rounded-2xl bg-red-50 p-4 text-sm font-bold text-red-600">
+                            {flash.error}
+                        </div>
+                    )}
+                    {flash?.warning && (
+                        <div className="rounded-2xl bg-amber-50 p-4 text-sm font-bold text-amber-600">
+                            {flash.warning}
+                        </div>
+                    )}
+                    {flash?.success && (
+                        <div className="rounded-2xl bg-green-50 p-4 text-sm font-bold text-green-600">
+                            {flash.success}
+                        </div>
+                    )}
 
 
                     <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-12">

@@ -39,20 +39,27 @@ interface EditProps {
 export default function Edit({ event, categories }: EditProps) {
     const parsedMeta = parseDescription(event.description);
 
-    // Helper to format ISO dates to datetime-local values (YYYY-MM-DDTHH:mm)
-    const formatDatetimeForInput = (dateString: string) => {
-        if (!dateString) {
-            return '';
-        }
-
+    // Helper to format ISO date to date value (YYYY-MM-DD)
+    const formatDateForInput = (dateString: string) => {
+        if (!dateString) return '';
         try {
             const date = new Date(dateString);
             const tzOffset = date.getTimezoneOffset() * 60000;
-            const localISOTime = new Date(date.getTime() - tzOffset)
-                .toISOString()
-                .slice(0, 16);
+            const localTime = new Date(date.getTime() - tzOffset);
+            return localTime.toISOString().slice(0, 10);
+        } catch {
+            return '';
+        }
+    };
 
-            return localISOTime;
+    // Helper to format ISO time to time value (HH:mm)
+    const formatTimeForInput = (dateString: string) => {
+        if (!dateString) return '';
+        try {
+            const date = new Date(dateString);
+            const tzOffset = date.getTimezoneOffset() * 60000;
+            const localTime = new Date(date.getTime() - tzOffset);
+            return localTime.toISOString().slice(11, 16);
         } catch {
             return '';
         }
@@ -71,14 +78,16 @@ export default function Edit({ event, categories }: EditProps) {
         longitude: event.longitude ? Number(event.longitude) : 110.36949,
         platform_name: event.platform_name || '',
         link: event.link || '',
-        start_datetime: formatDatetimeForInput(event.start_datetime),
-        end_datetime: formatDatetimeForInput(event.end_datetime),
+        start_date: formatDateForInput(event.start_datetime),
+        start_time: formatTimeForInput(event.start_datetime),
+        end_time: formatTimeForInput(event.end_datetime),
         capacity: event.capacity === null || event.capacity === undefined ? '' : event.capacity,
         poster: null as File | null,
         price: event.price || 0,
     });
 
     const { props } = usePage();
+    const { flash } = props as any;
     const pageErrors = props.errors as any;
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -146,7 +155,22 @@ export default function Edit({ event, categories }: EditProps) {
                     onSubmit={submit}
                     className="mx-auto flex max-w-[1080px] flex-col gap-10 px-4 py-10 pt-28 pb-16 md:px-8"
                 >
-
+                    {/* Flash messages */}
+                    {flash?.error && (
+                        <div className="rounded-2xl bg-red-50 p-4 text-sm font-bold text-red-600">
+                            {flash.error}
+                        </div>
+                    )}
+                    {flash?.warning && (
+                        <div className="rounded-2xl bg-amber-50 p-4 text-sm font-bold text-amber-600">
+                            {flash.warning}
+                        </div>
+                    )}
+                    {flash?.success && (
+                        <div className="rounded-2xl bg-green-50 p-4 text-sm font-bold text-green-600">
+                            {flash.success}
+                        </div>
+                    )}
 
                     <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-12">
                         {/* LEFT COLUMN: Poster, Tags, Capacity, Dates, Access */}

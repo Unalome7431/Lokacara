@@ -163,38 +163,58 @@ export default function EditFormLeft({
                 <div className="flex flex-col gap-3">
                     <div className="flex flex-col gap-1.5">
                         <label className="pl-1 text-xs font-bold tracking-wide text-gray-400 uppercase">
-                            Mulai
+                            Tanggal Event
                         </label>
                         <input
-                            type="datetime-local"
-                            value={data.start_datetime}
-                            onChange={(e) => setData('start_datetime', e.target.value)}
+                            type="date"
+                            value={data.start_date}
+                            onChange={(e) => setData('start_date', e.target.value)}
                             required
                             className="w-full rounded-full border-0 bg-white px-5 py-3 font-semibold text-neutral-800 shadow-xs focus:ring-2 focus:ring-primary-500 focus:outline-none"
                         />
-                        {errors.start_datetime && (
+                        {errors.start_date && (
                             <span className="mt-1 pl-1 text-xs font-bold text-red-500">
-                                {errors.start_datetime}
+                                {errors.start_date}
                             </span>
                         )}
                     </div>
 
-                    <div className="flex flex-col gap-1.5">
-                        <label className="pl-1 text-xs font-bold tracking-wide text-gray-400 uppercase">
-                            Selesai
-                        </label>
-                        <input
-                            type="datetime-local"
-                            value={data.end_datetime}
-                            onChange={(e) => setData('end_datetime', e.target.value)}
-                            required
-                            className="w-full rounded-full border-0 bg-white px-5 py-3 font-semibold text-neutral-800 shadow-xs focus:ring-2 focus:ring-primary-500 focus:outline-none"
-                        />
-                        {errors.end_datetime && (
-                            <span className="mt-1 pl-1 text-xs font-bold text-red-500">
-                                {errors.end_datetime}
-                            </span>
-                        )}
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="flex flex-col gap-1.5">
+                            <label className="pl-1 text-xs font-bold tracking-wide text-gray-400 uppercase">
+                                Waktu Mulai
+                            </label>
+                            <input
+                                type="time"
+                                value={data.start_time}
+                                onChange={(e) => setData('start_time', e.target.value)}
+                                required
+                                className="w-full rounded-full border-0 bg-white px-5 py-3 font-semibold text-neutral-800 shadow-xs focus:ring-2 focus:ring-primary-500 focus:outline-none"
+                            />
+                            {errors.start_time && (
+                                <span className="mt-1 pl-1 text-xs font-bold text-red-500">
+                                    {errors.start_time}
+                                </span>
+                            )}
+                        </div>
+
+                        <div className="flex flex-col gap-1.5">
+                            <label className="pl-1 text-xs font-bold tracking-wide text-gray-400 uppercase">
+                                Waktu Selesai
+                            </label>
+                            <input
+                                type="time"
+                                value={data.end_time}
+                                onChange={(e) => setData('end_time', e.target.value)}
+                                required
+                                className="w-full rounded-full border-0 bg-white px-5 py-3 font-semibold text-neutral-800 shadow-xs focus:ring-2 focus:ring-primary-500 focus:outline-none"
+                            />
+                            {errors.end_time && (
+                                <span className="mt-1 pl-1 text-xs font-bold text-red-500">
+                                    {errors.end_time}
+                                </span>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
