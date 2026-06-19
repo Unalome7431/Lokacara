@@ -5,13 +5,12 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Jobs\DistributeCertificatesJob;
 use App\Models\Event;
+use App\Services\CertificateRenderer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
-use Intervention\Image\Drivers\Gd\Driver;
-use Intervention\Image\ImageManager;
 
 class CertificateManagementController extends Controller
 {
@@ -133,6 +132,17 @@ class CertificateManagementController extends Controller
             return redirect()->back()->with('error', 'Tidak ada peserta yang terdata hadir (checked-in) untuk menerima sertifikat.');
         }
 
+        $hasBlankParticipantName = $event->eventRegistrations()
+            ->where('status', 'present')
+            ->whereHas('user', function ($query) {
+                $query->whereRaw("TRIM(COALESCE(name, '')) = ''");
+            })
+            ->exists();
+
+        if ($hasBlankParticipantName) {
+            return redirect()->back()->with('error', 'Ada peserta hadir yang belum melengkapi nama profil. Lengkapi nama peserta sebelum mengirim sertifikat.');
+        }
+
         $tempPath = 'temp/'.Str::random(40).'.'.pathinfo($event->certificate_template, PATHINFO_EXTENSION);
         Storage::disk('local')->copy($event->certificate_template, $tempPath);
 
@@ -207,62 +217,8 @@ class CertificateManagementController extends Controller
             $extension = pathinfo($event->certificate_template, PATHINFO_EXTENSION);
         }
 
-        /** @var ImageManager $manager */
-        $manager = new ImageManager(new Driver);
-        $image = $manager->decode($tempFile);
-
-        $fontFile = storage_path("app/fonts/{$validated['font_family']}.ttf");
-        if (! file_exists($fontFile)) {
-            $fontFile = null;
-        }
-
-        $name = $request->user()->name; // Use host's own name as preview
-
-        $maxFontSize = match ($validated['font_size']) {
-            'Small' => 60,
-            'Large' => 180,
-            default => 120, // Medium
-        };
-
-        $finalFontSize = $maxFontSize;
-
-        $maxWidthPercent = $validated['max_width'];
-        $maxHeightPercent = $validated['max_height'];
-        $maxWidthBound = $image->width() * ($maxWidthPercent / 100);
-        $maxHeightBound = $image->height() * ($maxHeightPercent / 100);
-
-        if ($fontFile && function_exists('imagettfbbox')) {
-            $box = imagettfbbox($maxFontSize, 0, $fontFile, $name);
-            if ($box) {
-                $textWidth = abs($box[4] - $box[0]);
-                $textHeight = abs($box[5] - $box[1]);
-
-                $widthRatio = $textWidth > 0 ? ($maxWidthBound / $textWidth) : 1.0;
-                $heightRatio = $textHeight > 0 ? ($maxHeightBound / $textHeight) : 1.0;
-
-                $ratio = min($widthRatio, $heightRatio);
-                if ($ratio < 1.0) {
-                    $finalFontSize = max(8, (int) floor($maxFontSize * $ratio));
-                }
-            }
-        }
-
-        $x = filter_var($validated['is_x_center'], FILTER_VALIDATE_BOOLEAN)
-            ? (int) ($image->width() / 2)
-            : (int) ($image->width() * ($validated['x_pos'] / 100));
-
-        $y = filter_var($validated['is_y_center'], FILTER_VALIDATE_BOOLEAN)
-            ? (int) ($image->height() / 2)
-            : (int) ($image->height() * ($validated['y_pos'] / 100));
-
-        $image->text($name, $x, $y, function ($font) use ($fontFile, $finalFontSize, $validated) {
-            if ($fontFile) {
-                $font->file($fontFile);
-            }
-            $font->size($finalFontSize);
-            $font->color($validated['font_color']);
-            $font->align('center', 'center');
-        });
+        $name = $request->user()->name ?: 'Nama Peserta';
+        $image = app(CertificateRenderer::class)->render($tempFile, $name, $validated);
 
         $tempOut = tempnam(sys_get_temp_dir(), 'cert_preview_').'.'.$extension;
         $image->save($tempOut, quality: 90);
