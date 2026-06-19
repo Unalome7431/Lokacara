@@ -233,7 +233,7 @@ export default function DashboardCatalog({
     return (
         <div className="flex flex-col gap-4">
             {/* Dashboard Navigation & Toggles */}
-            <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+            <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
                 {/* Tab Toggles */}
                 <SegmentedToggle
                     options={[
@@ -247,7 +247,7 @@ export default function DashboardCatalog({
                         setSearchQuery('');
                         setCurrentPage(1);
                     }}
-                    className="md:w-[450px] lg:w-[540px]"
+                    className="w-full lg:max-w-[540px]"
                 />
 
                 {/* Lalu / Mendatang Toggler */}
@@ -263,7 +263,7 @@ export default function DashboardCatalog({
                             setTimeFilter(val);
                             setCurrentPage(1);
                         }}
-                        className="md:w-[300px] lg:w-[360px]"
+                        className="w-full lg:max-w-[360px]"
                     />
                 )}
             </div>

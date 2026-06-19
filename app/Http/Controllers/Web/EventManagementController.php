@@ -17,7 +17,7 @@ class EventManagementController extends Controller
 {
     private function validateEvent(Request $request)
     {
-        return $request->validate([
+        $validated = $request->validate([
             'title' => 'required|string|max:255',
             'category_id' => 'nullable|exists:categories,id',
             'description' => 'required|string',
@@ -34,8 +34,9 @@ class EventManagementController extends Controller
             'platform_name' => 'required_if:type,online|nullable|string|max:255',
             'link' => 'required_if:type,online|nullable|url|max:255',
 
-            'start_datetime' => 'required|date',
-            'end_datetime' => 'required|date|after_or_equal:start_datetime',
+            'start_date' => 'required|date',
+            'start_time' => 'required|date_format:H:i',
+            'end_time' => 'required|date_format:H:i',
             'capacity' => 'nullable|integer|min:1',
 
             // Poster validation: only required on create; max 5MB
@@ -56,11 +57,12 @@ class EventManagementController extends Controller
             'platform_name.required_if' => 'Platform webinar wajib diisi untuk event online.',
             'link.required_if' => 'Link webinar wajib diisi untuk event online.',
             'link.url' => 'Format link webinar tidak valid (harus diawali dengan http:// atau https://).',
-            'start_datetime.required' => 'Waktu mulai event wajib diisi.',
-            'start_datetime.date' => 'Format waktu mulai tidak valid.',
-            'end_datetime.required' => 'Waktu selesai event wajib diisi.',
-            'end_datetime.date' => 'Format waktu selesai tidak valid.',
-            'end_datetime.after_or_equal' => 'Waktu selesai harus sama atau setelah waktu mulai.',
+            'start_date.required' => 'Tanggal event wajib diisi.',
+            'start_date.date' => 'Format tanggal tidak valid.',
+            'start_time.required' => 'Waktu mulai event wajib diisi.',
+            'start_time.date_format' => 'Format waktu mulai tidak valid.',
+            'end_time.required' => 'Waktu selesai event wajib diisi.',
+            'end_time.date_format' => 'Format waktu selesai tidak valid.',
             'capacity.integer' => 'Kuota peserta harus berupa angka.',
             'capacity.min' => 'Kuota peserta minimal 1.',
             'poster.required' => 'Poster event wajib diunggah.',
@@ -68,6 +70,27 @@ class EventManagementController extends Controller
             'poster.mimes' => 'Format gambar poster harus jpeg, png, jpg, atau webp.',
             'poster.max' => 'Ukuran file poster tidak boleh lebih dari 5MB.',
         ]);
+
+        $start_datetime_str = $validated['start_date'] . ' ' . $validated['start_time'];
+        $end_datetime_str = $validated['start_date'] . ' ' . $validated['end_time'];
+
+        $start_datetime = \Illuminate\Support\Carbon::parse($start_datetime_str);
+        $end_datetime = \Illuminate\Support\Carbon::parse($end_datetime_str);
+
+        if ($end_datetime->lte($start_datetime)) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'end_time' => ['Waktu selesai harus setelah waktu mulai.'],
+            ]);
+        }
+
+        unset($validated['start_date']);
+        unset($validated['start_time']);
+        unset($validated['end_time']);
+
+        $validated['start_datetime'] = $start_datetime->toDateTimeString();
+        $validated['end_datetime'] = $end_datetime->toDateTimeString();
+
+        return $validated;
     }
 
     public function create()

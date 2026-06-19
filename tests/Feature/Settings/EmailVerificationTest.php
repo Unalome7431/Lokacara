@@ -31,8 +31,9 @@ test('unverified user cannot submit event creation', function () {
             'type' => 'online',
             'platform_name' => 'Zoom',
             'link' => 'https://zoom.us',
-            'start_datetime' => now()->addDay()->toDateTimeString(),
-            'end_datetime' => now()->addDay()->addHours(2)->toDateTimeString(),
+            'start_date' => now()->addDay()->toDateString(),
+            'start_time' => '10:00',
+            'end_time' => '12:00',
         ]);
 
     $response->assertRedirect(route('profile.edit'));
