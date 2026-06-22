@@ -67,7 +67,7 @@ test('user cannot report same event twice if a pending report exists', function 
 
     $response->assertRedirect();
     $response->assertSessionHas('error', 'You already have a pending report for this event.');
-    
+
     // Ensure only one report exists
     expect(EventReport::where('event_id', $this->event->id)->count())->toBe(1);
 });
@@ -116,7 +116,7 @@ test('admin can ban event', function () {
     Mail::fake();
 
     $admin = User::factory()->create(['role' => 'admin']);
-    
+
     $registration = EventRegistration::create([
         'event_id' => $this->event->id,
         'user_id' => $this->attendee->id,

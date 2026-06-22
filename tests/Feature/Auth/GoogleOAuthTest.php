@@ -1,13 +1,13 @@
 <?php
 
 use App\Models\User;
-use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Socialite\Facades\Socialite;
 
 test('redirects to google provider', function () {
     $provider = Mockery::mock('Laravel\Socialite\Contracts\Provider');
     $provider->shouldReceive('redirect')->andReturn(redirect('https://accounts.google.com'));
-    
+
     Socialite::shouldReceive('driver')->with('google')->andReturn($provider);
 
     $response = $this->get(route('login.google'));
@@ -15,7 +15,7 @@ test('redirects to google provider', function () {
 });
 
 test('registers a new user when email does not exist', function () {
-    $googleUser = new \Laravel\Socialite\Two\User();
+    $googleUser = new Laravel\Socialite\Two\User;
     $googleUser->id = 'google-id-123';
     $googleUser->name = 'Google User';
     $googleUser->email = 'oauth_test@example.com';
@@ -47,7 +47,7 @@ test('logs in existing user and links provider without modifying role or passwor
         'role' => 'admin',
     ]);
 
-    $googleUser = new \Laravel\Socialite\Two\User();
+    $googleUser = new Laravel\Socialite\Two\User;
     $googleUser->id = 'google-id-123';
     $googleUser->name = 'Google User';
     $googleUser->email = 'oauth_test@example.com';

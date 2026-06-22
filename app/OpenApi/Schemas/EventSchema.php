@@ -18,6 +18,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'price', type: 'integer', nullable: true, example: 25000),
         new OA\Property(property: 'location_name', type: 'string', nullable: true, example: 'Central Park'),
         new OA\Property(property: 'address', type: 'string', nullable: true, example: '123 Main St, City'),
+        new OA\Property(property: 'city', type: 'string', nullable: true, example: 'Surakarta'),
         new OA\Property(property: 'latitude', type: 'number', format: 'float', nullable: true, example: -6.2088),
         new OA\Property(property: 'longitude', type: 'number', format: 'float', nullable: true, example: 106.8456),
         new OA\Property(property: 'platform_name', type: 'string', nullable: true, example: 'Zoom'),

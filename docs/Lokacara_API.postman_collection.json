@@ -5525,7 +5525,7 @@
                 }
               ],
               "cookie": [],
-              "body": "{\n    \"message\": \"Template uploaded successfully\",\n    \"template_path\": \"temp/some_uploaded_template_filename.png\"\n}"
+              "body": "{\n    \"message\": \"Template uploaded successfully\",\n    \"template_path\": \"event-templates/1/some_uploaded_template_filename.png\"\n}"
             },
             {
               "name": "401 Unauthenticated",
@@ -5619,7 +5619,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"template_path\": \"temp/some_uploaded_template_filename.png\",\n    \"font_family\": \"PlayfairDisplay\",\n    \"font_color\": \"#111111\",\n    \"font_size\": \"Medium\",\n    \"x_pos\": 50,\n    \"is_x_center\": true,\n    \"y_pos\": 45,\n    \"is_y_center\": false\n}"
+              "raw": "{\n    \"template_path\": \"event-templates/1/some_uploaded_template_filename.png\",\n    \"font_family\": \"PlayfairDisplay\",\n    \"font_color\": \"#111111\",\n    \"font_size\": \"Medium\",\n    \"x_pos\": 50,\n    \"is_x_center\": true,\n    \"y_pos\": 45,\n    \"is_y_center\": false\n}"
             },
             "url": {
               "raw": "{{base_url}}/organizer/events/:event/certificates/distribute",
@@ -5686,7 +5686,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"template_path\": \"temp/some_uploaded_template_filename.png\",\n    \"font_family\": \"PlayfairDisplay\",\n    \"font_color\": \"#111111\",\n    \"font_size\": \"Medium\",\n    \"x_pos\": 50,\n    \"is_x_center\": true,\n    \"y_pos\": 45,\n    \"is_y_center\": false\n}"
+                  "raw": "{\n    \"template_path\": \"event-templates/1/some_uploaded_template_filename.png\",\n    \"font_family\": \"PlayfairDisplay\",\n    \"font_color\": \"#111111\",\n    \"font_size\": \"Medium\",\n    \"x_pos\": 50,\n    \"is_x_center\": true,\n    \"y_pos\": 45,\n    \"is_y_center\": false\n}"
                 },
                 "url": {
                   "raw": "{{base_url}}/organizer/events/:event/certificates/distribute",
@@ -5747,7 +5747,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"template_path\": \"temp/some_uploaded_template_filename.png\",\n    \"font_family\": \"PlayfairDisplay\",\n    \"font_color\": \"#111111\",\n    \"font_size\": \"Medium\",\n    \"x_pos\": 50,\n    \"is_x_center\": true,\n    \"y_pos\": 45,\n    \"is_y_center\": false\n}"
+                  "raw": "{\n    \"template_path\": \"event-templates/1/some_uploaded_template_filename.png\",\n    \"font_family\": \"PlayfairDisplay\",\n    \"font_color\": \"#111111\",\n    \"font_size\": \"Medium\",\n    \"x_pos\": 50,\n    \"is_x_center\": true,\n    \"y_pos\": 45,\n    \"is_y_center\": false\n}"
                 },
                 "url": {
                   "raw": "{{base_url}}/organizer/events/:event/certificates/distribute",
@@ -5808,7 +5808,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"template_path\": \"temp/some_uploaded_template_filename.png\",\n    \"font_family\": \"PlayfairDisplay\",\n    \"font_color\": \"#111111\",\n    \"font_size\": \"Medium\",\n    \"x_pos\": 50,\n    \"is_x_center\": true,\n    \"y_pos\": 45,\n    \"is_y_center\": false\n}"
+                  "raw": "{\n    \"template_path\": \"event-templates/1/some_uploaded_template_filename.png\",\n    \"font_family\": \"PlayfairDisplay\",\n    \"font_color\": \"#111111\",\n    \"font_size\": \"Medium\",\n    \"x_pos\": 50,\n    \"is_x_center\": true,\n    \"y_pos\": 45,\n    \"is_y_center\": false\n}"
                 },
                 "url": {
                   "raw": "{{base_url}}/organizer/events/:event/certificates/distribute",

@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
     'user_id', 'category_id', 'type', 'poster', 'title', 'description', 'price',
-    'location_name', 'address', 'latitude', 'longitude',
+    'location_name', 'address', 'city', 'latitude', 'longitude',
     'platform_name', 'link',
     'start_datetime', 'end_datetime', 'capacity', 'view_count',
     'certificate_template', 'certificate_font_family', 'certificate_font_size',
