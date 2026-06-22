@@ -1,9 +1,9 @@
 <?php
 
+use App\Models\AuditLog;
 use App\Models\Category;
 use App\Models\Event;
 use App\Models\User;
-use App\Models\AuditLog;
 use Illuminate\Support\Facades\Auth;
 
 beforeEach(function () {
@@ -79,7 +79,7 @@ test('suspended users cannot login on web and API', function () {
         'email' => $suspendedUser->email,
         'password' => $password,
     ]);
-    
+
     $responseWeb->assertSessionHasErrors('email');
     expect(Auth::check())->toBeFalse();
 

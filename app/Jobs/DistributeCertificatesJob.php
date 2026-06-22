@@ -29,8 +29,6 @@ class DistributeCertificatesJob implements ShouldQueue
             ->get();
 
         if ($registrations->isEmpty()) {
-            Storage::disk('local')->delete($this->templatePath);
-
             return;
         }
 
@@ -45,8 +43,6 @@ class DistributeCertificatesJob implements ShouldQueue
             $attendeeName = $registration->user->name;
 
             if (CertificateRenderer::hasBlankName($attendeeName)) {
-                Storage::disk('local')->delete($this->templatePath);
-
                 throw new RuntimeException('Cannot generate certificate for an attendee without a profile name.');
             }
 
@@ -70,9 +66,7 @@ class DistributeCertificatesJob implements ShouldQueue
             );
         }
 
-        // Cleanup temporary template file
-        Storage::disk('local')->delete($this->templatePath);
-
+        // Notifications
         $notifications = app(NotificationDispatchService::class);
         foreach ($registrations as $registration) {
             if ($registration->user) {

@@ -44,7 +44,7 @@ class DiscoveryController extends Controller
 
     #[OA\Get(
         path: '/api/events/search',
-        summary: 'Search events by keyword and/or category',
+        summary: 'Search events by keyword, category, and/or exact city location',
         tags: ['Discovery'],
     )]
     #[OA\Parameter(
@@ -60,6 +60,13 @@ class DiscoveryController extends Controller
         description: 'Filter by category ID',
         required: false,
         schema: new OA\Schema(type: 'integer')
+    )]
+    #[OA\Parameter(
+        name: 'location',
+        in: 'query',
+        description: 'Filter by exact canonical city (case-insensitive)',
+        required: false,
+        schema: new OA\Schema(type: 'string', example: 'Surakarta')
     )]
     #[OA\Response(
         response: 200,
@@ -86,6 +93,10 @@ class DiscoveryController extends Controller
 
         if ($request->filled('category_id')) {
             $query->where('category_id', $request->category_id);
+        }
+
+        if ($request->filled('location')) {
+            $query->whereRaw('LOWER(city) = ?', [strtolower(trim($request->location))]);
         }
 
         // Default sort by latest upcoming

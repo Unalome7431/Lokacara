@@ -84,6 +84,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/organizer/events/{event}/certificates/distribute', [CertificateApiController::class, 'distribute']);
     Route::get('/events/{event}/certificate', [CertificateApiController::class, 'download']);
 
+    // Feature-flagged: persistent certificate state (enable in .env: ENABLE_CERTIFICATE_STATE=true)
+    if (env('ENABLE_CERTIFICATE_STATE', false)) {
+        Route::get('/organizer/events/{event}/certificates', [CertificateApiController::class, 'state']);
+        Route::get('/organizer/events/{event}/certificates/template/stream', [CertificateApiController::class, 'streamTemplate']);
+    }
+
     // Module 6: Moderation (User)
     Route::post('/events/{event}/report', [ModerationApiController::class, 'reportEvent']);
 

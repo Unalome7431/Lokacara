@@ -6,9 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Mail\EventRefundedMail;
 use App\Models\Event;
 use App\Services\NotificationDispatchService;
+use App\Services\ReverseGeocodeService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use OpenApi\Attributes as OA;
 
 class EventManagementApiController extends Controller
@@ -25,6 +28,7 @@ class EventManagementApiController extends Controller
             // Rules for offline
             'location_name' => 'required_if:type,offline|nullable|string|max:255',
             'address' => 'required_if:type,offline|nullable|string',
+            'city' => 'nullable|string|max:255',
             'latitude' => 'required_if:type,offline|nullable|numeric|between:-90,90',
             'longitude' => 'required_if:type,offline|nullable|numeric|between:-180,180',
 
@@ -69,14 +73,14 @@ class EventManagementApiController extends Controller
             'poster.max' => 'Ukuran file poster tidak boleh lebih dari 5MB.',
         ]);
 
-        $start_datetime_str = $validated['start_date'] . ' ' . $validated['start_time'];
-        $end_datetime_str = $validated['start_date'] . ' ' . $validated['end_time'];
+        $start_datetime_str = $validated['start_date'].' '.$validated['start_time'];
+        $end_datetime_str = $validated['start_date'].' '.$validated['end_time'];
 
-        $start_datetime = \Illuminate\Support\Carbon::parse($start_datetime_str);
-        $end_datetime = \Illuminate\Support\Carbon::parse($end_datetime_str);
+        $start_datetime = Carbon::parse($start_datetime_str);
+        $end_datetime = Carbon::parse($end_datetime_str);
 
         if ($end_datetime->lte($start_datetime)) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
+            throw ValidationException::withMessages([
                 'end_time' => ['Waktu selesai harus setelah waktu mulai.'],
             ]);
         }
@@ -88,7 +92,34 @@ class EventManagementApiController extends Controller
         $validated['start_datetime'] = $start_datetime->toDateTimeString();
         $validated['end_datetime'] = $end_datetime->toDateTimeString();
 
+        if (! empty($validated['city'])) {
+            $validated['city'] = trim($validated['city']);
+        }
+
         return $validated;
+    }
+
+    private function resolveCityIfNeeded(array &$validated): void
+    {
+        if (($validated['type'] ?? null) === 'offline' && empty($validated['city'])) {
+            $latitude = $validated['latitude'] ?? null;
+            $longitude = $validated['longitude'] ?? null;
+
+            if ($latitude !== null && $longitude !== null) {
+                $city = app(ReverseGeocodeService::class)->resolveCity(
+                    (float) $latitude,
+                    (float) $longitude
+                );
+
+                if ($city !== null) {
+                    $validated['city'] = $city;
+                }
+            }
+        }
+
+        if (($validated['type'] ?? null) === 'online') {
+            $validated['city'] = null;
+        }
     }
 
     #[OA\Get(
@@ -139,6 +170,7 @@ class EventManagementApiController extends Controller
                     new OA\Property(property: 'type', type: 'string', enum: ['online', 'offline'], example: 'offline'),
                     new OA\Property(property: 'location_name', type: 'string', example: 'Central Park'),
                     new OA\Property(property: 'address', type: 'string', example: '123 Main St, City'),
+                    new OA\Property(property: 'city', type: 'string', nullable: true, example: 'Surakarta'),
                     new OA\Property(property: 'latitude', type: 'number', format: 'float', example: -6.2088),
                     new OA\Property(property: 'longitude', type: 'number', format: 'float', example: 106.8456),
                     new OA\Property(property: 'platform_name', type: 'string', example: 'Zoom'),
@@ -166,6 +198,7 @@ class EventManagementApiController extends Controller
     public function store(Request $request)
     {
         $validated = $this->validateEvent($request);
+        $this->resolveCityIfNeeded($validated);
 
         $event = new Event($validated);
         $event->user_id = $request->user()->id;
@@ -207,6 +240,7 @@ class EventManagementApiController extends Controller
                     new OA\Property(property: 'type', type: 'string', enum: ['online', 'offline'], example: 'online'),
                     new OA\Property(property: 'platform_name', type: 'string', example: 'Google Meet'),
                     new OA\Property(property: 'link', type: 'string', format: 'uri', example: 'https://meet.google.com/abc-defg-hij'),
+                    new OA\Property(property: 'city', type: 'string', nullable: true, example: 'Surakarta'),
                     new OA\Property(property: 'start_date', type: 'string', format: 'date', example: '2026-08-01'),
                     new OA\Property(property: 'start_time', type: 'string', format: 'time', example: '10:00'),
                     new OA\Property(property: 'end_time', type: 'string', format: 'time', example: '18:00'),
@@ -238,6 +272,7 @@ class EventManagementApiController extends Controller
         }
 
         $validated = $this->validateEvent($request);
+        $this->resolveCityIfNeeded($validated);
 
         $event->fill($validated);
 
@@ -252,6 +287,7 @@ class EventManagementApiController extends Controller
         if ($event->type === 'online') {
             $event->location_name = null;
             $event->address = null;
+            $event->city = null;
             $event->latitude = null;
             $event->longitude = null;
         } else {
@@ -323,6 +359,10 @@ class EventManagementApiController extends Controller
 
         if ($event->getRawOriginal('poster') && Storage::disk('local')->exists($event->getRawOriginal('poster'))) {
             Storage::disk('local')->delete($event->getRawOriginal('poster'));
+        }
+
+        if ($event->getRawOriginal('certificate_template') && Storage::disk('local')->exists($event->getRawOriginal('certificate_template'))) {
+            Storage::disk('local')->delete($event->getRawOriginal('certificate_template'));
         }
 
         $event->delete();

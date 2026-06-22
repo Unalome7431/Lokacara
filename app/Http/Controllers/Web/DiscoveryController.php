@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Certificate;
 use App\Models\Event;
+use App\Models\EventReport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -155,7 +156,7 @@ class DiscoveryController extends Controller
 
         if (Auth::check()) {
             if (in_array(Auth::user()->role, ['admin', 'super_admin'])) {
-                $reports = \App\Models\EventReport::where('event_id', $event->id)
+                $reports = EventReport::where('event_id', $event->id)
                     ->with('user')
                     ->latest()
                     ->get();

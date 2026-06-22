@@ -1097,7 +1097,7 @@ Upload a template background image for generating participant certificates.
 ```json
 {
   "message": "Template uploaded successfully",
-  "template_path": "temp/some_temp_file_hash.png"
+  "template_path": "event-templates/1/some_temp_file_hash.png"
 }
 ```
 

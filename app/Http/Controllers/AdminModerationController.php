@@ -4,11 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Mail\EventBannedMail;
 use App\Mail\EventCancelledForParticipantMail;
+use App\Models\AuditLog;
+use App\Models\Category;
 use App\Models\Event;
+use App\Models\EventRegistration;
 use App\Models\EventReport;
 use App\Models\User;
-use App\Models\Category;
-use App\Models\AuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -41,7 +42,7 @@ class AdminModerationController extends Controller
             'pending_reports' => EventReport::where('status', 'pending')->count(),
             'resolved_reports' => EventReport::where('status', 'resolved')->count(),
             'total_views' => (int) Event::sum('view_count'),
-            'total_registrations' => \App\Models\EventRegistration::count(),
+            'total_registrations' => EventRegistration::count(),
             'category_distribution' => Category::withCount('event')->get()->map(function ($cat) {
                 return [
                     'id' => $cat->id,
@@ -252,7 +253,7 @@ class AdminModerationController extends Controller
     public function updateCategory(Request $request, Category $category)
     {
         $request->validate([
-            'name' => 'required|string|max:255|unique:categories,name,' . $category->id,
+            'name' => 'required|string|max:255|unique:categories,name,'.$category->id,
         ]);
 
         $slug = Str::slug($request->name);
@@ -278,7 +279,7 @@ class AdminModerationController extends Controller
     {
         $eventsCount = $category->event()->count();
         if ($eventsCount > 0) {
-            return back()->with('error', 'Cannot delete category because it is being used by ' . $eventsCount . ' events.');
+            return back()->with('error', 'Cannot delete category because it is being used by '.$eventsCount.' events.');
         }
 
         $categoryName = $category->name;

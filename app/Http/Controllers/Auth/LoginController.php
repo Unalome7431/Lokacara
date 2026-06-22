@@ -30,6 +30,7 @@ class LoginController extends Controller
                 Auth::logout();
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();
+
                 return back()->withErrors([
                     'email' => 'Akun Anda telah ditangguhkan. Silakan hubungi dukungan.',
                 ])->onlyInput('email');

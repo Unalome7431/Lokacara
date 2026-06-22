@@ -24,7 +24,7 @@ class GoogleController extends Controller
             if ($user) {
                 $user->provider = $user->provider ?? 'google';
                 $user->provider_id = $user->provider_id ?? $googleUser->id;
-                if (!$user->email_verified_at) {
+                if (! $user->email_verified_at) {
                     $user->email_verified_at = now();
                 }
                 $user->save();

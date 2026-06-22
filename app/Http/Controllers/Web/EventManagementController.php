@@ -8,9 +8,12 @@ use App\Models\Category;
 use App\Models\Event;
 use App\Models\EventRegistration;
 use App\Services\NotificationDispatchService;
+use App\Services\ReverseGeocodeService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
 class EventManagementController extends Controller
@@ -27,6 +30,7 @@ class EventManagementController extends Controller
             // Rules for offline
             'location_name' => 'required_if:type,offline|nullable|string|max:255',
             'address' => 'required_if:type,offline|nullable|string',
+            'city' => 'nullable|string|max:255',
             'latitude' => 'required_if:type,offline|nullable|numeric|between:-90,90',
             'longitude' => 'required_if:type,offline|nullable|numeric|between:-180,180',
 
@@ -71,14 +75,14 @@ class EventManagementController extends Controller
             'poster.max' => 'Ukuran file poster tidak boleh lebih dari 5MB.',
         ]);
 
-        $start_datetime_str = $validated['start_date'] . ' ' . $validated['start_time'];
-        $end_datetime_str = $validated['start_date'] . ' ' . $validated['end_time'];
+        $start_datetime_str = $validated['start_date'].' '.$validated['start_time'];
+        $end_datetime_str = $validated['start_date'].' '.$validated['end_time'];
 
-        $start_datetime = \Illuminate\Support\Carbon::parse($start_datetime_str);
-        $end_datetime = \Illuminate\Support\Carbon::parse($end_datetime_str);
+        $start_datetime = Carbon::parse($start_datetime_str);
+        $end_datetime = Carbon::parse($end_datetime_str);
 
         if ($end_datetime->lte($start_datetime)) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
+            throw ValidationException::withMessages([
                 'end_time' => ['Waktu selesai harus setelah waktu mulai.'],
             ]);
         }
@@ -91,6 +95,29 @@ class EventManagementController extends Controller
         $validated['end_datetime'] = $end_datetime->toDateTimeString();
 
         return $validated;
+    }
+
+    private function resolveCityIfNeeded(array &$validated): void
+    {
+        if (($validated['type'] ?? null) === 'offline' && empty($validated['city'])) {
+            $latitude = $validated['latitude'] ?? null;
+            $longitude = $validated['longitude'] ?? null;
+
+            if ($latitude !== null && $longitude !== null) {
+                $city = app(ReverseGeocodeService::class)->resolveCity(
+                    (float) $latitude,
+                    (float) $longitude
+                );
+
+                if ($city !== null) {
+                    $validated['city'] = $city;
+                }
+            }
+        }
+
+        if (($validated['type'] ?? null) === 'online') {
+            $validated['city'] = null;
+        }
     }
 
     public function create()
@@ -113,6 +140,7 @@ class EventManagementController extends Controller
         }
 
         $validated = $this->validateEvent($request);
+        $this->resolveCityIfNeeded($validated);
 
         $event = new Event($validated);
         $event->user_id = $request->user()->id;
@@ -155,6 +183,7 @@ class EventManagementController extends Controller
         }
 
         $validated = $this->validateEvent($request);
+        $this->resolveCityIfNeeded($validated);
 
         $event->fill($validated);
 
@@ -169,6 +198,7 @@ class EventManagementController extends Controller
         if ($event->type === 'online') {
             $event->location_name = null;
             $event->address = null;
+            $event->city = null;
             $event->latitude = null;
             $event->longitude = null;
         } else {
@@ -193,6 +223,10 @@ class EventManagementController extends Controller
 
         if ($event->getRawOriginal('poster') && Storage::disk('local')->exists($event->getRawOriginal('poster'))) {
             Storage::disk('local')->delete($event->getRawOriginal('poster'));
+        }
+
+        if ($event->getRawOriginal('certificate_template') && Storage::disk('local')->exists($event->getRawOriginal('certificate_template'))) {
+            Storage::disk('local')->delete($event->getRawOriginal('certificate_template'));
         }
 
         $event->delete();
