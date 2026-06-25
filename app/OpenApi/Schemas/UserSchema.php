@@ -17,6 +17,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'role', type: 'string', example: 'user'),
         new OA\Property(property: 'suspended_at', type: 'string', format: 'date-time', nullable: true),
         new OA\Property(property: 'provider', type: 'string', nullable: true, example: 'google'),
+        new OA\Property(property: 'has_password', type: 'boolean', example: true),
         new OA\Property(property: 'created_at', type: 'string', format: 'date-time'),
         new OA\Property(property: 'updated_at', type: 'string', format: 'date-time'),
     ],

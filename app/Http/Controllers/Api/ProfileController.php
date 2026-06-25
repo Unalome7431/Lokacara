@@ -3,13 +3,24 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Laravel\Socialite\Facades\Socialite;
 use OpenApi\Attributes as OA;
 
 class ProfileController extends Controller
 {
+    private function userPayload(User $user): array
+    {
+        $freshUser = $user->fresh();
+
+        return array_merge($freshUser->toArray(), [
+            'has_password' => $freshUser->hasPassword(),
+        ]);
+    }
+
     #[OA\Get(
         path: '/api/profile',
         summary: 'Get authenticated user profile',
@@ -28,7 +39,7 @@ class ProfileController extends Controller
     public function show(Request $request)
     {
         return response()->json([
-            'user' => $request->user(),
+            'user' => $this->userPayload($request->user()),
         ], 200);
     }
 
@@ -104,7 +115,7 @@ class ProfileController extends Controller
 
         return response()->json([
             'message' => 'Profile updated successfully',
-            'user' => $user,
+            'user' => $this->userPayload($user),
         ], 200);
     }
 
@@ -117,9 +128,9 @@ class ProfileController extends Controller
     #[OA\RequestBody(
         required: true,
         content: new OA\JsonContent(
-            required: ['password'],
             properties: [
-                new OA\Property(property: 'password', type: 'string', example: 'password_saat_ini'),
+                new OA\Property(property: 'password', type: 'string', nullable: true, example: 'password_saat_ini'),
+                new OA\Property(property: 'google_token', type: 'string', nullable: true, example: 'eyJhbGciOiJSUzI1NiIsImtpZCI6IjFiZDM2...'),
             ]
         )
     )]
@@ -136,18 +147,48 @@ class ProfileController extends Controller
     public function destroy(Request $request)
     {
         $validated = $request->validate([
-            'password' => 'required|string',
+            'password' => 'nullable|string',
+            'google_token' => 'nullable|string',
         ]);
 
         $user = $request->user();
 
-        if (! Hash::check($validated['password'], $user->password)) {
+        $hasPassword = $user->hasPassword();
+        $hasGoogleToken = filled($validated['google_token'] ?? null);
+
+        if (! $hasPassword && ! $hasGoogleToken) {
+            return response()->json([
+                'message' => 'Verifikasi akun diperlukan',
+            ], 422);
+        }
+
+        if ($hasGoogleToken) {
+            if ($user->provider !== 'google' || empty($user->provider_id)) {
+                return response()->json([
+                    'message' => 'Akun ini tidak terhubung ke Google',
+                ], 422);
+            }
+
+            try {
+                $googleUser = Socialite::driver('google')->userFromToken($validated['google_token']);
+            } catch (\Exception $e) {
+                return response()->json([
+                    'message' => 'Google token tidak valid',
+                ], 422);
+            }
+
+            if ((string) $googleUser->getId() !== (string) $user->provider_id) {
+                return response()->json([
+                    'message' => 'Google token tidak cocok dengan akun ini',
+                ], 422);
+            }
+        } elseif (! Hash::check($validated['password'] ?? '', $user->password)) {
             return response()->json([
                 'message' => 'Password tidak sesuai',
             ], 422);
         }
 
-        $user->currentAccessToken()->delete();
+        $user->currentAccessToken()?->delete();
 
         $user->delete();
 
@@ -207,7 +248,7 @@ class ProfileController extends Controller
         return response()->json([
             'message' => 'Avatar uploaded successfully',
             'avatar_url' => $user->avatar_url,
-            'user' => $user,
+            'user' => $this->userPayload($user),
         ], 200);
     }
 }
