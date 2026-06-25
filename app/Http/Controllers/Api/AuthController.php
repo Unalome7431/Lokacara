@@ -341,13 +341,14 @@ class AuthController extends Controller
     public function changePassword(Request $request)
     {
         $user = $request->user();
+        $requiresOldPassword = $user->provider !== 'google' && $user->hasPassword();
 
         $validated = $request->validate([
-            'old_password' => [$user->hasPassword() ? 'required' : 'nullable', 'string'],
+            'old_password' => [$requiresOldPassword ? 'required' : 'nullable', 'string'],
             'new_password' => 'required|string|min:8|confirmed',
         ]);
 
-        if ($user->hasPassword() && ! Hash::check($validated['old_password'], $user->password)) {
+        if ($requiresOldPassword && ! Hash::check($validated['old_password'], $user->password)) {
             return response()->json([
                 'message' => 'The given data was invalid.',
                 'errors' => [

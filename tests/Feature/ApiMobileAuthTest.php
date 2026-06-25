@@ -106,6 +106,28 @@ test('mobile api still requires old password for existing password users', funct
         ->assertJsonValidationErrors('old_password');
 });
 
+test('mobile api allows linked google user with existing password to change password without old password', function () {
+    $user = User::factory()->create([
+        'provider' => 'google',
+        'provider_id' => 'google-linked-password-123',
+        'password' => Hash::make('existing-password'),
+    ]);
+
+    $response = $this
+        ->actingAs($user, 'sanctum')
+        ->postJson('/api/auth/password/change', [
+            'new_password' => 'new-password-456',
+            'new_password_confirmation' => 'new-password-456',
+        ]);
+
+    $response->assertOk()
+        ->assertJsonPath('message', 'Password berhasil diubah');
+
+    $user->refresh();
+
+    expect(Hash::check('new-password-456', $user->password))->toBeTrue();
+});
+
 test('mobile api allows linked google user to delete account with google token', function () {
     $user = User::factory()->create([
         'email' => 'delete-google@example.com',
