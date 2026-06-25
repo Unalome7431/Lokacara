@@ -16,6 +16,15 @@ use OpenApi\Attributes as OA;
 
 class AuthController extends Controller
 {
+    private function userPayload(User $user): array
+    {
+        $freshUser = $user->fresh();
+
+        return array_merge($freshUser->toArray(), [
+            'has_password' => $freshUser->hasPassword(),
+        ]);
+    }
+
     #[OA\Post(
         path: '/api/auth/register',
         summary: 'Register a new user account',
@@ -64,7 +73,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'User registered successfully',
-            'user' => $user,
+            'user' => $this->userPayload($user),
             'token' => $token,
         ], 201);
     }
@@ -125,7 +134,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Login successful',
-            'user' => $user,
+            'user' => $this->userPayload($user),
             'token' => $token,
         ], 200);
     }
@@ -192,9 +201,16 @@ class AuthController extends Controller
                 'provider' => 'google',
                 'provider_id' => $googleUser->getId(),
                 'email_verified_at' => now(),
-                'password' => bcrypt(Str::random(32)),
+                'password' => null,
                 'avatar_url' => $googleUser->getAvatar(),
             ]);
+        } else {
+            $user->forceFill([
+                'provider' => $user->provider ?: 'google',
+                'provider_id' => $user->provider_id ?: $googleUser->getId(),
+                'email_verified_at' => $user->email_verified_at ?: now(),
+                'avatar_url' => $user->getRawOriginal('avatar_url') ?: $googleUser->getAvatar(),
+            ])->save();
         }
 
         if ($user->suspended_at) {
@@ -207,7 +223,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Login successful',
-            'user' => $user->fresh(),
+            'user' => $this->userPayload($user),
             'token' => $token,
         ], 200);
     }
@@ -305,9 +321,8 @@ class AuthController extends Controller
     #[OA\RequestBody(
         required: true,
         content: new OA\JsonContent(
-            required: ['old_password', 'new_password', 'new_password_confirmation'],
             properties: [
-                new OA\Property(property: 'old_password', type: 'string', example: 'password_lama'),
+                new OA\Property(property: 'old_password', type: 'string', nullable: true, example: 'password_lama'),
                 new OA\Property(property: 'new_password', type: 'string', minLength: 8, example: 'password_baru'),
                 new OA\Property(property: 'new_password_confirmation', type: 'string', example: 'password_baru'),
             ]
@@ -325,14 +340,14 @@ class AuthController extends Controller
     #[OA\Response(response: 422, description: 'Validation error')]
     public function changePassword(Request $request)
     {
+        $user = $request->user();
+
         $validated = $request->validate([
-            'old_password' => 'required|string',
+            'old_password' => [$user->hasPassword() ? 'required' : 'nullable', 'string'],
             'new_password' => 'required|string|min:8|confirmed',
         ]);
 
-        $user = $request->user();
-
-        if (! Hash::check($validated['old_password'], $user->password)) {
+        if ($user->hasPassword() && ! Hash::check($validated['old_password'], $user->password)) {
             return response()->json([
                 'message' => 'The given data was invalid.',
                 'errors' => [

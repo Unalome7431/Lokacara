@@ -52,6 +52,11 @@ class User extends Authenticatable
         );
     }
 
+    public function hasPassword(): bool
+    {
+        return ! empty($this->getRawOriginal('password'));
+    }
+
     public function events(): HasMany
     {
         return $this->hasMany(Event::class)->chaperone();
